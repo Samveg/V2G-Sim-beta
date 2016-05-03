@@ -1,0 +1,14 @@
+# Python file
+*.pyc
+
+# JSON files
+*.json
+
+# csv files
+*.csv
+
+# Pycharm settings
+.idea
+
+# Weird mac thing
+.DS_store
