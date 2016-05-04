@@ -1,0 +1,31 @@
+itinerary package
+=================
+
+Description of the itinerary package.
+
+itinerary.load module
+--------------------------------------------------
+
+Description of the load module.
+
+.. automodule:: itinerary.load
+    :members:
+    :show-inheritance:
+
+itinerary.itineraryBin module
+-------------------------------------------
+
+Description of the itineraryBin module.
+
+.. automodule:: itinerary.itineraryBin
+    :members:
+    :show-inheritance:
+
+itinerary.create_vehicles module
+------------------------------------------------
+
+Description of the vehicle creation.
+
+.. automodule:: itinerary.create_vehicles
+    :members:
+    :show-inheritance:

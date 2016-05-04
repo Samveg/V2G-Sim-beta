@@ -1,0 +1,281 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>writing your own charging function &mdash; V2G-Sim 0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="V2G-Sim 0.1 documentation" href="index.html"/>
+        <link rel="next" title="core module" href="core.html"/>
+        <link rel="prev" title="writing your own V2G-Sim scripts" href="commandLineTutorial.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> V2G-Sim
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="V2Gconcept.html">what is Vehicle 2 Grid (V2G)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_structure.html">data structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="package_and_module_structure.html">packages and modules structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="commandLineTutorial.html">writing your own V2G-Sim scripts</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">writing your own charging function</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">core module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="itinerary.html">itinerary package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="charging.html">charging package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="driving.html">driving package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">result package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">V2G-Sim</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>writing your own charging function</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/chargingFunc.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="writing-your-own-charging-function">
+<h1>writing your own charging function<a class="headerlink" href="#writing-your-own-charging-function" title="Permalink to this headline">¶</a></h1>
+<p>This section should provide the basics for someone interested in creating new charging algorithms.</p>
+<p>The code you may write should live in the controlled.py module inside the &#8220;charging&#8221; package.
+Before launching a simulation, you may tell V2G-Sim to use your charging function at any location as follow:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">locationList</span><span class="p">:</span>
+        <span class="n">location</span><span class="o">.</span><span class="n">chargingInfra</span><span class="o">.</span><span class="n">chargingFunc</span> <span class="o">=</span> <span class="s1">&#39;charging.controlled.nameOfMyFunction(vehicle, activity, lastIteration, option)&#39;</span>
+</pre></div>
+</div>
+<p>Let&#8217;s look at the very basic of all charging functions, the uncontrolled case. This function is named &#8220;consumption&#8221; in the uncontrolled.py module.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">consumption</span><span class="p">(</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">activity</span><span class="p">,</span> <span class="n">lastIteration</span><span class="p">,</span> <span class="n">option</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>Parameters:</dt>
+<dd><ul class="first last simple">
+<li>a vehicle instance to make sure that the SOC and the power constraints are respected.</li>
+<li>an activity so that information on duration and location can be accessed.</li>
+<li>a parameter &#8220;lastIteration&#8221; false for any iteration which is not the last one, and true for the last iteration so only then the data is saved.</li>
+<li>a parameter &#8220;option&#8221; that allows you to pass any sort of supplementary data you might need (price signal...).</li>
+</ul>
+</dd>
+</dl>
+<p>The first step is to find the number of intervals that the car will be parked (dictated by vehicle.outputInterval).</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">consumption</span><span class="p">(</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">activity</span><span class="p">,</span> <span class="n">lastIteration</span><span class="p">,</span> <span class="n">option</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="c1"># Find the parked duration</span>
+        <span class="n">hourlySteps</span> <span class="o">=</span> <span class="mi">3600</span><span class="o">/</span><span class="n">vehicle</span><span class="o">.</span><span class="n">outputInterval</span>
+        <span class="n">nbInterval</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">driving</span><span class="o">.</span><span class="n">end</span><span class="o">*</span><span class="n">hourlySteps</span><span class="p">)</span><span class="o">-</span><span class="nb">int</span><span class="p">(</span><span class="n">driving</span><span class="o">.</span><span class="n">start</span><span class="o">*</span><span class="n">hourlySteps</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The next step is to iterate through all the intervals of the charging session and decide the power rate to apply.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">consumption</span><span class="p">(</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">activity</span><span class="p">,</span> <span class="n">lastIteration</span><span class="p">,</span> <span class="n">option</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="c1"># Find the parked duration</span>
+        <span class="n">hourlySteps</span> <span class="o">=</span> <span class="mi">3600</span><span class="o">/</span><span class="n">vehicle</span><span class="o">.</span><span class="n">outputInterval</span>
+        <span class="n">nbInterval</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">driving</span><span class="o">.</span><span class="n">end</span><span class="o">*</span><span class="n">hourlySteps</span><span class="p">)</span><span class="o">-</span><span class="nb">int</span><span class="p">(</span><span class="n">driving</span><span class="o">.</span><span class="n">start</span><span class="o">*</span><span class="n">hourlySteps</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nbInterval</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">carModel</span><span class="o">.</span><span class="n">SOCMax</span> <span class="ow">and</span> <span class="n">parked</span><span class="o">.</span><span class="n">pluggedIn</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+                        <span class="c1"># Do something</span>
+                <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># Don&#39;t charge</span>
+</pre></div>
+</div>
+<p>In the end the charging function must at least update vehicle.SOC and parked.powerDemand. You should update vehicle.SOC at every iteration (even if lastIteration is false), however, parked.powerDemand will only be saved at the last iteration (lastIteration is true).</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">consumption</span><span class="p">(</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">activity</span><span class="p">,</span> <span class="n">lastIteration</span><span class="p">,</span> <span class="n">option</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="c1"># Find the parked duration</span>
+        <span class="n">hourlySteps</span> <span class="o">=</span> <span class="mi">3600</span><span class="o">/</span><span class="n">vehicle</span><span class="o">.</span><span class="n">outputInterval</span>
+        <span class="n">nbInterval</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">driving</span><span class="o">.</span><span class="n">end</span><span class="o">*</span><span class="n">hourlySteps</span><span class="p">)</span><span class="o">-</span><span class="nb">int</span><span class="p">(</span><span class="n">driving</span><span class="o">.</span><span class="n">start</span><span class="o">*</span><span class="n">hourlySteps</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nbInterval</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">carModel</span><span class="o">.</span><span class="n">SOCMax</span> <span class="ow">and</span> <span class="n">parked</span><span class="o">.</span><span class="n">pluggedIn</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+                        <span class="c1"># Check if the vehicle can handle the charger power rate</span>
+                        <span class="k">if</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">carModel</span><span class="o">.</span><span class="n">powerRateMax</span> <span class="o">&gt;</span> <span class="n">parked</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">chargingInfra</span><span class="o">.</span><span class="n">powerRateMax</span><span class="p">:</span>
+                                <span class="n">powerRate</span> <span class="o">=</span> <span class="n">parked</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">chargingInfra</span><span class="o">.</span><span class="n">powerRateMax</span>
+                        <span class="k">else</span><span class="p">:</span>
+                                <span class="n">powerRate</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">carModel</span><span class="o">.</span><span class="n">powerRateMax</span>
+
+                        <span class="c1"># Set the power demand to be the charger station power</span>
+                        <span class="k">if</span> <span class="n">lastIteration</span><span class="p">:</span>
+                                <span class="n">parked</span><span class="o">.</span><span class="n">powerDemand</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">powerRate</span><span class="p">)</span>
+                        <span class="c1"># Set new SOC to be (SOC + powerDemand*outputInterval/totalCap)</span>
+                        <span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span>
+                                                           <span class="p">(</span><span class="n">powerRate</span><span class="o">*</span>
+                                                           <span class="n">vehicle</span><span class="o">.</span><span class="n">outputInterval</span><span class="o">/</span>
+                                                           <span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">carModel</span><span class="o">.</span><span class="n">batteryCap</span><span class="o">*</span><span class="mi">3600</span><span class="p">)))</span> <span class="c1"># batteryCap from Wh to Joules</span>
+                <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">lastIteration</span><span class="p">:</span>
+                                <span class="n">parked</span><span class="o">.</span><span class="n">powerDemand</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                        <span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Feel free to create your own now !</p>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="core.html" class="btn btn-neutral float-right" title="core module" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="commandLineTutorial.html" class="btn btn-neutral" title="writing your own V2G-Sim scripts" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Lawrence Berkeley National Laboratory.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

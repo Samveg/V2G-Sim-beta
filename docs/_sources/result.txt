@@ -1,0 +1,23 @@
+result package
+==============
+
+Subpackages
+-----------
+
+.. toctree::
+    result.visualization
+    :maxdepth: 1
+
+result.itinerary module
+-----------------------
+
+.. automodule:: result.itinerary
+    :members:
+    :show-inheritance:
+
+result.vehicle_consumption module
+-----------------------------------------
+
+.. automodule:: result.vehicle_consumption
+    :members:
+    :show-inheritance:

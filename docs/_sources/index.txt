@@ -1,0 +1,45 @@
+.. V2G-Sim documentation master file, created by
+   sphinx-quickstart on Mon Sep 28 14:36:18 2015.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Welcome to V2G-Sim's documentation!
+===================================
+
+Abstract
+========
+
+The *Vehicle-to-Grid Simulator (V2G-Sim)* provides systematic quantitative methods to address the uncertainties and barriers facing vehicle-grid integration (VGI). 
+In the real world, each person drives a different vehicle, in different ways, with different trip distances, at different times. 
+Predicting the adequacy of plug-in electric vehicles (PEVs) for the needs of drivers, and accurately predicting the impacts and opportunities to the electricity grid from increased PEV deployment requires models that can consider these
+differences at the individual vehicle level.
+
+
+V2G-Sim models the driving and charging behavior of individual PEVs to generate temporally- and spatially-resolved predictions of grid impacts and opportunities from increased plug-in electric vehicle (PEV) deployment.
+V2G-Sim provides bottom up modeling from individual vehicle dynamics all the way up to aggregate grid impacts and opportunities.
+
+Contents:
+=========
+
+.. toctree::
+	V2Gconcept.rst
+	data_structure.rst
+	package_and_module_structure.rst	
+	GUItutorial.rst
+	commandLineTutorial.rst
+	chargingFunc.rst
+	core.rst
+	model.rst
+	itinerary.rst
+	charging.rst
+	driving.rst
+	result.rst
+	:maxdepth: 3
+
+.. Indices and tables
+.. ==================
+
+.. * :ref:`genindex`
+.. * :ref:`modindex`
+.. * :ref:`search`
+

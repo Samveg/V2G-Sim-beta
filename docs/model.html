@@ -1,0 +1,478 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>model &mdash; V2G-Sim 0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="V2G-Sim 0.1 documentation" href="index.html"/>
+        <link rel="prev" title="core module" href="core.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> V2G-Sim
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="V2Gconcept.html">what is Vehicle 2 Grid (V2G)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_structure.html">data structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="package_and_module_structure.html">packages and modules structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="commandLineTutorial.html">writing your own V2G-Sim scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chargingFunc.html">writing your own charging function</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">core module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">model</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">V2G-Sim</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>model</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/model.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-model">
+<span id="model"></span><h1>model<a class="headerlink" href="#module-model" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="model.Activity">
+<em class="property">class </em><code class="descclassname">model.</code><code class="descname">Activity</code><span class="sig-paren">(</span><em>start</em>, <em>end</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Activity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Activity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Activity is an abstract class that is implemented in Driving and Parked.
+Data is indexed with the project timestep.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>start</strong> (<em>float</em>) &#8211; start time of the activity in hours [h]</li>
+<li><strong>end</strong> (<em>float</em>) &#8211; end time of the activity in hours [h]</li>
+<li><strong>power_demand</strong> (<em>list</em>) &#8211; he power consumption during the activity [W]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="model.BasicCarModel">
+<em class="property">class </em><code class="descclassname">model.</code><code class="descname">BasicCarModel</code><span class="sig-paren">(</span><em>name</em>, <em>driving_function</em>, <em>maker=None</em>, <em>year=None</em>, <em>UDDS=145.83</em>, <em>HWFET=163.69</em>, <em>US06=223.62</em>, <em>Delhi=138.3</em>, <em>maximum_SOC=0.95</em>, <em>decay=0.95</em>, <em>battery_capacity=23832</em>, <em>battery_efficiency_charging=1.0</em>, <em>battery_efficiency_discharging=1.0</em>, <em>maximum_power=6600</em>, <em>minimum_power=-6600</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#BasicCarModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.BasicCarModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>BasicCarModel describes a very basic car model using deterministic
+consumption for typical drivecycles. Equivalent to assigning consumption
+with average speed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; (required) name of the model</li>
+<li><strong>driving_function</strong> (<em>func</em>) &#8211; (required) algorithm to compute
+vehicle consumptionwhile driving</li>
+<li><strong>maker</strong> (<em>string</em>) &#8211; name of the maker</li>
+<li><strong>year</strong> (<em>string</em>) &#8211; year of the car model</li>
+<li><strong>UDDS</strong> (<em>float</em>) &#8211; Consumption on the UDDS drivecycle [wh/km]</li>
+<li><strong>HWFET</strong> (<em>float</em>) &#8211; Consumption on the HWFET drivecycle [wh/km]</li>
+<li><strong>US06</strong> (<em>float</em>) &#8211; consumption on the US06 drivecycle[wh/km]</li>
+<li><strong>Delhi</strong> (<em>float</em>) &#8211; consumption on the Delhi drivecycle [wh/km]</li>
+<li><strong>battery_capacity</strong> (<em>float</em>) &#8211; battery capacity in [Wh]</li>
+<li><strong>battery_efficiency_charging</strong> (<em>float</em>) &#8211; efficiency while charging</li>
+<li><strong>battery_efficiency_discharging</strong> (<em>float</em>) &#8211; efficiency while discharging</li>
+<li><strong>maximum_SOC</strong> (<em>float</em>) &#8211; maximum state of charge that the battery can reach</li>
+<li><strong>decay</strong> (<em>float</em>) &#8211; state of charge from which the battery charging
+profile is not linear</li>
+<li><strong>minimum_power</strong> (<em>float</em>) &#8211; maximum power rate for the battery [W]</li>
+<li><strong>maximum_power</strong> (<em>float</em>) &#8211; minumin power rate for the battery [W]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="model.ChargingStation">
+<em class="property">class </em><code class="descclassname">model.</code><code class="descname">ChargingStation</code><span class="sig-paren">(</span><em>charging_function</em>, <em>maximum_power=1440</em>, <em>minimum_power=-1440</em>, <em>v2g=False</em>, <em>name='charger'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#ChargingStation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.ChargingStation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Charging station represents a type of infrastructure</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; name associated with the infrastructure</li>
+<li><strong>charging_function</strong> (<em>func</em>) &#8211; (required) function to control
+the charging behavior</li>
+<li><strong>v2g</strong> (<em>boolean</em>) &#8211; True to allow potential flow from vehicle to the grid</li>
+<li><strong>maximum_power</strong> (<em>float</em>) &#8211; maximum rate at which a vehicle can charge</li>
+<li><strong>minimum_power</strong> (<em>float</em>) &#8211; minimum rate at which a vehicle can charge</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="model.Driving">
+<em class="property">class </em><code class="descclassname">model.</code><code class="descname">Driving</code><span class="sig-paren">(</span><em>start</em>, <em>end</em>, <em>distance</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Driving"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Driving" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#model.Activity" title="model.Activity"><code class="xref py py-class docutils literal"><span class="pre">model.Activity</span></code></a></p>
+<p>Driving represents a drivecycle, it inherits from Activity.
+Note that units differ from the SI units since distance is in [km]
+and speed in [km/h]. Data is indexed with at project timestep rate.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>distance</strong> (<em>float</em>) &#8211; distance traveled in [km]</li>
+<li><strong>speed</strong> (<em>list</em>) &#8211; drive cycle speed in [km/h]</li>
+<li><strong>terrain</strong> (<em>list</em>) &#8211; grade along the drive cycle in [rad]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="model.ItineraryBin">
+<em class="property">class </em><code class="descclassname">model.</code><code class="descname">ItineraryBin</code><span class="sig-paren">(</span><em>vehicles</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#ItineraryBin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.ItineraryBin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Hold statistics for specific itineraries</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>vehicles</strong> (<em>list</em>) &#8211; vehicles having this itinerary combinaison</li>
+<li><strong>statistics</strong> (<em>pandas.DataFrame</em>) &#8211; statistics for individual activities (
+duration, distance, ...)</li>
+<li><strong>weight</strong> (<em>float</em>) &#8211; weight associated to this itinerary combinaison</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="model.Location">
+<em class="property">class </em><code class="descclassname">model.</code><code class="descname">Location</code><span class="sig-paren">(</span><em>category</em>, <em>name</em>, <em>position=(0</em>, <em>0)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Location"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Location" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Location physical place or a category of place.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; (required) name of the location</li>
+<li><strong>category</strong> (<em>string</em>) &#8211; (required) type of location (Home, Work, ...)</li>
+<li><strong>position</strong> (<em>tuple</em>) &#8211; GPS position</li>
+<li><strong>power_demand</strong> (<em>list</em>) &#8211; power demand [W]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="model.Parked">
+<em class="property">class </em><code class="descclassname">model.</code><code class="descname">Parked</code><span class="sig-paren">(</span><em>start</em>, <em>end</em>, <em>location</em>, <em>plugged_in=False</em>, <em>charging_station=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Parked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Parked" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#model.Activity" title="model.Activity"><code class="xref py py-class docutils literal"><span class="pre">model.Activity</span></code></a></p>
+<p>Parked activity inherits from Activity. It represents a car parked at
+a location.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>location</strong> (<a class="reference internal" href="#model.Location" title="model.Location"><em>Location</em></a>) &#8211; (required) location object at which the vehicle
+is parked</li>
+<li><strong>plugged_in</strong> (<em>boolean</em>) &#8211; True if the vehicle is plugged to a charging
+infrastructure</li>
+<li><strong>charging_station</strong> (<a class="reference internal" href="#model.ChargingStation" title="model.ChargingStation"><em>ChargingStation</em></a>) &#8211; charging station at which a
+vehicle is plugged</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="model.Project">
+<em class="property">class </em><code class="descclassname">model.</code><code class="descname">Project</code><span class="sig-paren">(</span><em>description='no description'</em>, <em>timestep=60</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>V2G-Sim project holder. It contains all the vehicles, locations,
+car models and charging stations used in the project. It also includes
+statistics on input activities for the vehicles.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>vehicles</strong> (<em>list</em>) &#8211; vehicle objects</li>
+<li><strong>car_models</strong> (<em>list</em>) &#8211; car model objects</li>
+<li><strong>locations</strong> (<em>list</em>) &#8211; location objects</li>
+<li><strong>charging_stations</strong> (<em>list</em>) &#8211; charging_station objects</li>
+<li><strong>description</strong> (<em>string</em>) &#8211; description of the project</li>
+<li><strong>vehicle_statistics</strong> (<em>pandas.DataFrame</em>) &#8211; statistics for individual
+vehicles (distance traveled, ...)</li>
+<li><strong>itinerary_statistics</strong> (<em>pandas.DataFrame</em>) &#8211; statistics for specific
+itinerary combinaisons (number of vehicles, ...)</li>
+<li><strong>timestep</strong> (<em>int</em>) &#8211; simulation interval in [seconds]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="model.Project.check_integrity">
+<code class="descname">check_integrity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Project.check_integrity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Project.check_integrity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Launch tests on the project</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="model.Project.load">
+<code class="descname">load</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Project.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Project.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a project</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> (<em>string</em>) &#8211; path to a project (/../my_project.v2gsim)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="model.Project.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Project.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Project.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the project</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> (<em>string</em>) &#8211; path to save the project (/../my_project.v2gsim)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="model.Vehicle">
+<em class="property">class </em><code class="descclassname">model.</code><code class="descname">Vehicle</code><span class="sig-paren">(</span><em>index</em>, <em>car_model</em>, <em>initial_SOC=0.95</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Vehicle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Vehicle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Vehicle represents a single car with a specific model and set of
+activities throughout the day. Vehicles keep track of their SOC as well
+as their stranding log.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>id</strong> (<em>int</em>) &#8211; unique id</li>
+<li><strong>initial_SOC</strong> (<em>float</em>) &#8211; initial state of charge [0, 1]</li>
+<li><strong>SOC</strong> (<em>list</em>) &#8211; state of charge of the battery along the time</li>
+<li><strong>activities</strong> (<em>list</em>) &#8211; activities throughout the day
+(parked, driving, parked, ...)</li>
+<li><strong>weight</strong> (<em>float</em>) &#8211; how representative is a vehicle [0, 1]</li>
+<li><strong>valid_activities</strong> (<em>boolean</em>) &#8211; True if activities don&#8217;t leave any
+gap of time, the end of an activity must correspond with the start
+of the next one</li>
+<li><strong>stranding_log</strong> (<em>list</em>) &#8211; time at which the vehicle has stranded [hour]</li>
+<li><strong>car_model</strong> (<a class="reference internal" href="#model.BasicCarModel" title="model.BasicCarModel"><em>BasicCarModel</em></a>) &#8211; car model associated to the vehicle</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="model.Vehicle.check_activities">
+<code class="descname">check_activities</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Vehicle.check_activities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Vehicle.check_activities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify if every activity start at the end of the previous activity</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="model.Vehicle.set_activities">
+<code class="descname">set_activities</code><span class="sig-paren">(</span><em>parked</em>, <em>driving</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Vehicle.set_activities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Vehicle.set_activities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set activities in order and check if the order has been respected</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="core.html" class="btn btn-neutral" title="core module" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Lawrence Berkeley National Laboratory.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

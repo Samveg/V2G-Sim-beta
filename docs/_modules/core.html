@@ -1,0 +1,325 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>core &mdash; V2G-Sim 0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="V2G-Sim 0.1 documentation" href="../index.html"/>
+        <link rel="up" title="Module code" href="index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> V2G-Sim
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../V2Gconcept.html">what is Vehicle 2 Grid (V2G)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../data_structure.html">data structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../package_and_module_structure.html">packages and modules structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commandLineTutorial.html">writing your own V2G-Sim scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chargingFunc.html">writing your own charging function</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core.html">core module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../model.html">model</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">V2G-Sim</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="index.html">Module code</a> &raquo;</li>
+      
+    <li>core</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for core</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span class="kn">import</span> <span class="nn">model</span>
+<span class="c1"># import driving.simple</span>
+<span class="c1"># import charging.kamishwar</span>
+<span class="c1"># import charging.uncontrolled</span>
+<span class="c1"># import charging.controlled</span>
+<span class="c1"># import driving.detailed.power_train</span>
+<span class="kn">import</span> <span class="nn">progressbar</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">from</span> <span class="nn">clint.textui</span> <span class="kn">import</span> <span class="n">colored</span>
+
+
+<div class="viewcode-block" id="runV2GSim"><a class="viewcode-back" href="../core.html#core.runV2GSim">[docs]</a><span class="k">def</span> <span class="nf">runV2GSim</span><span class="p">(</span><span class="n">vehicleList</span><span class="p">,</span> <span class="n">nbIteration</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">option</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">itineraryNb</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Launch driving functions and charging functions for each vehicle passed,</span>
+<span class="sd">    results from function is then appended to the vehicle state.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        vehicleList (list of vehicles): vehicles to simulate</span>
+<span class="sd">        nbIteration (int): number of iterations</span>
+<span class="sd">        option (anything): optional parameter for charging functions</span>
+<span class="sd">        itineraryNb (int): optional itinerary number (default: 0)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">colored</span><span class="o">.</span><span class="n">green</span><span class="p">(</span><span class="s1">&#39;core.runV2GSim(vehicleList, nbIteration=&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nbIteration</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span><span class="p">))</span>
+
+    <span class="c1"># Create the progress bar</span>
+    <span class="n">progress</span> <span class="o">=</span> <span class="n">progressbar</span><span class="o">.</span><span class="n">ProgressBar</span><span class="p">(</span><span class="n">widgets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Running V2G-Sim: &#39;</span><span class="p">,</span> <span class="n">progressbar</span><span class="o">.</span><span class="n">Percentage</span><span class="p">(),</span> <span class="n">progressbar</span><span class="o">.</span><span class="n">Bar</span><span class="p">()],</span>
+                                       <span class="n">maxval</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vehicleList</span><span class="p">)))</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">indexV</span><span class="p">,</span> <span class="n">vehicle</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vehicleList</span><span class="p">):</span>
+        <span class="n">lastIteration</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="k">for</span> <span class="n">indexI</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nbIteration</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">indexI</span> <span class="o">==</span> <span class="n">nbIteration</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">lastIteration</span> <span class="o">=</span> <span class="bp">True</span>
+
+            <span class="k">for</span> <span class="n">indexA</span><span class="p">,</span> <span class="n">activity</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">itinerary</span><span class="p">[</span><span class="n">itineraryNb</span><span class="p">]</span><span class="o">.</span><span class="n">activity</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">Driving</span><span class="p">):</span>
+                    <span class="n">SOC</span><span class="p">,</span> <span class="n">powerDemand</span><span class="p">,</span> <span class="n">stranded</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">carModel</span><span class="o">.</span><span class="n">drivingFunc</span><span class="p">)</span>
+                    <span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">SOC</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">lastIteration</span><span class="p">:</span>
+                        <span class="n">activity</span><span class="o">.</span><span class="n">powerDemand</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">powerDemand</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">stranded</span><span class="p">:</span>
+                            <span class="n">hourlySteps</span> <span class="o">=</span> <span class="mi">3600</span> <span class="o">/</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">outputInterval</span>
+                            <span class="n">vehicle</span><span class="o">.</span><span class="n">strandingLog</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">end</span> <span class="o">-</span> <span class="n">activity</span><span class="o">.</span><span class="n">start</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">Parked</span><span class="p">):</span>
+                    <span class="n">SOC</span><span class="p">,</span> <span class="n">powerDemand</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">chargingInfra</span><span class="o">.</span><span class="n">chargingFunc</span><span class="p">)</span>
+                    <span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">SOC</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">lastIteration</span><span class="p">:</span>
+                        <span class="n">activity</span><span class="o">.</span><span class="n">powerDemand</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">powerDemand</span><span class="p">)</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Oops one of the activities was neither driving or parked&#39;</span><span class="p">)</span>
+                    <span class="k">return</span>
+
+            <span class="c1"># Initiate Vehicle SOC last value to be the inital SOC next iteration</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">lastIteration</span><span class="p">:</span>
+                <span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span> <span class="o">=</span> <span class="p">[</span><span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+            <span class="k">if</span> <span class="n">lastIteration</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">SOC</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># removed initial value added line 58</span>
+
+        <span class="n">progress</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">indexV</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">progress</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="runV2GSim_reduce"><a class="viewcode-back" href="../core.html#core.runV2GSim_reduce">[docs]</a><span class="k">def</span> <span class="nf">runV2GSim_reduce</span><span class="p">(</span><span class="n">vehicleList</span><span class="p">,</span> <span class="n">nbIteration</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">option</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">itineraryNb</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Launch driving functions and charging functions for each vehicle passed,</span>
+<span class="sd">    results from function is then appended to the vehicle state. In order to overpass RAM limitation the results from</span>
+<span class="sd">    individual activities are freed from the memory, instead a dictionary with the consumptions at each locations</span>
+<span class="sd">    is returned.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        vehicleList (list of vehicles): vehicles to simulate</span>
+<span class="sd">        nbIteration (int): number of iterations</span>
+<span class="sd">        option (anything): optional parameter for charging functions</span>
+<span class="sd">        itineraryNb (int): optional itinerary number (default: 0)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">colored</span><span class="o">.</span><span class="n">green</span><span class="p">(</span><span class="s1">&#39;core.runV2GSim(vehicleList, nbIteration=&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nbIteration</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span><span class="p">))</span>
+
+    <span class="c1"># Create the progress bar</span>
+    <span class="n">progress</span> <span class="o">=</span> <span class="n">progressbar</span><span class="o">.</span><span class="n">ProgressBar</span><span class="p">(</span><span class="n">widgets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Running V2G-Sim: &#39;</span><span class="p">,</span> <span class="n">progressbar</span><span class="o">.</span><span class="n">Percentage</span><span class="p">(),</span> <span class="n">progressbar</span><span class="o">.</span><span class="n">Bar</span><span class="p">()],</span>
+                                       <span class="n">maxval</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vehicleList</span><span class="p">)))</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">windowTime</span> <span class="o">=</span> <span class="mi">24</span>
+    <span class="n">hourlySteps</span> <span class="o">=</span> <span class="mi">3600</span> <span class="o">/</span> <span class="n">vehicleList</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">outputInterval</span>
+    <span class="n">powerDemandLoc</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Total&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">windowTime</span> <span class="o">*</span> <span class="n">hourlySteps</span><span class="p">))}</span>
+    <span class="k">for</span> <span class="n">indexV</span><span class="p">,</span> <span class="n">vehicle</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vehicleList</span><span class="p">):</span>
+        <span class="n">lastIteration</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="k">for</span> <span class="n">indexI</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nbIteration</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">indexI</span> <span class="o">==</span> <span class="n">nbIteration</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">lastIteration</span> <span class="o">=</span> <span class="bp">True</span>
+
+            <span class="k">for</span> <span class="n">indexA</span><span class="p">,</span> <span class="n">activity</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">itinerary</span><span class="p">[</span><span class="n">itineraryNb</span><span class="p">]</span><span class="o">.</span><span class="n">activity</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">Driving</span><span class="p">):</span>
+                    <span class="n">SOC</span><span class="p">,</span> <span class="n">powerDemand</span><span class="p">,</span> <span class="n">stranded</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">carModel</span><span class="o">.</span><span class="n">drivingFunc</span><span class="p">)</span>
+                    <span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">SOC</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">lastIteration</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">stranded</span><span class="p">:</span>
+                            <span class="n">hourlySteps</span> <span class="o">=</span> <span class="mi">3600</span> <span class="o">/</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">outputInterval</span>
+                            <span class="n">vehicle</span><span class="o">.</span><span class="n">strandingLog</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">end</span> <span class="o">-</span> <span class="n">activity</span><span class="o">.</span><span class="n">start</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">Parked</span><span class="p">):</span>
+                    <span class="n">SOC</span><span class="p">,</span> <span class="n">powerDemand</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">chargingInfra</span><span class="o">.</span><span class="n">chargingFunc</span><span class="p">)</span>
+                    <span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">SOC</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">lastIteration</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">activity</span><span class="o">.</span><span class="n">pluggedIn</span><span class="p">:</span>
+                            <span class="c1"># Set offset for the activity starting time</span>
+                            <span class="n">sublist</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">hourlySteps</span> <span class="o">*</span> <span class="n">activity</span><span class="o">.</span><span class="n">start</span><span class="p">))</span>
+                            <span class="n">sublist</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">powerDemand</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">activity</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">powerDemandLoc</span><span class="p">:</span>
+                                <span class="n">powerDemandLoc</span><span class="p">[</span><span class="n">activity</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">type</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">windowTime</span> <span class="o">*</span> <span class="n">hourlySteps</span><span class="p">))</span>
+
+                            <span class="c1"># Sum power demand at the corresponding location</span>
+                            <span class="n">powerDemandLoc</span><span class="p">[</span><span class="n">activity</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">type</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">izip_longest</span><span class="p">(</span>
+                                <span class="n">powerDemandLoc</span><span class="p">[</span><span class="n">activity</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">type</span><span class="p">],</span> <span class="n">sublist</span><span class="p">,</span> <span class="n">fillvalue</span><span class="o">=</span><span class="mi">0</span><span class="p">)]</span>
+                            <span class="n">powerDemandLoc</span><span class="p">[</span><span class="s1">&#39;Total&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span>
+                                                       <span class="n">itertools</span><span class="o">.</span><span class="n">izip_longest</span><span class="p">(</span><span class="n">powerDemandLoc</span><span class="p">[</span><span class="s1">&#39;Total&#39;</span><span class="p">],</span> <span class="n">sublist</span><span class="p">,</span>
+                                                                              <span class="n">fillvalue</span><span class="o">=</span><span class="mi">0</span><span class="p">)]</span>
+            <span class="c1"># Initiate Vehicle SOC last value to be the inital SOC next iteration</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">lastIteration</span><span class="p">:</span>
+                <span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span> <span class="o">=</span> <span class="p">[</span><span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+            <span class="k">if</span> <span class="n">lastIteration</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">SOC</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># removed initial value added line 121</span>
+
+        <span class="n">progress</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">indexV</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">progress</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">powerDemandLoc</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Lawrence Berkeley National Laboratory.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

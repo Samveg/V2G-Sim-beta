@@ -1,0 +1,9 @@
+driving.drivecycle package
+==========================
+
+driving.drivecycle.generator module
+-----------------------------------
+
+.. automodule:: driving.drivecycle.generator
+    :members:
+    :show-inheritance:
