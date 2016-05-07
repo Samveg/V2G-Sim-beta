@@ -31,7 +31,8 @@
 
   
     <link rel="top" title="V2G-Sim 0.1 documentation" href="index.html"/>
-        <link rel="prev" title="core module" href="core.html"/> 
+        <link rel="next" title="itinerary" href="itinerary.html"/>
+        <link rel="prev" title="core" href="core.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -81,13 +82,13 @@
             
             
                 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="V2Gconcept.html">what is Vehicle 2 Grid (V2G)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="data_structure.html">data structure</a></li>
-<li class="toctree-l1"><a class="reference internal" href="package_and_module_structure.html">packages and modules structure</a></li>
-<li class="toctree-l1"><a class="reference internal" href="commandLineTutorial.html">writing your own V2G-Sim scripts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="chargingFunc.html">writing your own charging function</a></li>
-<li class="toctree-l1"><a class="reference internal" href="core.html">core module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="v2gconcept.html">what is vehicle to grid?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">core</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="itinerary.html">itinerary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="charging.html">charging package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="driving.html">driving package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">result</a></li>
 </ul>
 
             
@@ -157,7 +158,7 @@ Data is indexed with the project timestep.</p>
 
 <dl class="class">
 <dt id="model.BasicCarModel">
-<em class="property">class </em><code class="descclassname">model.</code><code class="descname">BasicCarModel</code><span class="sig-paren">(</span><em>name</em>, <em>driving_function</em>, <em>maker=None</em>, <em>year=None</em>, <em>UDDS=145.83</em>, <em>HWFET=163.69</em>, <em>US06=223.62</em>, <em>Delhi=138.3</em>, <em>maximum_SOC=0.95</em>, <em>decay=0.95</em>, <em>battery_capacity=23832</em>, <em>battery_efficiency_charging=1.0</em>, <em>battery_efficiency_discharging=1.0</em>, <em>maximum_power=6600</em>, <em>minimum_power=-6600</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#BasicCarModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.BasicCarModel" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">model.</code><code class="descname">BasicCarModel</code><span class="sig-paren">(</span><em>name</em>, <em>driving=&lt;function consumption&gt;</em>, <em>maker=None</em>, <em>year=None</em>, <em>UDDS=145.83</em>, <em>HWFET=163.69</em>, <em>US06=223.62</em>, <em>Delhi=138.3</em>, <em>maximum_SOC=0.95</em>, <em>decay=0.95</em>, <em>battery_capacity=23832</em>, <em>battery_efficiency_charging=1.0</em>, <em>battery_efficiency_discharging=1.0</em>, <em>maximum_power=6600</em>, <em>minimum_power=-6600</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#BasicCarModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.BasicCarModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>BasicCarModel describes a very basic car model using deterministic
 consumption for typical drivecycles. Equivalent to assigning consumption
@@ -168,7 +169,7 @@ with average speed.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>name</strong> (<em>string</em>) &#8211; (required) name of the model</li>
-<li><strong>driving_function</strong> (<em>func</em>) &#8211; (required) algorithm to compute
+<li><strong>driving</strong> (<em>func</em>) &#8211; (required) algorithm to compute
 vehicle consumptionwhile driving</li>
 <li><strong>maker</strong> (<em>string</em>) &#8211; name of the maker</li>
 <li><strong>year</strong> (<em>string</em>) &#8211; year of the car model</li>
@@ -193,7 +194,7 @@ profile is not linear</li>
 
 <dl class="class">
 <dt id="model.ChargingStation">
-<em class="property">class </em><code class="descclassname">model.</code><code class="descname">ChargingStation</code><span class="sig-paren">(</span><em>charging_function</em>, <em>maximum_power=1440</em>, <em>minimum_power=-1440</em>, <em>v2g=False</em>, <em>name='charger'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#ChargingStation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.ChargingStation" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">model.</code><code class="descname">ChargingStation</code><span class="sig-paren">(</span><em>charging=&lt;function consumption&gt;</em>, <em>maximum_power=1440</em>, <em>minimum_power=-1440</em>, <em>v2g=False</em>, <em>name='charger'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#ChargingStation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.ChargingStation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Charging station represents a type of infrastructure</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -202,7 +203,7 @@ profile is not linear</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>name</strong> (<em>string</em>) &#8211; name associated with the infrastructure</li>
-<li><strong>charging_function</strong> (<em>func</em>) &#8211; (required) function to control
+<li><strong>charging</strong> (<em>func</em>) &#8211; function to control
 the charging behavior</li>
 <li><strong>v2g</strong> (<em>boolean</em>) &#8211; True to allow potential flow from vehicle to the grid</li>
 <li><strong>maximum_power</strong> (<em>float</em>) &#8211; maximum rate at which a vehicle can charge</li>
@@ -259,7 +260,7 @@ duration, distance, ...)</li>
 
 <dl class="class">
 <dt id="model.Location">
-<em class="property">class </em><code class="descclassname">model.</code><code class="descname">Location</code><span class="sig-paren">(</span><em>category</em>, <em>name</em>, <em>position=(0</em>, <em>0)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Location"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Location" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">model.</code><code class="descname">Location</code><span class="sig-paren">(</span><em>category</em>, <em>name</em>, <em>position=(0</em>, <em>0)</em>, <em>assign_charging_station=&lt;function randomly_assign&gt;</em>, <em>result_function=&lt;function save_power_demand_at_location&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Location"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Location" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Location physical place or a category of place.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -270,7 +271,14 @@ duration, distance, ...)</li>
 <li><strong>name</strong> (<em>string</em>) &#8211; (required) name of the location</li>
 <li><strong>category</strong> (<em>string</em>) &#8211; (required) type of location (Home, Work, ...)</li>
 <li><strong>position</strong> (<em>tuple</em>) &#8211; GPS position</li>
-<li><strong>power_demand</strong> (<em>list</em>) &#8211; power demand [W]</li>
+<li><strong>result</strong> (<em>pandas.DataFrame</em>) &#8211; results</li>
+<li><strong>result_function</strong> (<em>func</em>) &#8211; function to create and update the result
+data frame</li>
+<li><strong>available_charging_station</strong> (<em>pandas.DataFrame</em>) &#8211; describe the
+availability of charging stations (charging_station,
+probability, available, total)</li>
+<li><strong>assign_charging_station_function</strong> (<em>func</em>) &#8211; function to assign a
+charging station to an incoming vehicle</li>
 </ul>
 </td>
 </tr>
@@ -395,14 +403,8 @@ of the next one</li>
 </table>
 <dl class="method">
 <dt id="model.Vehicle.check_activities">
-<code class="descname">check_activities</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Vehicle.check_activities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Vehicle.check_activities" title="Permalink to this definition">¶</a></dt>
+<code class="descname">check_activities</code><span class="sig-paren">(</span><em>start_date</em>, <em>end_date</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Vehicle.check_activities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Vehicle.check_activities" title="Permalink to this definition">¶</a></dt>
 <dd><p>Verify if every activity start at the end of the previous activity</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="model.Vehicle.set_activities">
-<code class="descname">set_activities</code><span class="sig-paren">(</span><em>parked</em>, <em>driving</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Vehicle.set_activities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Vehicle.set_activities" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set activities in order and check if the order has been respected</p>
 </dd></dl>
 
 </dd></dl>
@@ -416,8 +418,10 @@ of the next one</li>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
+        <a href="itinerary.html" class="btn btn-neutral float-right" title="itinerary" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
-        <a href="core.html" class="btn btn-neutral" title="core module" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+        <a href="core.html" class="btn btn-neutral" title="core" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

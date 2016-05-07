@@ -22,12 +22,7 @@ Contents:
 =========
 
 .. toctree::
-	V2Gconcept.rst
-	data_structure.rst
-	package_and_module_structure.rst	
-	GUItutorial.rst
-	commandLineTutorial.rst
-	chargingFunc.rst
+	v2gconcept.rst
 	core.rst
 	model.rst
 	itinerary.rst

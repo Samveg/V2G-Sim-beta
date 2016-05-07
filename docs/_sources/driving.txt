@@ -1,17 +1,9 @@
 driving package
 ===============
 
-Subpackages
------------
-
-.. toctree::
-    driving.detailed
-    driving.drivecycle
-    :maxdepth: 1
-
-driving.simple module
+driving.basic_powertrain
 -----------------------------
 
-.. automodule:: driving.simple
+.. automodule:: driving.basic_powertrain
     :members:
     :show-inheritance:

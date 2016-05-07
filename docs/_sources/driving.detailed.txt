@@ -1,4 +1,0 @@
-driving.detailed package
-========================
-
-Description of the detailed model, should I include the code ?

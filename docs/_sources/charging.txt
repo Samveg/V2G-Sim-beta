@@ -1,9 +1,17 @@
 charging package
 ================
 
-charging.uncontrolled module
-------------------------------------
+charging.uncontrolled
+-----------------------------
 
 .. automodule:: charging.uncontrolled
+    :members:
+    :show-inheritance:
+
+
+charging.station
+-----------------------------
+
+.. automodule:: charging.station
     :members:
     :show-inheritance:

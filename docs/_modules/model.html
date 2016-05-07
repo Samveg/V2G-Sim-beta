@@ -81,13 +81,13 @@
             
             
                 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../V2Gconcept.html">what is Vehicle 2 Grid (V2G)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../data_structure.html">data structure</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../package_and_module_structure.html">packages and modules structure</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commandLineTutorial.html">writing your own V2G-Sim scripts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chargingFunc.html">writing your own charging function</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../core.html">core module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../v2gconcept.html">what is vehicle to grid?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core.html">core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../model.html">model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../itinerary.html">itinerary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../charging.html">charging package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../driving.html">driving package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../result.html">result</a></li>
 </ul>
 
             
@@ -133,7 +133,15 @@
            <div itemprop="articleBody">
             
   <h1>Source code for model</h1><div class="highlight"><pre>
-<div class="viewcode-block" id="Project"><a class="viewcode-back" href="../model.html#model.Project">[docs]</a><span></span><span class="k">class</span> <span class="nc">Project</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span></span><span class="kn">import</span> <span class="nn">driving.basic_powertrain</span>
+<span class="kn">import</span> <span class="nn">charging.uncontrolled</span>
+<span class="kn">import</span> <span class="nn">charging.station</span>
+<span class="kn">import</span> <span class="nn">result</span>
+<span class="kn">import</span> <span class="nn">cPickle</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+
+
+<div class="viewcode-block" id="Project"><a class="viewcode-back" href="../model.html#model.Project">[docs]</a><span class="k">class</span> <span class="nc">Project</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;V2G-Sim project holder. It contains all the vehicles, locations,</span>
 <span class="sd">    car models and charging stations used in the project. It also includes</span>
 <span class="sd">    statistics on input activities for the vehicles.</span>
@@ -152,14 +160,16 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;no description&#39;</span><span class="p">,</span> <span class="n">timestep</span><span class="o">=</span><span class="mi">60</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">vehicles</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">car_models</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">charging_stations</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vehicles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">car_models</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">charging_stations</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">vehicle_statistics</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">itinerary_statistics</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">timestep</span> <span class="o">=</span> <span class="n">timestep</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">hour</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">minute</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                                    <span class="n">second</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">microsecond</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Project.check_integrity"><a class="viewcode-back" href="../model.html#model.Project.check_integrity">[docs]</a>    <span class="k">def</span> <span class="nf">check_integrity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Launch tests on the project</span>
@@ -172,7 +182,8 @@
 <span class="sd">        Args:</span>
 <span class="sd">            filename (string): path to save the project (/../my_project.v2gsim)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output</span><span class="p">:</span>
+            <span class="n">cPickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">cPickle</span><span class="o">.</span><span class="n">HIGHEST_PROTOCOL</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="Project.load"><a class="viewcode-back" href="../model.html#model.Project.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Load a project</span>
@@ -180,9 +191,65 @@
 <span class="sd">        Args:</span>
 <span class="sd">            filename (string): path to a project (/../my_project.v2gsim)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="nb">input</span><span class="p">:</span>
+            <span class="n">project</span> <span class="o">=</span> <span class="n">cPickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">project</span>
 
 </div></div>
+<div class="viewcode-block" id="BasicCarModel"><a class="viewcode-back" href="../model.html#model.BasicCarModel">[docs]</a><span class="k">class</span> <span class="nc">BasicCarModel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; BasicCarModel describes a very basic car model using deterministic</span>
+<span class="sd">    consumption for typical drivecycles. Equivalent to assigning consumption</span>
+<span class="sd">    with average speed.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name (string): (required) name of the model</span>
+<span class="sd">        driving (func): (required) algorithm to compute</span>
+<span class="sd">            vehicle consumptionwhile driving</span>
+<span class="sd">        maker (string): name of the maker</span>
+<span class="sd">        year (string): year of the car model</span>
+<span class="sd">        UDDS (float):  Consumption on the UDDS drivecycle [wh/km]</span>
+<span class="sd">        HWFET (float): Consumption on the HWFET drivecycle [wh/km]</span>
+<span class="sd">        US06 (float): consumption on the US06 drivecycle[wh/km]</span>
+<span class="sd">        Delhi (float): consumption on the Delhi drivecycle [wh/km]</span>
+<span class="sd">        battery_capacity (float): battery capacity in [Wh]</span>
+<span class="sd">        battery_efficiency_charging (float): efficiency while charging</span>
+<span class="sd">        battery_efficiency_discharging (float): efficiency while discharging</span>
+<span class="sd">        maximum_SOC (float): maximum state of charge that the battery can reach</span>
+<span class="sd">        decay (float): state of charge from which the battery charging</span>
+<span class="sd">               profile is not linear</span>
+<span class="sd">        minimum_power (float): maximum power rate for the battery [W]</span>
+<span class="sd">        maximum_power (float): minumin power rate for the battery [W]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span>
+                 <span class="n">driving</span><span class="o">=</span><span class="n">driving</span><span class="o">.</span><span class="n">basic_powertrain</span><span class="o">.</span><span class="n">consumption</span><span class="p">,</span>
+                 <span class="n">maker</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">UDDS</span><span class="o">=</span><span class="mf">145.83</span><span class="p">,</span> <span class="n">HWFET</span><span class="o">=</span><span class="mf">163.69</span><span class="p">,</span> <span class="n">US06</span><span class="o">=</span><span class="mf">223.62</span><span class="p">,</span>
+                 <span class="n">Delhi</span><span class="o">=</span><span class="mf">138.3</span><span class="p">,</span> <span class="n">maximum_SOC</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">decay</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span>
+                 <span class="n">battery_capacity</span><span class="o">=</span><span class="mi">23832</span><span class="p">,</span> <span class="n">battery_efficiency_charging</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                 <span class="n">battery_efficiency_discharging</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">maximum_power</span><span class="o">=</span><span class="mi">6600</span><span class="p">,</span>
+                 <span class="n">minimum_power</span><span class="o">=-</span><span class="mi">6600</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maker</span> <span class="o">=</span> <span class="n">maker</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">year</span> <span class="o">=</span> <span class="n">year</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">UDDS</span> <span class="o">=</span> <span class="n">UDDS</span>  <span class="c1"># [wh/km]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">HWFET</span> <span class="o">=</span> <span class="n">HWFET</span>  <span class="c1"># [wh/km]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">US06</span> <span class="o">=</span> <span class="n">US06</span>  <span class="c1"># [wh/km]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Delhi</span> <span class="o">=</span> <span class="n">Delhi</span>  <span class="c1"># [wh/km]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">battery_capacity</span> <span class="o">=</span> <span class="n">battery_capacity</span>  <span class="c1"># [Wh]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">battery_efficiency_charging</span> <span class="o">=</span> <span class="n">battery_efficiency_charging</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">battery_efficiency_discharging</span> <span class="o">=</span> <span class="n">battery_efficiency_discharging</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maximum_SOC</span> <span class="o">=</span> <span class="n">maximum_SOC</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">decay</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minimum_power</span> <span class="o">=</span> <span class="n">minimum_power</span>  <span class="c1"># [W]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maximum_power</span> <span class="o">=</span> <span class="n">maximum_power</span>  <span class="c1"># [W]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driving</span> <span class="o">=</span> <span class="n">driving</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;Basic car model: name({}) batteryCap({}Wh)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">battery_capacity</span><span class="p">)</span>
+
+</div>
 <div class="viewcode-block" id="Vehicle"><a class="viewcode-back" href="../model.html#model.Vehicle">[docs]</a><span class="k">class</span> <span class="nc">Vehicle</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Vehicle represents a single car with a specific model and set of</span>
 <span class="sd">    activities throughout the day. Vehicles keep track of their SOC as well</span>
@@ -204,99 +271,40 @@
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">car_model</span><span class="p">,</span> <span class="n">initial_SOC</span><span class="o">=</span><span class="mf">0.95</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">index</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">carModel</span> <span class="o">=</span> <span class="n">car_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">car_model</span> <span class="o">=</span> <span class="n">car_model</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">SOC</span> <span class="o">=</span> <span class="p">[</span><span class="n">initial_SOC</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">activities</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">valid_activities</span> <span class="o">=</span> <span class="bp">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">strandingLog</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stranding_log</span> <span class="o">=</span> <span class="p">[]</span>
 
-<div class="viewcode-block" id="Vehicle.check_activities"><a class="viewcode-back" href="../model.html#model.Vehicle.check_activities">[docs]</a>    <span class="k">def</span> <span class="nf">check_activities</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Vehicle.check_activities"><a class="viewcode-back" href="../model.html#model.Vehicle.check_activities">[docs]</a>    <span class="k">def</span> <span class="nf">check_activities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Verify if every activity start at the end of the previous activity</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">valid_activities</span> <span class="o">=</span> <span class="bp">True</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">start</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">start</span> <span class="o">!=</span> <span class="n">start_date</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">valid_activities</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="bp">False</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">activities</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">end</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">start</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">valid_activities</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="k">return</span> <span class="bp">False</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">end</span> <span class="o">!=</span> <span class="mi">24</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">end</span> <span class="o">!=</span> <span class="n">end_date</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">valid_activities</span> <span class="o">=</span> <span class="bp">False</span>
-</div>
-<div class="viewcode-block" id="Vehicle.set_activities"><a class="viewcode-back" href="../model.html#model.Vehicle.set_activities">[docs]</a>    <span class="k">def</span> <span class="nf">set_activities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parked</span><span class="p">,</span> <span class="n">driving</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set activities in order and check if the order has been respected</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">activities</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="c1"># Append activities in the right order into self.activities</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">driving</span><span class="p">)):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">activities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parked</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">activities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">driving</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">activities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parked</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">check_activities</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="k">return</span> <span class="bp">True</span>
 </div>
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">string</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Vehicle: id({}) carModel.name({}) initSOC({}) &quot;</span> <span class="o">+</span>
-                  <span class="s2">&quot;outputInterval({}) </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
-                                                  <span class="bp">self</span><span class="o">.</span><span class="n">carModel</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                                                  <span class="bp">self</span><span class="o">.</span><span class="n">SOC</span><span class="p">,</span>
-                                                  <span class="bp">self</span><span class="o">.</span><span class="n">outputInterval</span><span class="p">)</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Vehicle: id({}) car_model.name({}) &quot;</span> <span class="o">+</span>
+                  <span class="s2">&quot;initial_SOC({})&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">car_model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">SOC</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="k">for</span> <span class="n">activity</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">activities</span><span class="p">:</span>
             <span class="n">string</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">activity</span><span class="o">.</span><span class="n">__repr__</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">string</span>
-
-</div>
-<div class="viewcode-block" id="BasicCarModel"><a class="viewcode-back" href="../model.html#model.BasicCarModel">[docs]</a><span class="k">class</span> <span class="nc">BasicCarModel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; BasicCarModel describes a very basic car model using deterministic</span>
-<span class="sd">    consumption for typical drivecycles. Equivalent to assigning consumption</span>
-<span class="sd">    with average speed.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        name (string): (required) name of the model</span>
-<span class="sd">        driving_function (func): (required) algorithm to compute</span>
-<span class="sd">            vehicle consumptionwhile driving</span>
-<span class="sd">        maker (string): name of the maker</span>
-<span class="sd">        year (string): year of the car model</span>
-<span class="sd">        UDDS (float):  Consumption on the UDDS drivecycle [wh/km]</span>
-<span class="sd">        HWFET (float): Consumption on the HWFET drivecycle [wh/km]</span>
-<span class="sd">        US06 (float): consumption on the US06 drivecycle[wh/km]</span>
-<span class="sd">        Delhi (float): consumption on the Delhi drivecycle [wh/km]</span>
-<span class="sd">        battery_capacity (float): battery capacity in [Wh]</span>
-<span class="sd">        battery_efficiency_charging (float): efficiency while charging</span>
-<span class="sd">        battery_efficiency_discharging (float): efficiency while discharging</span>
-<span class="sd">        maximum_SOC (float): maximum state of charge that the battery can reach</span>
-<span class="sd">        decay (float): state of charge from which the battery charging</span>
-<span class="sd">               profile is not linear</span>
-<span class="sd">        minimum_power (float): maximum power rate for the battery [W]</span>
-<span class="sd">        maximum_power (float): minumin power rate for the battery [W]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">driving_function</span><span class="p">,</span> <span class="n">maker</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">UDDS</span><span class="o">=</span><span class="mf">145.83</span><span class="p">,</span> <span class="n">HWFET</span><span class="o">=</span><span class="mf">163.69</span><span class="p">,</span> <span class="n">US06</span><span class="o">=</span><span class="mf">223.62</span><span class="p">,</span> <span class="n">Delhi</span><span class="o">=</span><span class="mf">138.3</span><span class="p">,</span>
-                 <span class="n">maximum_SOC</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">decay</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">battery_capacity</span><span class="o">=</span><span class="mi">23832</span><span class="p">,</span>
-                 <span class="n">battery_efficiency_charging</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-                 <span class="n">battery_efficiency_discharging</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">maximum_power</span><span class="o">=</span><span class="mi">6600</span><span class="p">,</span>
-                 <span class="n">minimum_power</span><span class="o">=-</span><span class="mi">6600</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">maker</span> <span class="o">=</span> <span class="n">maker</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">year</span> <span class="o">=</span> <span class="n">year</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">UDDS</span> <span class="o">=</span> <span class="n">UDDS</span>  <span class="c1"># [wh/km]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">HWFET</span> <span class="o">=</span> <span class="n">HWFET</span>  <span class="c1"># [wh/km]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">US06</span> <span class="o">=</span> <span class="n">US06</span>  <span class="c1"># [wh/km]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Delhi</span> <span class="o">=</span> <span class="n">Delhi</span>  <span class="c1"># [wh/km]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">battery_capacity</span> <span class="o">=</span> <span class="n">battery_capacity</span>  <span class="c1"># [Wh]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">battery_efficiency_charging</span> <span class="o">=</span> <span class="n">battery_efficiency_charging</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">battery_efficiency_discharging</span> <span class="o">=</span> <span class="n">battery_efficiency_discharging</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">maximum_SOC</span> <span class="o">=</span> <span class="n">maximum_SOC</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">decay</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">minimum_power</span> <span class="o">=</span> <span class="n">minimum_power</span>  <span class="c1"># [W]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">maximum_power</span> <span class="o">=</span> <span class="n">maximum_power</span>  <span class="c1"># [W]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">driving_function</span> <span class="o">=</span> <span class="n">driving_function</span>
-
-    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s2">&quot;Basic car model: name({}) batteryCap({}Wh)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">battery_capacity</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">string</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
 
 </div>
 <div class="viewcode-block" id="Activity"><a class="viewcode-back" href="../model.html#model.Activity">[docs]</a><span class="k">class</span> <span class="nc">Activity</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -332,16 +340,17 @@
                  <span class="n">charging_station</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="n">Activity</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">location</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">plugged_in</span> <span class="o">=</span> <span class="n">plugged_in</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">charging_station</span> <span class="o">=</span> <span class="n">charging_station</span>
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;Parked Activity: start({}) end({}) location({}) &quot;</span> <span class="o">+</span>
-                <span class="s2">&quot;pluggedIn({}) chargingInfra({})&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">category</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">plugged_in</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">charging_station</span><span class="o">.</span><span class="n">maximum_power</span><span class="p">)</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Parked Activity: start({}) end({}) &quot;</span> <span class="o">+</span>
+                  <span class="s2">&quot;location({})&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                      <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
+                      <span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">category</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">charging_station</span><span class="p">:</span>
+            <span class="n">string</span> <span class="o">+=</span> <span class="s2">&quot; charging_station({}W)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">charging_station</span><span class="o">.</span><span class="n">maximum_power</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">string</span>
 
 </div>
 <div class="viewcode-block" id="Driving"><a class="viewcode-back" href="../model.html#model.Driving">[docs]</a><span class="k">class</span> <span class="nc">Driving</span><span class="p">(</span><span class="n">Activity</span><span class="p">):</span>
@@ -362,7 +371,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">terrain</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s2">&quot;Driving: start({}) end({}) distance({})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="k">return</span> <span class="s2">&quot;Driving: start({}) end({}) distance({}km)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">)</span>
 
 </div>
@@ -373,15 +382,26 @@
 <span class="sd">        name (string): (required) name of the location</span>
 <span class="sd">        category (string): (required) type of location (Home, Work, ...)</span>
 <span class="sd">        position (tuple): GPS position</span>
-<span class="sd">        power_demand (list): power demand [W]</span>
+<span class="sd">        result (pandas.DataFrame): results</span>
+<span class="sd">        result_function (func): function to create and update the result</span>
+<span class="sd">            data frame</span>
+<span class="sd">        available_charging_station (pandas.DataFrame): describe the</span>
+<span class="sd">            availability of charging stations (charging_station,</span>
+<span class="sd">            probability, available, total)</span>
+<span class="sd">        assign_charging_station_function (func): function to assign a</span>
+<span class="sd">            charging station to an incoming vehicle</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                 <span class="n">assign_charging_station</span><span class="o">=</span><span class="n">charging</span><span class="o">.</span><span class="n">station</span><span class="o">.</span><span class="n">randomly_assign</span><span class="p">,</span>
+                 <span class="n">result_function</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">save_power_demand_at_location</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">category</span> <span class="o">=</span> <span class="n">category</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">position</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">power_demand</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result_function</span> <span class="o">=</span> <span class="n">result_function</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">available_charging_station</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assign_charging_station</span> <span class="o">=</span> <span class="n">assign_charging_station</span>
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;Location: type({})&quot;</span> <span class="o">+</span>
@@ -394,27 +414,28 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        name (string): name associated with the infrastructure</span>
-<span class="sd">        charging_function (func): (required) function to control</span>
+<span class="sd">        charging (func): function to control</span>
 <span class="sd">            the charging behavior</span>
 <span class="sd">        v2g (boolean): True to allow potential flow from vehicle to the grid</span>
 <span class="sd">        maximum_power (float): maximum rate at which a vehicle can charge</span>
 <span class="sd">        minimum_power (float): minimum rate at which a vehicle can charge</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">charging_function</span><span class="p">,</span> <span class="n">maximum_power</span><span class="o">=</span><span class="mi">1440</span><span class="p">,</span>
-                 <span class="n">minimum_power</span><span class="o">=-</span><span class="mi">1440</span><span class="p">,</span> <span class="n">v2g</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;charger&#39;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">charging</span><span class="o">=</span><span class="n">charging</span><span class="o">.</span><span class="n">uncontrolled</span><span class="o">.</span><span class="n">consumption</span><span class="p">,</span>
+                 <span class="n">maximum_power</span><span class="o">=</span><span class="mi">1440</span><span class="p">,</span> <span class="n">minimum_power</span><span class="o">=-</span><span class="mi">1440</span><span class="p">,</span> <span class="n">v2g</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">name</span><span class="o">=</span><span class="s1">&#39;charger&#39;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">v2g</span> <span class="o">=</span> <span class="n">v2g</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">maximum_power</span> <span class="o">=</span> <span class="n">maximum_power</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">minimum_power</span> <span class="o">=</span> <span class="n">minimum_power</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">charging_function</span> <span class="o">=</span> <span class="n">charging_function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">charging</span> <span class="o">=</span> <span class="n">charging</span>
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;Charging infrastructure: v2g({}) powerRateMax({})&quot;</span> <span class="o">+</span>
-                <span class="s2">&quot;powerRateMin({}) chargingFunc({})</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="s2">&quot;powerRateMin({}) charging({})</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">v2g</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum_power</span><span class="p">,</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">minimum_power</span><span class="p">,</span>
-                    <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">charging_function</span><span class="p">))</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">charging</span><span class="p">))</span>
 
 </div>
 <div class="viewcode-block" id="ItineraryBin"><a class="viewcode-back" href="../model.html#model.ItineraryBin">[docs]</a><span class="k">class</span> <span class="nc">ItineraryBin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>

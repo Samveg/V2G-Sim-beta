@@ -1,0 +1,15 @@
+what is vehicle to grid?
+========================
+
+The interconnection of vehicles and the grid can enable a paradigm shift with synergistic benefits for the transportation and electricity sectors. Widespread use of plug-in electric vehicles (PEVs) enables transportation with lower emissions, reduction of the link between mobility and oil, and integration of intermittent renewables. U.S. electricity generation capacity today is just over 1,000 GW. If 25% of the U.S. fleet were PEVs, PEV grid storage would be nearly 1,000 GWh, creating remarkable challenges and opportunities for integrating PEVs with a dynamic grid.
+
+The electricity grid is operated by continuously balancing electricity generation to the amount of electricity demand. This requires careful forecasting of the amount of electricity demand at each time interval throughout the day, so that different power generators can be notified how much electricity they must plan to produce throughout the day. As more clean renewable power is introduced on the grid, unique challenges arise as these renewables are less responsive to ramping up and down their power output based on current demands on the grid. The introduction of large scale energy storage on the grid presents unique opportunities to integrate more renewables while also relaxing the need to always match supply and demand.
+
+As each PEV includes a large battery pack, vehicles can offer many of the same benefits to the grid that are presented by large scale grid energy storage. There are many grid services that vehicles can offer, for example:
+
+    - Modulation of charging times and charging rates for demand response during periods of peak loading on the grid. 
+    - Providing energy storage to enable integration of intermittent renewable generation. 
+    - Modulating charging or discharging rates to deliver valuable ancillary services to the grid, such as frequency regulation (e.g. to help maintain a grid operating frequency of 50 or 60 Hz). 
+    - Modulating charging or discharging rates to alleviate distribution and transmission system bandwidth constraints.
+
+The use of vehicles to deliver these and many other grid services are collectively referred as vehicle-grid integration (VGI). Different categories of VGI exist based on the type of electricity market that vehicles are offering services in, and whether vehicles are controlling 1-way charging rates only (V1G), or whether vehicles can offer bi-direction charging/discharging to deliver grid services (V2G). The use of PEVs to deliver grid services can alleviate technical and economic challenges for the grid, and can enable drivers to earn money for the grid services that their vehicles offer, however the understanding of the value of these vehicle-grid services is still evolving.
