@@ -89,7 +89,8 @@ def run(project, save_activity_power_demand=False,
                                                       project.timestep,
                                                       date_from, date_to,
                                                       vehicle, activity,
-                                                      power_demand, nb_interval)
+                                                      power_demand, SOC
+                                                      nb_interval)
 
         del vehicle.SOC[0]  # removed initial SOC
         progress.update(indexV + 1)

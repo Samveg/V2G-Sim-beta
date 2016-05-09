@@ -195,13 +195,11 @@ class Parked(Activity):
     Args:
         location (Location): (required) location object at which the vehicle
             is parked
-        plugged_in (boolean): True if the vehicle is plugged to a charging
-            infrastructure
         charging_station (ChargingStation): charging station at which a
             vehicle is plugged
     """
 
-    def __init__(self, start, end, location, plugged_in=False,
+    def __init__(self, start, end, location,
                  charging_station=None):
         Activity.__init__(self, start, end)
         self.location = location

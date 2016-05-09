@@ -3,7 +3,7 @@ import numpy
 
 def save_power_demand_at_location(location, timestep, date_from, date_to,
                                   vehicle=None, activity=None,
-                                  power_demand=None, nb_interval=None):
+                                  power_demand=None, SOC=None, nb_interval=None):
     """Save local result from a parked activity during running
     time. If date_from and date_to, set a fresh pandas DataFrame at locations.
 
@@ -15,6 +15,7 @@ def save_power_demand_at_location(location, timestep, date_from, date_to,
         vehicle (Vehicle): vehicle
         activity (Parked): parked activity
         power_demand (list): power demand from parked activity
+        SOC (list): state of charge from the parked activity
         nb_interval (int): number of timestep for the parked activity
 
     Example:
@@ -26,7 +27,7 @@ def save_power_demand_at_location(location, timestep, date_from, date_to,
                                           power_demand, nb_interval)
     """
     if activity is None:
-        # Initiate a dictionnary of numpy array to hold result (faster than DataFrame)
+        # Initiate a dictionary of numpy array to hold result (faster than DataFrame)
         location.result = {'power_demand': numpy.array([0] * int((date_to - date_from).total_seconds() / timestep))}
 
     else:
@@ -45,7 +46,8 @@ def save_power_demand_at_location(location, timestep, date_from, date_to,
 
             # Add 'available_energy' in the initialization section
             # Then location.result['available_energy'][location_index1:location_index2] += (
-            #          [SOC[-1-i] * vehicle.car_model.battery_capacity for i in range(0, len(power_demand))])
+            #          [soc * vehicle.car_model.battery_capacity 
+            #           for soc in SOC[activity_index1:activity_index2]])
 
 
 def _map_index(activity_start, activity_end, date_from, date_to, vector_size,

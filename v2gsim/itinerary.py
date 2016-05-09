@@ -114,3 +114,70 @@ def unique_location_category(location_category, project):
     new_location = Location(location_category, name=location_category + '01')
     project.locations.append(new_location)
     return new_location
+
+
+def copy_append(project, nb_copies=2):
+    """Copy the itinerary of each vehicle in the project.
+    The copy is appended and a merge operation is applied to ensure a good blend.
+
+    Args:
+        project (Project): project
+        nb_copies (int): number of copies to append
+
+    Return:
+        project (Project): new project with extended itineraries
+    """
+    number_of_merged = 0
+    for vehicle in project.vehicles:
+        new_activities = []
+        for i_copy in range(0, nb_copies):
+            # Manually copy all activities
+            for activity in vehicle.activities:
+                if isinstance(activity, Driving):
+                    new_activities.append(Driving(activity.start + datetime.timedelta(days=1 + i_copy),
+                                                  activity.end + datetime.timedelta(days=1 + i_copy),
+                                                  activity.distance))
+                elif isinstance(activity, Parked):
+                    new_activities.append(Parked(activity.start + datetime.timedelta(days=1 + i_copy),
+                                                 activity.end + datetime.timedelta(days=1 + i_copy),
+                                                 activity.location))
+        # Add new activities
+        vehicle.activities.extend(new_activities)
+
+        # Merge itineraries
+        merged_activities = []
+        skip = False
+        for index, activity in enumerate(vehicle.activities):
+            # Check if we have reached the last activity, if so exit loop
+            if index == len(vehicle.activities) - 1:
+                merged_activities.append(activity)
+                break
+
+            # Check if the activity has been merged during the previous iteration
+            if skip:
+                skip = False
+                continue
+
+            # Check for two parked activity in a row
+            if (isinstance(activity, Parked) and 
+                isinstance(vehicle.activities[index + 1], Parked):
+                # Check for matching names
+                if (activity.category == vehicle.activities[index + 1].category and
+                    activity.name == vehicle.activities[index + 1].name)
+                    # Double check separately that times are matching
+                    if activity.end == vehicle.activities[index + 1].start:
+                        # Merge both activities
+                        number_of_merged += 1
+                        skip = True
+                    else:
+                        print activity
+                        print vehicle.activities[index + 1]
+                        print 'Merging issue'
+                        merged_activities.append(activity)
+                else:
+                    merged_activities.append(activity)
+            else:
+                merged_activities.append(activity)
+
+        vehicle.activities = merged_activities
+
