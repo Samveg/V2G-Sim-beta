@@ -32,7 +32,7 @@ def run(project, save_activity_power_demand=False,
     # Reset location result before starting computation
     for location in project.locations:
         location.result_function(location, project.timestep,
-                                 date_from=date_from, date_to=date_to)
+                                 date_from, date_to)
 
     # Reset activity consumption and charging station
     for vehicle in project.vehicles:
@@ -87,11 +87,19 @@ def run(project, save_activity_power_demand=False,
 
                     activity.location.result_function(activity.location,
                                                       project.timestep,
+                                                      date_from, date_to,
                                                       vehicle, activity,
                                                       power_demand, nb_interval)
 
         del vehicle.SOC[0]  # removed initial SOC
         progress.update(indexV + 1)
+
+    # Convert location result back into pandas DataFrame (faster that way)
+    i = pandas.date_range(start=date_from, end=date_to,
+                          freq=str(project.timestep) + 's', closed='left')
+    for location in project.locations:
+        location.result = pandas.DataFrame(index=i, data=location.result)
+
     progress.finish()
     print('')
 
@@ -114,13 +122,19 @@ def initialize_SOC(project, nb_iteration=1, charging_option=None):
               'std': numpy.std([v.SOC[0] for v in project.vehicles]),
               'mean_rate': [0], 'std_rate': [0]})
 
+    # Reset activity consumption
+    for vehicle in project.vehicles:
+        for activity in vehicle.activities:
+            activity.power_demand = []
+
     # Create the progress bar
     progress = progressbar.ProgressBar(widgets=['core.initialize_SOC: ',
                                                 progressbar.Percentage(),
                                                 progressbar.Bar()],
-                                       maxval=nb_iteration).start()
+                                       maxval=nb_iteration * len(project.vehicles)).start()
 
     # For each iteration
+    count = 0
     for indexI in range(0, nb_iteration):
         # For each vehicle
         for vehicle in project.vehicles:
@@ -132,7 +146,8 @@ def initialize_SOC(project, nb_iteration=1, charging_option=None):
                     SOC, _1, _2 = vehicle.car_model.driving(activity, vehicle,
                                                             nb_interval,
                                                             project.timestep)
-                    vehicle.SOC.extend(SOC)
+                    if len(SOC) != 0:
+                        vehicle.SOC.append(SOC[-1])
 
                 elif isinstance(activity, model.Parked):
                     # Get the charging station if not already assigned
@@ -144,10 +159,13 @@ def initialize_SOC(project, nb_iteration=1, charging_option=None):
                     SOC, _1 = activity.charging_station.charging(activity, vehicle,
                                                                  nb_interval, project.timestep,
                                                                  charging_option)
-                    vehicle.SOC.extend(SOC)
+                    if len(SOC) != 0:
+                        vehicle.SOC.append(SOC[-1])
 
             # Initiate Vehicle SOC last value to be the inital SOC next iteration
             vehicle.SOC = [vehicle.SOC[-1]]
+            count += 1
+            progress.update(count)
 
         # Update the convergence DataFrame
         convergence = pandas.concat([convergence, pandas.DataFrame(
@@ -159,7 +177,7 @@ def initialize_SOC(project, nb_iteration=1, charging_option=None):
                                                     convergence.loc[indexI + 1, 'mean'])
         convergence.loc[indexI + 1, 'std_rate'] = (convergence.loc[indexI, 'std'] -
                                                    convergence.loc[indexI + 1, 'std'])
-        progress.update(indexI + 1)
     progress.finish()
+    print(convergence)
     print('')
     return convergence

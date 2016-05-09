@@ -18,12 +18,13 @@ def from_excel(project, filename):
         project (Project): project assigned with vehicles
     """
     print('itinerary.from_excel(project, ' + filename + ')')
+    print('Loading ...')
 
     # Day of the project
     date = project.date
     tot_sec = (date - datetime.datetime.utcfromtimestamp(0)).total_seconds()
 
-    df = pandas.read_excel(io='Tennessee.xlsx', sheetname='Activity')
+    df = pandas.read_excel(io=filename, sheetname='Activity')
     df = df.drop('Nothing', axis=1)
     df = df.rename(columns={'Vehicle ID': 'id', 'State': 'state',
                             'Start time (hour)': 'start',
