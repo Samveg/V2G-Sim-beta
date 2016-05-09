@@ -169,6 +169,8 @@ def copy_append(project, nb_copies=2):
                         # Merge both activities
                         number_of_merged += 1
                         skip = True
+                        activity.end = vehicle.activities[index + 1].end
+                        merged_activities.append(activity)
                     else:
                         print activity
                         print vehicle.activities[index + 1]
@@ -180,4 +182,10 @@ def copy_append(project, nb_copies=2):
                 merged_activities.append(activity)
 
         vehicle.activities = merged_activities
+        # Check time gap
+        if not vehicle.check_activities(start_date=date,
+                                        end_date=date + datetime.timedelta(days=1 + nb_copies)):
+            print('Itinerary does not respect the constraints')
+            print(vehicle)
 
+    return project
