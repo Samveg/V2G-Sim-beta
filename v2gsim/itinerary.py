@@ -159,11 +159,11 @@ def copy_append(project, nb_copies=2):
                 continue
 
             # Check for two parked activity in a row
-            if (isinstance(activity, Parked) and 
-                isinstance(vehicle.activities[index + 1], Parked):
+            if (isinstance(activity, Parked) and
+                    isinstance(vehicle.activities[index + 1], Parked)):
                 # Check for matching names
-                if (activity.category == vehicle.activities[index + 1].category and
-                    activity.name == vehicle.activities[index + 1].name)
+                if (activity.location.category == vehicle.activities[index + 1].location.category and
+                        activity.location.name == vehicle.activities[index + 1].location.name):
                     # Double check separately that times are matching
                     if activity.end == vehicle.activities[index + 1].start:
                         # Merge both activities
@@ -183,8 +183,8 @@ def copy_append(project, nb_copies=2):
 
         vehicle.activities = merged_activities
         # Check time gap
-        if not vehicle.check_activities(start_date=date,
-                                        end_date=date + datetime.timedelta(days=1 + nb_copies)):
+        if not vehicle.check_activities(
+                start_date=project.date, end_date=project.date + datetime.timedelta(days=1 + nb_copies)):
             print('Itinerary does not respect the constraints')
             print(vehicle)
 

@@ -3,6 +3,7 @@ import charging.uncontrolled
 import charging.station
 import result
 import cPickle
+import copy
 import datetime
 
 
@@ -40,6 +41,11 @@ class Project(object):
         """Launch tests on the project
         """
         pass
+
+    def copy(self):
+        """Deep copy the project and return the copy
+        """
+        return copy.deepcopy(self)
 
     def save(self, filename):
         """Save the project
@@ -132,6 +138,8 @@ class Vehicle(object):
             of the next one
         stranding_log (list): time at which the vehicle has stranded [hour]
         car_model (BasicCarModel): car model associated to the vehicle
+        result_function (func): function describing the way results are saved
+        result (any): result structure returned by the result function
     """
 
     def __init__(self, index, car_model, initial_SOC=0.95):
@@ -142,6 +150,8 @@ class Vehicle(object):
         self.weight = 1
         self.valid_activities = False
         self.stranding_log = []
+        self.result_function = result.save_vehicle_state
+        self.result = None
 
     def check_activities(self, start_date, end_date):
         """Verify if every activity start at the end of the previous activity
@@ -179,13 +189,11 @@ class Activity(object):
     Args:
         start (float): start time of the activity in hours [h]
         end (float): end time of the activity in hours [h]
-        power_demand (list): he power consumption during the activity [W]
     """
 
     def __init__(self, start, end):
         self.start = start
         self.end = end
-        self.power_demand = []
 
 
 class Parked(Activity):

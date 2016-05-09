@@ -20,6 +20,7 @@ def consumption(activity, vehicle, nb_interval, timestep, charging_option):
 
     maximum_power = min(activity.charging_station.maximum_power,
                         vehicle.car_model.maximum_power)
+    maximum_power *= vehicle.car_model.battery_efficiency_charging
     battery_capacity = vehicle.car_model.battery_capacity * 3600  # from Wh to J
 
     SOC = [vehicle.SOC[-1]]

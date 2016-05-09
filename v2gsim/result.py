@@ -1,10 +1,12 @@
 import numpy
+import pandas
 
 
 def save_power_demand_at_location(location, timestep, date_from, date_to,
                                   vehicle=None, activity=None,
-                                  power_demand=None, SOC=None, nb_interval=None):
-    """Save local result from a parked activity during running
+                                  power_demand=None, SOC=None, nb_interval=None,
+                                  init=False, run=False, post=False):
+    """Save local results from a parked activity during running
     time. If date_from and date_to, set a fresh pandas DataFrame at locations.
 
     Args:
@@ -26,11 +28,7 @@ def save_power_demand_at_location(location, timestep, date_from, date_to,
         >>> save_power_demand_at_location(location, timestep, vehicle, activity,
                                           power_demand, nb_interval)
     """
-    if activity is None:
-        # Initiate a dictionary of numpy array to hold result (faster than DataFrame)
-        location.result = {'power_demand': numpy.array([0] * int((date_to - date_from).total_seconds() / timestep))}
-
-    else:
+    if run:
         activity_index1, activity_index2, location_index1, location_index2, save = _map_index(
             activity.start, activity.end, date_from, date_to, len(power_demand),
             len(location.result['power_demand']), timestep)
@@ -46,8 +44,24 @@ def save_power_demand_at_location(location, timestep, date_from, date_to,
 
             # Add 'available_energy' in the initialization section
             # Then location.result['available_energy'][location_index1:location_index2] += (
-            #          [soc * vehicle.car_model.battery_capacity 
+            #          [soc * vehicle.car_model.battery_capacity
             #           for soc in SOC[activity_index1:activity_index2]])
+
+    elif init:
+        # Initiate a dictionary of numpy array to hold result (faster than DataFrame)
+        location.result = {'power_demand': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep))}
+
+    elif post:
+        # Convert location result back into pandas DataFrame (faster that way)
+        i = pandas.date_range(start=date_from, end=date_to,
+                              freq=str(timestep) + 's', closed='left')
+        location.result = pandas.DataFrame(index=i, data=location.result)
+
+
+def save_vehicle_state(vehicle, timestep, date_from,
+                       date_to, activity=None, power_demand=None, SOC=None,
+                       nb_interval=None, init=False, run=False, post=False):
+    pass
 
 
 def _map_index(activity_start, activity_end, date_from, date_to, vector_size,

@@ -6,8 +6,8 @@ import datetime
 import progressbar
 
 
-def run(project, save_activity_power_demand=False,
-        charging_option=None, date_from=None, date_to=None):
+def run(project, charging_option=None, date_from=None, date_to=None,
+        reset_charging_station=False):
     """Launch a simulation in a decoupled manner, vehicle don't take other
     vehicle's actions into consideration. The simulation goes throught each
     activity one by one for each vehicle and number of iteration desired.
@@ -20,25 +20,16 @@ def run(project, save_activity_power_demand=False,
         project (Project): project to simulate
         date_from (datetime.datetime): date to start recording power demand
         date_to (datetime.datetime): date to end recording power demand
-        save_activity_power_demand (boolean): save power demand of each
-            activity (possibly memory intensive)
         charging_option (any): pass some object to the charging function
+        reset_charging_station (boolean): reset charging stations to None
     """
     if date_from is None:
         date_from = project.date
     if date_to is None:
         date_to = project.date + datetime.timedelta(hours=23, minutes=59)
 
-    # Reset location result before starting computation
-    for location in project.locations:
-        location.result_function(location, project.timestep,
-                                 date_from, date_to)
-
-    # Reset activity consumption and charging station
-    for vehicle in project.vehicles:
-        for activity in vehicle.activities:
-            activity.power_demand = []
-            activity.charging_station = None
+    # Itinitialize result placeholders and reset charging stations to None
+    project = _pre_run(project, date_from, date_to, reset=reset_charging_station)
 
     # Create the progress bar
     progress = progressbar.ProgressBar(widgets=['core.run: ',
@@ -46,23 +37,20 @@ def run(project, save_activity_power_demand=False,
                                                 progressbar.Bar()],
                                        maxval=len(project.vehicles)).start()
 
+    # ####################### Simulation #####################################
     # For each vehicle
     for indexV, vehicle in enumerate(project.vehicles):
         # For each activity
         for indexA, activity in enumerate(vehicle.activities):
             # Calculate the duration of the activity
             nb_interval = int((activity.end - activity.start).total_seconds() / project.timestep)
-
             if isinstance(activity, model.Driving):
                 SOC, power_demand, stranded = vehicle.car_model.driving(activity,
                                                                         vehicle,
                                                                         nb_interval,
                                                                         project.timestep)
                 vehicle.SOC.extend(SOC)
-                # Save power demand and log stranded vehicles
-                if save_activity_power_demand:
-                    activity.power_demand.extend(power_demand)
-
+                # Log stranded vehicles
                 if stranded:
                     vehicle.stranding_log.append(activity.end)
 
@@ -80,29 +68,56 @@ def run(project, save_activity_power_demand=False,
                                                                        project.timestep,
                                                                        charging_option)
                 vehicle.SOC.extend(SOC)
-                # Save power demand
+                # Save power demand at location
                 if len(power_demand) != 0:
-                    if save_activity_power_demand:
-                        activity.power_demand.extend(power_demand)
-
                     activity.location.result_function(activity.location,
                                                       project.timestep,
                                                       date_from, date_to,
                                                       vehicle, activity,
-                                                      power_demand, SOC
-                                                      nb_interval)
-
-        del vehicle.SOC[0]  # removed initial SOC
+                                                      power_demand, SOC,
+                                                      nb_interval, run=True)
+            vehicle.result_function(vehicle, project.timestep, date_from,
+                                    date_to, activity, power_demand, SOC,
+                                    nb_interval, run=True)
+        # Remove initial SOC
+        del vehicle.SOC[0]
         progress.update(indexV + 1)
+    # ########################################################################
 
-    # Convert location result back into pandas DataFrame (faster that way)
-    i = pandas.date_range(start=date_from, end=date_to,
-                          freq=str(project.timestep) + 's', closed='left')
-    for location in project.locations:
-        location.result = pandas.DataFrame(index=i, data=location.result)
-
+    # Post process result (change format, ...)
+    project = _post_run(project, date_from, date_to)
     progress.finish()
     print('')
+
+
+def _pre_run(project, date_from, date_to, reset):
+    # Reset location result before starting computation
+    for location in project.locations:
+        location.result_function(location, project.timestep,
+                                 date_from, date_to, init=True)
+
+    # Reset activity charging station and vehicle results
+    for vehicle in project.vehicles:
+        vehicle.result_function(vehicle, project.timestep, date_from,
+                                date_to, init=True)
+        if reset:
+            for activity in vehicle.activities:
+                activity.charging_station = None
+
+    return project
+
+
+def _post_run(project, date_from, date_to):
+    # Result post processing
+    for location in project.locations:
+        location.result_function(location, project.timestep, date_from, date_to,
+                                 post=True)
+
+    for vehicle in project.vehicles:
+        vehicle.result_function(vehicle, project.timestep, date_from,
+                                date_to, post=True)
+
+    return project
 
 
 def initialize_SOC(project, nb_iteration=1, charging_option=None):
@@ -122,11 +137,6 @@ def initialize_SOC(project, nb_iteration=1, charging_option=None):
         data={'mean': numpy.mean([v.SOC[0] for v in project.vehicles]),
               'std': numpy.std([v.SOC[0] for v in project.vehicles]),
               'mean_rate': [0], 'std_rate': [0]})
-
-    # Reset activity consumption
-    for vehicle in project.vehicles:
-        for activity in vehicle.activities:
-            activity.power_demand = []
 
     # Create the progress bar
     progress = progressbar.ProgressBar(widgets=['core.initialize_SOC: ',
