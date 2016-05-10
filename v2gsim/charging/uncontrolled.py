@@ -20,7 +20,7 @@ def consumption(activity, vehicle, nb_interval, timestep, charging_option):
 
     maximum_power = min(activity.charging_station.maximum_power,
                         vehicle.car_model.maximum_power)
-    maximum_power *= vehicle.car_model.battery_efficiency_charging
+    power_at_battery = maximum_power * vehicle.car_model.battery_efficiency_charging
     battery_capacity = vehicle.car_model.battery_capacity * 3600  # from Wh to J
 
     SOC = [vehicle.SOC[-1]]
@@ -33,7 +33,7 @@ def consumption(activity, vehicle, nb_interval, timestep, charging_option):
             # Set the power demand to be the charger station power
             power_demand.append(maximum_power)
             # SOC [0,1] + (power_demand [W] * timestep [s] / totalCap [J])
-            SOC.append(SOC[-1] + (maximum_power * timestep / battery_capacity))
+            SOC.append(SOC[-1] + (power_at_battery * timestep / battery_capacity))
         # Vehicle is not charging
         else:
             power_demand.append(0)
