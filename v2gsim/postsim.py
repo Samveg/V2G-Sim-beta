@@ -53,6 +53,9 @@ class CentralOptimization(object):
         """Make sure that SOC final can be reached from SOC init under uncontrolled
         charging (best case scenario)
         """
+        # Check SOC difference between date_from and date_to ?
+
+        # Check if below minimum SOC at any time ?
         pass
 
     def scale_down_net_load(self, net_load, expected_vehicle_number, project,
