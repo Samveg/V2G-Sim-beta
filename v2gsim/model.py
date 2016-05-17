@@ -265,7 +265,7 @@ class Location(object):
 
     def __init__(self, category, name, position=(0, 0),
                  assign_charging_station=charging.station.randomly_assign,
-                 result_function=result.save_power_demand_at_location):
+                 result_function=result.save_location_state):
         self.category = category
         self.name = name
         self.position = position
@@ -287,16 +287,16 @@ class ChargingStation(object):
         name (string): name associated with the infrastructure
         charging (func): function to control
             the charging behavior
-        v2g (boolean): True to allow potential flow from vehicle to the grid
+        post_simulation (boolean): True station can be subject to post processing
         maximum_power (float): maximum rate at which a vehicle can charge
         minimum_power (float): minimum rate at which a vehicle can charge
     """
 
     def __init__(self, charging=charging.uncontrolled.consumption,
-                 maximum_power=1440, minimum_power=-1440, v2g=False,
+                 maximum_power=1440, minimum_power=-1440, post_simulation=False,
                  name='charger'):
         self.name = name
-        self.v2g = v2g
+        self.post_simulation = post_simulation
         self.maximum_power = maximum_power
         self.minimum_power = minimum_power
         self.charging = charging

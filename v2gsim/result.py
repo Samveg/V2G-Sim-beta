@@ -2,10 +2,10 @@ import numpy
 import pandas
 
 
-def save_power_demand_at_location(location, timestep, date_from, date_to,
-                                  vehicle=None, activity=None,
-                                  power_demand=None, SOC=None, nb_interval=None,
-                                  init=False, run=False, post=False):
+def save_location_state(location, timestep, date_from, date_to,
+                        vehicle=None, activity=None,
+                        power_demand=None, SOC=None, nb_interval=None,
+                        init=False, run=False, post=False):
     """Save local results from a parked activity during running
     time. If date_from and date_to, set a fresh pandas DataFrame at locations.
 
@@ -61,6 +61,8 @@ def save_power_demand_at_location(location, timestep, date_from, date_to,
 def save_vehicle_state(vehicle, timestep, date_from,
                        date_to, activity=None, power_demand=None, SOC=None,
                        nb_interval=None, init=False, run=False, post=False):
+    """Placeholder function to save individual vehicle's state. Do nothing.
+    """
     pass
 
 

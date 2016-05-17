@@ -76,10 +76,10 @@ def from_excel(project, filename):
                                                  minimum_power=0),
                                  ChargingStation(name='L1',
                                                  maximum_power=1440,
-                                                 minimum_power=-1440),
+                                                 minimum_power=0),
                                  ChargingStation(name='L2',
                                                  maximum_power=7200,
-                                                 minimum_power=-7200)]
+                                                 minimum_power=0)]
     df2 = pandas.DataFrame(index=['no_charger', 'L1', 'L2'],
                            data={'charging_station': project.charging_stations,
                                  'probability': [0.0, 0.8, 0.2],
