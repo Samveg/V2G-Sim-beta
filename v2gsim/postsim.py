@@ -2,7 +2,6 @@
 from __future__ import division
 from pyomo.opt import SolverFactory
 from pyomo.environ import *
-import datetime
 import time
 import pandas
 import model
@@ -31,10 +30,10 @@ class CentralOptimization(object):
         self.SOC_index_from = int((date_from - project.date).total_seconds() / project.timestep)
         self.SOC_index_to = int((date_to - project.date).total_seconds() / project.timestep)
 
-        # Simulation result with expected number of vehicle at project timestep
-        self.result = []
-        self.simulation_description = pandas.DataFrame(
-            columns=['offset_SOC', 'margin_SOC', 'rampu_decrease', 'rampd_increase', 'feasible'])
+        # # Simulation result with expected number of vehicle at project timestep
+        # self.result = []
+        # self.simulation_description = pandas.DataFrame(
+        #     columns=['offset_SOC', 'margin_SOC', 'rampu_decrease', 'rampd_increase', 'feasible'])
         #     columns=['initial_SOC', 'initial_energy', 'final_SOC', 'final_energy',
         #              'net_load_rampu', 'rampu_decrease', 'rampu_constraint', 'rampu_power_demand',
         #              'net_load_rampd', 'rampd_increase', 'rampd_constraint', 'rampd_power_demand',
@@ -42,74 +41,8 @@ class CentralOptimization(object):
         #              'minimum_power_demand', 'minimum_net_load_power',
         #              'feasible'])
 
-    def solve_with_maximum_ramp_constraint(self, project, net_load, real_number_of_vehicle, rampu_decrease,
-                                           rampd_increase, SOC_margin=0.02, SOC_offset=0.0):
-        """Launch the optimization for different ramping constraints and find
-        the most constraining one. The intermediate results are saved if
-        feasibles.
-
-        Args:
-            project (Project): project
-            net_load (pandas.DataFrame): data frame with date index and a 'net_load' column in [W]
-            real_number_of_vehicle (int): maximum power on the scaled net load
-            rampu_decrease (float): decrease on the ramping up [0, 1]
-            rampu_decrease (float): increase on the ramping down [0, 1]
-            SOC_margin (float): SOC margin that can be used by the optimization at the end of the day [0, 1]
-            SOC_offset (float): energy offset [0, 1]
-        """
-        # Reset model
-        self.times = []
-        self.vehicles = []
-        self.d = {}
-        self.r = {}
-        self.pmax = {}
-        self.pmin = {}
-        self.emin = {}
-        self.emax = {}
-        self.rampu = {}
-        self.rampd = {}
-        self.efinal = {}
-
-        # Set the variables for the optimization
-        new_net_load = self.initialize_net_load(net_load, real_number_of_vehicle, project)
-        self.initialize_model(project, new_net_load, SOC_margin, SOC_offset)
-
-        for index in range(0, len(rampu_decrease)):
-            self.rampu = {}
-            self.rampd = {}
-            self.initialize_ramp_constraints(new_net_load, rampu_decrease[index], rampd_increase[index])
-
-            # Run the optimization
-            timer = time.time()
-            opti_model, result = self.process(self.times, self.vehicles, self.d, self.r, self.pmax,
-                                              self.pmin, self.emin, self.emax, self.rampu,
-                                              self.rampd, self.efinal)
-            timer2 = time.time()
-            print('')
-            print('The optimization duration was ' + str((timer2 - timer) / 60) + ' minutes')
-            print('')
-
-            self.result.append(pandas.DataFrame(index=['power'], data=opti_model.u.get_values()).transpose().groupby(level=0).sum())
-            if self.result[-1].loc[0, 'power'] is None:
-                print('Unfeasible')
-                self.simulation_description = pandas.concat(
-                    [self.simulation_description, pandas.DataFrame(index=[index], data={'offset_SOC': SOC_offset, 'margin_SOC': SOC_margin,
-                                                                                        'rampu_decrease': rampu_decrease[index],
-                                                                                        'rampd_increase': rampd_increase[index], 'feasible': False})])
-            else:
-                print('Feasible solution found')
-                self.simulation_description = pandas.concat(
-                    [self.simulation_description, pandas.DataFrame(index=[index], data={'offset_SOC': SOC_offset, 'margin_SOC': SOC_margin,
-                                                                                        'rampu_decrease': rampu_decrease[index],
-                                                                                        'rampd_increase': rampd_increase[index], 'feasible': True})])
-            # Free some memory
-            import pdb
-            pdb.set_trace()
-            del opti_model
-            del result
-            pdb.set_trace()
-
-    def solve(self, project, net_load, real_number_of_vehicle, beta, SOC_margin=0.02, SOC_offset=0.0):
+    def solve(self, project, net_load, real_number_of_vehicle, SOC_margin=0.02,
+              SOC_offset=0.0, peak_shaving=True, beta=None, plot=False):
         """Launch the optimization and the post_processing fucntion. Results
         and assumptions are appended to a data frame.
 
@@ -117,10 +50,9 @@ class CentralOptimization(object):
             project (Project): project
             net_load (pandas.DataFrame): data frame with date index and a 'net_load' column in [W]
             real_number_of_vehicle (int): maximum power on the scaled net load
-            # rampu_decrease (float): decrease on the ramping up [0, 1]
-            # rampu_decrease (float): increase on the ramping down [0, 1]
             SOC_margin (float): SOC margin that can be used by the optimization at the end of the day [0, 1]
             SOC_offset (float): energy offset [0, 1]
+            peak_shaving (bolean): if True ramping constraints are not taking in account within the objective else it is.
         """
         # Reset model
         self.times = []
@@ -138,27 +70,19 @@ class CentralOptimization(object):
         # Set the variables for the optimization
         new_net_load = self.initialize_net_load(net_load, real_number_of_vehicle, project)
         self.initialize_model(project, new_net_load, SOC_margin, SOC_offset)
-        # self.initialize_ramp_constraints(new_net_load, rampu_decrease, rampd_increase)
 
         # Run the optimization
         timer = time.time()
         opti_model, result = self.process(self.times, self.vehicles, self.d, self.r, self.pmax,
                                           self.pmin, self.emin, self.emax, self.rampu,
-                                          self.rampd, self.efinal, beta=beta)
+                                          self.rampd, self.efinal, peak_shaving=peak_shaving)
         timer2 = time.time()
         print('')
         print('The optimization duration was ' + str((timer2 - timer) / 60) + ' minutes')
         print('')
 
-        # Save results
-        self.post_process(project, opti_model, result)
-        temp = pandas.DataFrame(index=['beta=' + str(beta)], data=opti_model.u.get_values()).transpose().groupby(level=0).sum()
-        temp_index = pandas.DataFrame(range(0, len(new_net_load)), columns=['index'])
-        temp_net_load = new_net_load.copy()
-        temp_net_load = temp_net_load.set_index(temp_index['index'])
-        temp_net_load = temp_net_load.rename(columns={'netload': 'netload' + str(beta)})
-
-        return pandas.concat([temp, temp_net_load], axis=1)
+        # Post process results
+        return self.post_process(project, net_load, opti_model, result, plot)
 
     def initialize_net_load(self, net_load, real_number_of_vehicle, project):
         """Make sure that the net load has the right size and scale the net
@@ -329,54 +253,8 @@ class CentralOptimization(object):
                                                  (SOC_final - SOC_init) * vehicle.car_model.battery_capacity *
                                                  (60 / self.optimization_timestep))})
 
-    def initialize_ramp_constraints(self, temp_net_load, rampu_decrease, rampd_increase):
-        """Create the ramping constraints using an hourly sampled net load. Find the maximum
-        ramping constraint and apply the increase/decrease to get the final value to apply.
-        Set a ramping look up dictionary from the net load with constant value in between hours.
-
-        Args:
-            net_load (pandas.DataFrame): data frame with date index and a 'netload' column in [W]
-            rampu_decrease (float): decrease on the ramping up [0, 1]
-            rampu_decrease (float): increase on the ramping down [0, 1]
-        """
-        # temp_net_load = net_load.copy()
-        # temp_net_load = temp_net_load.resample('60T', how='first')
-
-        # Maximum ramping per hour
-        max_rampu = max(list(numpy.diff(temp_net_load['netload'].values)))
-        max_rampd = min(list(numpy.diff(temp_net_load['netload'].values)))
-        rampu_constraint = max_rampu * (1 - rampu_decrease)
-        rampd_constraint = max_rampd * (1 - rampd_increase)
-
-        # Maximum ramping per optimization timestep
-        df_rampu = pandas.DataFrame(index=self.times,
-                                    data=[rampu_constraint for i in self.times], columns=['rampu'])
-        self.rampu = df_rampu.to_dict()['rampu']
-        df_rampd = pandas.DataFrame(index=self.times,
-                                    data=[rampd_constraint for i in self.times], columns=['rampd'])
-        self.rampd = df_rampd.to_dict()['rampd']
-
-        # # Set ramping from the net load as a lookup with constant value in between hours
-        # mylist = [0]
-        # mylist.extend(numpy.diff(temp_net_load['netload'].values).tolist())
-        # df_r = pandas.DataFrame(index=temp_net_load.index, data=mylist, columns=['ramp']) * (self.optimization_timestep / 60)
-        # df_r = df_r.resample(str(self.optimization_timestep) + 'T', fill_method='pad')
-        # # Check we did not loose value in --> down --> up resampling
-        # if len(df_r) != len(net_load):
-        #     diff = len(net_load) - len(df_r)
-        #     for i in range(0, diff):
-        #         df_r = df_r.append(pandas.DataFrame(index=[df_r.tail(1).index[0] + datetime.timedelta(minutes=self.optimization_timestep)],
-        #                                             data={'ramp': df_r.tail(1).ramp[0]}))
-
-        # # Set temp_index
-        # temp_index = pandas.DataFrame(self.times, columns=['index'])
-        # # import pdb
-        # # pdb.set_trace()
-        # df_r = df_r.set_index(temp_index['index'])
-        # self.r = df_r.to_dict()['ramp']
-
     def process(self, times, vehicles, d, r, pmax, pmin, emin, emax, rampu, rampd,
-                efinal, solver="gurobi", beta=10):
+                efinal, peak_shaving, solver="gurobi"):
         """The process function creates the pyomo model and solve it.
         Minimize sum( net_load(t) + sum(power_demand(t, v)))**2
         subject to:
@@ -416,8 +294,6 @@ class CentralOptimization(object):
             # ###### Parameters
             # Net load
             model.d = Param(model.t, initialize=d, doc='Net load')
-            # Net load ramp
-            # model.r = Param(model.t, initialize=r, doc='Net load ramp')
 
             # Power
             model.p_max = Param(model.t, model.v, initialize=pmax, doc='P max')
@@ -428,11 +304,7 @@ class CentralOptimization(object):
             model.e_max = Param(model.t, model.v, initialize=emax, doc='E max')
 
             model.e_final = Param(model.v, initialize=efinal, doc='final energy balance')
-            model.beta = Param(initialize=beta, doc='beta')
-
-            # # Ramp
-            # model.ramp_up = Param(model.t, initialize=rampu, doc='ramp up')
-            # model.ramp_down = Param(model.t, initialize=rampd, doc='ramp up')
+            # model.beta = Param(initialize=beta, doc='beta')
 
             # ###### Variable
             model.u = Var(model.t, model.v, domain=Integers, doc='Power used')
@@ -458,24 +330,15 @@ class CentralOptimization(object):
                 return sum(model.u[i, v] for i in model.t) >= model.e_final[v]
             model.final_energy_rule = Constraint(model.v, rule=final_energy_balance, doc='E final rule')
 
-            # def ramp_up_rule(model, t):
-            #     if t == 0:
-            #         return Constraint.Skip
-            #     else:
-            #         return (model.d[t] - model.d[t - 1] + sum([model.u[t, v] - model.u[t - 1, v] for v in model.v])) <= model.ramp_up[t]
-            # model.ramp_up_rule = Constraint(model.t, rule=ramp_up_rule, doc='limit ramping up')
-
-            # def ramp_down_rule(model, t):
-            #     if t == 0:
-            #         return Constraint.Skip
-            #     else:
-            #         return (model.d[t] - model.d[t - 1] + sum([model.u[t, v] - model.u[t - 1, v] for v in model.v])) >= model.ramp_down[t]
-            # model.ramp_down_rule = Constraint(model.t, rule=ramp_down_rule, doc='limit ramping down')
-
-            def objective_rule(model):
-                return (sum([(model.d[t] + sum([model.u[t, v] for v in model.v]))**2 for t in model.t]) +
-                        model.beta * sum([(model.d[t + 1] - model.d[t] + sum([model.u[t + 1, v] - model.u[t, v] for v in model.v]))**2 for t in model.t if t != last_t]))
-            model.objective = Objective(rule=objective_rule, sense=minimize, doc='Define objective function')
+            # Set the objective to be either peak shaving or ramp mitigation
+            if peak_shaving:
+                def objective_rule(model):
+                    return sum([(model.d[t] + sum([model.u[t, v] for v in model.v]))**2 for t in model.t])
+                model.objective = Objective(rule=objective_rule, sense=minimize, doc='Define objective function')
+            else:
+                def objective_rule(model):
+                    return sum([(model.d[t + 1] - model.d[t] + sum([model.u[t + 1, v] - model.u[t, v] for v in model.v]))**2 for t in model.t if t != last_t])
+                model.objective = Objective(rule=objective_rule, sense=minimize, doc='Define objective function')
 
             results = opt.solve(model)
             results.write()
@@ -521,12 +384,6 @@ class CentralOptimization(object):
         # Get the minimum final energy quantity
         e_final = pandas.DataFrame(index=['efinal'], data=model.e_final.extract_values()).transpose().sum() * (5 / 60)
 
-        # # Get the ramping constraints
-        # df = pandas.DataFrame(index=['rampu'], data=model.ramp_up.extract_values()).transpose()
-        # result = pandas.concat([result, df], axis=1)
-        # df = pandas.DataFrame(index=['rampd'], data=model.ramp_down.extract_values()).transpose()
-        # result = pandas.concat([result, df], axis=1)
-
         # Get the actual ramp
         mylist = [0]
         df = pandas.DataFrame(index=['net_load'], data=model.d.extract_values()).transpose()
@@ -549,10 +406,8 @@ class CentralOptimization(object):
         plt.legend(loc=0)
 
         plt.subplot(413)
-        # plt.plot(result.index.values, result.rampu.values, label='rampu')
         plt.plot(result.index.values, result.ramppower.values + result.rampnet_load.values, label='result ramp')
         plt.plot(result.index.values, result.rampnet_load.values, label='net_load ramp')
-        # plt.plot(result.index.values, result.rampd.values, label='rampd')
         plt.legend(loc=0)
 
         plt.subplot(414)
@@ -561,26 +416,37 @@ class CentralOptimization(object):
         plt.legend(loc=0)
         plt.show()
 
-    def post_process(self, project, model, result):
+    def post_process(self, project, netload, model, result, plot):
         """Recompute SOC profiles and compute new total power demand
 
         Args:
             project (Project): project
         """
-        self.plot_result(model)
-        # # Save model to crack it in Jupyter
-        # import dill as pickle
-        # # import cPickle as pickle
-        # filename = 'model.pickle'
-        # with open(filename, 'wb') as fp:
-        #     pickle.dump(model, fp)
+        if plot:
+            self.plot_result(model)
 
-        # import pdb
-        # pdb.set_trace()
-        # df = pandas.DataFrame(index=['power_demand'], data=model.u.get_values()).transpose().unstack()
-        # df2 = df['power_demand'][:].sum(axis=1)
-        # df = pandas.DataFrame(index=[0], data=model.p_max.extract_values()).transpose() # groupby time index .sum()
-        # pandas.DataFrame(columns=['SOC', 'power_demand', 'net_load'])
+        # Create a frame with vehicleLoad, grid, netload
+        new_net_load = netload.copy()
+        new_net_load = new_net_load.resample(str(self.optimization_timestep) + 'T', how='first')
+
+        # Check against the actual lenght it should have
+        diff = (len(new_net_load) -
+                int((self.date_to - self.date_from).total_seconds() / (60 * self.optimization_timestep)))
+        if diff > 0:
+            # We should trim the net load with diff elements (normaly 1 because of slicing inclusion)
+            new_net_load.drop(new_net_load.tail(diff).index, inplace=True)
+        elif diff < 0:
+            print('The net load does not contain enough data points')
+
+        new_net_load = new_net_load.rename(columns={'netload': 'grid'})
+        temp = pandas.DataFrame(index=['vehicleLoad'], data=model.u.get_values()).transpose().groupby(level=0).sum()
+        temp_index = pandas.DataFrame(new_net_load.index.tolist(), columns=['index'])
+        temp = temp.set_index(temp_index['index'])
+
+        final_result = pandas.DataFrame()
+        final_result = pandas.concat([temp, new_net_load, temp['vehicleLoad'] + new_net_load['grid']], axis=1)
+
+        return final_result
 
 
 def save_vehicle_state_for_optimization(vehicle, timestep, date_from,
