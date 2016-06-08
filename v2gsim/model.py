@@ -302,9 +302,9 @@ class ChargingStation(object):
         self.charging = charging
 
     def __repr__(self):
-        return ("Charging infrastructure: v2g({}) powerRateMax({})" +
+        return ("Charging infrastructure: powerRateMax({})" +
                 "powerRateMin({}) charging({})\n").format(
-                    self.v2g, self.maximum_power,
+                    self.maximum_power,
                     self.minimum_power,
                     str(self.charging))
 
