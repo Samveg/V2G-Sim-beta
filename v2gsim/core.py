@@ -102,7 +102,8 @@ def _pre_run(project, date_from, date_to, reset):
                                 date_to, init=True)
         if reset:
             for activity in vehicle.activities:
-                activity.charging_station = None
+                if isinstance(activity, model.Parked):
+                    activity.charging_station = None
 
     return project
 

@@ -115,7 +115,7 @@ class CentralOptimization(object):
 
         return new_net_load
 
-    def check_energy_constraints_feasible(self, vehicle, SOC_init, SOC_final, SOC_offset):
+    def check_energy_constraints_feasible(self, vehicle, SOC_init, SOC_final, SOC_offset, verbose=False):
         """Make sure that SOC final can be reached from SOC init under uncontrolled
         charging (best case scenario). Print details when conditions are not met.
 
@@ -134,8 +134,9 @@ class CentralOptimization(object):
 
         # Check if below minimum SOC at any time
         if (min(vehicle.SOC[self.SOC_index_from:self.SOC_index_to]) - SOC_offset) <= self.minimum_SOC:
-            print('Vehicle: ' + str(vehicle.id) + ' has a minimum SOC of ' +
-                  str(min(vehicle.SOC[self.SOC_index_from:self.SOC_index_to]) * 100) + '%')
+            if verbose:
+                print('Vehicle: ' + str(vehicle.id) + ' has a minimum SOC of ' +
+                      str(min(vehicle.SOC[self.SOC_index_from:self.SOC_index_to]) * 100) + '%')
             return False
 
         # Check SOC difference between date_from and date_to ?
@@ -209,6 +210,8 @@ class CentralOptimization(object):
         """
         # Create a dict with the net load and get time index in a data frame
         self.d, self.times = self.initialize_time_index(net_load)
+        vehicle_to_optimize = 0
+        unfeasible_vehicle = 0
 
         for vehicle in project.vehicles:
             if vehicle.result is not None:
@@ -218,10 +221,14 @@ class CentralOptimization(object):
 
                 # Find out if vehicle itinerary is feasible
                 if not self.check_energy_constraints_feasible(vehicle, SOC_init, SOC_final, SOC_offset):
+                    # Reset vehicle result to None
+                    vehicle.result = None
+                    unfeasible_vehicle += 1
                     continue
 
                 # Add vehicle id to a list
                 self.vehicles.append(vehicle.id)
+                vehicle_to_optimize += 1
 
                 # Resample vehicle result
                 temp_vehicle_result = vehicle.result.resample(str(self.optimization_timestep) + 'T',
@@ -252,6 +259,11 @@ class CentralOptimization(object):
                 self.efinal.update({vehicle.id: (temp_vehicle_result.tail(1).energy.values[0] * (project.timestep / (60 * self.optimization_timestep)) +
                                                  (SOC_final - SOC_init) * vehicle.car_model.battery_capacity *
                                                  (60 / self.optimization_timestep))})
+
+        print('There is ' + str(vehicle_to_optimize) + ' vehicle participating in the optimization (' +
+              str(vehicle_to_optimize * 100 / len(project.vehicles)) + '%)')
+        print('There is ' + str(unfeasible_vehicle) + ' unfeasible vehicle.')
+        print('')
 
     def process(self, times, vehicles, d, r, pmax, pmin, emin, emax, rampu, rampd,
                 efinal, peak_shaving, solver="gurobi"):
@@ -341,7 +353,7 @@ class CentralOptimization(object):
                 model.objective = Objective(rule=objective_rule, sense=minimize, doc='Define objective function')
 
             results = opt.solve(model)
-            results.write()
+            # results.write()
 
         return model, results
 
@@ -421,30 +433,32 @@ class CentralOptimization(object):
 
         Args:
             project (Project): project
+
+        Note: Should check that 'vehicle before' and 'after' contain the same number of vehicles
         """
         if plot:
             self.plot_result(model)
 
-        # Create a frame with vehicleLoad, grid, netload
-        new_net_load = netload.copy()
-        new_net_load = new_net_load.resample(str(self.optimization_timestep) + 'T', how='first')
+        temp = pandas.DataFrame()
+        first = True
+        for vehicle in project.vehicles:
+            if vehicle.result is not None:
+                if first:
+                    temp['vehicle_before'] = vehicle.result['power_demand']
+                    first = False
+                else:
+                    temp['vehicle_before'] += vehicle.result['power_demand']
 
-        # Check against the actual lenght it should have
-        diff = (len(new_net_load) -
-                int((self.date_to - self.date_from).total_seconds() / (60 * self.optimization_timestep)))
-        if diff > 0:
-            # We should trim the net load with diff elements (normaly 1 because of slicing inclusion)
-            new_net_load.drop(new_net_load.tail(diff).index, inplace=True)
-        elif diff < 0:
-            print('The net load does not contain enough data points')
-
-        new_net_load = new_net_load.rename(columns={'netload': 'grid'})
-        temp = pandas.DataFrame(index=['vehicleLoad'], data=model.u.get_values()).transpose().groupby(level=0).sum()
-        temp_index = pandas.DataFrame(new_net_load.index.tolist(), columns=['index'])
-        temp = temp.set_index(temp_index['index'])
+        temp2 = pandas.DataFrame(index=['vehicle_after'], data=model.u.get_values()).transpose().groupby(level=0).sum()
+        i = pandas.date_range(start=self.date_from, end=self.date_to,
+                              freq=str(self.optimization_timestep) + 'T', closed='left')
+        temp2 = temp2.set_index(i)
+        temp2 = temp2.resample(str(project.timestep) + 'S')
+        temp2 = temp2.fillna(method='ffill').fillna(method='bfill')
 
         final_result = pandas.DataFrame()
-        final_result = pandas.concat([temp, new_net_load, temp['vehicleLoad'] + new_net_load['grid']], axis=1)
+        final_result = pandas.concat([temp['vehicle_before'], temp2['vehicle_after']], axis=1)
+        final_result = final_result.fillna(method='ffill').fillna(method='bfill')
 
         return final_result
 
@@ -509,6 +523,8 @@ def save_vehicle_state_for_optimization(vehicle, timestep, date_from,
                             [0.0] * (activity_index2 - activity_index1))
 
     elif init:
+        vehicle.SOC = [vehicle.SOC[0]]
+        vehicle.result = None
         for activity in vehicle.activities:
             if isinstance(activity, model.Parked):
                 if activity.charging_station.post_simulation:

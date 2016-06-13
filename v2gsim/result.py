@@ -65,6 +65,7 @@ def save_vehicle_state(vehicle, timestep, date_from,
     """
     if init:
         vehicle.SOC = [vehicle.SOC[0]]
+        vehicle.result = None
 
 
 def total_power_demand(project):
