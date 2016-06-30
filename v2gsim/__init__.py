@@ -1,3 +1,4 @@
+from __future__ import division
 import v2gsim.itinerary
 import v2gsim.core
 import v2gsim.model
