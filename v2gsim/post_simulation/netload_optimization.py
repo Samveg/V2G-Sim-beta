@@ -108,8 +108,8 @@ class CentralOptimization(object):
             print('The net load does not contain enough data points')
 
         # Set scaling factor
-        # scaling_factor = net_load_pmax / new_net_load['netload'].max()
         scaling_factor = len(project.vehicles) / real_number_of_vehicle
+        
         # Scale the temp net load
         new_net_load['netload'] *= scaling_factor
 
