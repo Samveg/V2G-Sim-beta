@@ -4,11 +4,9 @@ from pyomo.opt import SolverFactory
 from pyomo.environ import *
 import time
 import pandas
-import model
 import numpy
 import matplotlib.pyplot as plt
 import seaborn as sns
-from result import _map_index
 
 
 class CentralOptimization(object):
@@ -520,13 +518,13 @@ def save_vehicle_state_for_optimization(vehicle, timestep, date_from,
     """
     if run:
         if vehicle.result is not None:
-            activity_index1, activity_index2, location_index1, location_index2, save = _map_index(
+            activity_index1, activity_index2, location_index1, location_index2, save = v2gsim.result._map_index(
                 activity.start, activity.end, date_from, date_to, len(power_demand),
                 len(vehicle.result['power_demand']), timestep)
             # Time frame are matching
             if save:
                 # If driving pmin and pmax are equal to 0 since we are not plugged
-                if isinstance(activity, model.Driving):
+                if isinstance(activity, v2gsim.model.Driving):
                     vehicle.result['p_max'][location_index1:location_index2] -= (
                         [0.0] * (activity_index2 - activity_index1))
                     vehicle.result['p_min'][location_index1:location_index2] -= (
@@ -539,7 +537,7 @@ def save_vehicle_state_for_optimization(vehicle, timestep, date_from,
                         [0.0] * (activity_index2 - activity_index1))
 
                 # If parked pmin and pmax are not necessary the same
-                if isinstance(activity, model.Parked):
+                if isinstance(activity, v2gsim.model.Parked):
                     # Save the positive power demand of this specific vehicle
                     vehicle.result['power_demand'][location_index1:location_index2] += (
                         power_demand[activity_index1:activity_index2])
@@ -572,7 +570,7 @@ def save_vehicle_state_for_optimization(vehicle, timestep, date_from,
         vehicle.SOC = [vehicle.SOC[0]]
         vehicle.result = None
         for activity in vehicle.activities:
-            if isinstance(activity, model.Parked):
+            if isinstance(activity, v2gsim.model.Parked):
                 if activity.charging_station.post_simulation:
                     # Initiate a dictionary of numpy array to hold result (faster than DataFrame)
                     vehicle.result = {'power_demand': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep)),
