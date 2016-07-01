@@ -7,7 +7,8 @@ import pandas
 import numpy
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+import v2gsim.model
+import v2gsim.result
 
 class CentralOptimization(object):
     """Creates an object to perform optimization.

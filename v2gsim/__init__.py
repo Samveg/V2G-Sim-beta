@@ -1,4 +1,10 @@
 from __future__ import division
+
+# Append v2gsim folder to the global path so sub-module can access the modules in the parent folder
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
 import v2gsim.itinerary
 import v2gsim.core
 import v2gsim.model
@@ -7,7 +13,6 @@ import v2gsim.charging.uncontrolled
 import v2gsim.charging.controlled
 import v2gsim.charging.station
 import v2gsim.driving.basic_powertrain
-
 
 __all__ = ['v2gsim.itinerary', 'v2gsim.core', 'v2gsim.model', 'v2gsim.post_simulation.netload_optimization',
            'v2gsim.charging.uncontrolled', 'v2gsim.charging.controlled', 'v2gsim.charging.station',
