@@ -10,6 +10,7 @@ import seaborn as sns
 import v2gsim.model
 import v2gsim.result
 
+
 class CentralOptimization(object):
     """Creates an object to perform optimization.
     The object contains the results from the optimization and also the model
@@ -48,7 +49,8 @@ class CentralOptimization(object):
         Args:
             project (Project): project
             net_load (pandas.DataFrame): data frame with date index and a 'net_load' column in [W]
-            real_number_of_vehicle (int): maximum power on the scaled net load
+            real_number_of_vehicle (int): number of vehicle expected on the net load,
+                False if number is the same as in project
             SOC_margin (float): SOC margin that can be used by the optimization at the end of the day [0, 1]
             SOC_offset (float): energy offset [0, 1]
             peak_shaving (bolean): if True ramping constraints are not taking in account within the objective else it is.
@@ -66,61 +68,26 @@ class CentralOptimization(object):
         self.rampd = {}
         self.efinal = {}
 
-        # Set the variables for the optimization
-        new_net_load = self.initialize_net_load(net_load, real_number_of_vehicle, project)
-        self.initialize_model(project, new_net_load, SOC_margin, SOC_offset)
+        try:
+            # Set the variables for the optimization
+            new_net_load = self.initialize_net_load(net_load, real_number_of_vehicle, project)
+            self.initialize_model(project, new_net_load, SOC_margin, SOC_offset)
 
-        # Run the optimization
-        timer = time.time()
-        opti_model, result = self.process(self.times, self.vehicles, self.d, self.r, self.pmax,
-                                          self.pmin, self.emin, self.emax, self.rampu,
-                                          self.rampd, self.efinal, peak_shaving=peak_shaving)
-        timer2 = time.time()
-        print('')
-        print('The optimization duration was ' + str((timer2 - timer) / 60) + ' minutes')
-        print('')
+            # Run the optimization
+            timer = time.time()
+            opti_model, result = self.process(self.times, self.vehicles, self.d, self.r, self.pmax,
+                                              self.pmin, self.emin, self.emax, self.rampu,
+                                              self.rampd, self.efinal, peak_shaving=peak_shaving)
+            timer2 = time.time()
+            print('')
+            print('The optimization duration was ' + str((timer2 - timer) / 60) + ' minutes')
+            print('')
 
-        # Post process results
-        return self.post_process(project, net_load, opti_model, result, plot)
-
-    def solve_stationary_battery(self, project, net_load, SOC_margin=0.02,
-              SOC_offset=0.0, peak_shaving=True, beta=None, plot=False):
-        """Launch the optimization and the post_processing fucntion for a single vehicle (considered as 
-            a stationary battery). The only difference with solve is that we don't need to scale the net load.
-
-        Args:
-            project (Project): project
-            net_load (pandas.DataFrame): data frame with date index and a 'net_load' column in [W]
-            SOC_margin (float): SOC margin that can be used by the optimization at the end of the day [0, 1]
-            SOC_offset (float): energy offset [0, 1]
-            peak_shaving (bolean): if True ramping constraints are not taking in account within the objective else it is.
-        """
-        # Reset model
-        self.times = []
-        self.vehicles = []
-        self.d = {}
-        self.r = {}
-        self.pmax = {}
-        self.pmin = {}
-        self.emin = {}
-        self.emax = {}
-        self.rampu = {}
-        self.rampd = {}
-        self.efinal = {}
-
-        # Set the variables for the optimization
-        new_net_load = self.initialize_net_load(net_load, False, project)  # False avoid scaling down the net load
-        self.initialize_model(project, new_net_load, SOC_margin, SOC_offset)
-
-        # Run the optimization
-        timer = time.time()
-        opti_model, result = self.process(self.times, self.vehicles, self.d, self.r, self.pmax,
-                                          self.pmin, self.emin, self.emax, self.rampu,
-                                          self.rampd, self.efinal, peak_shaving=peak_shaving)
-        timer2 = time.time()
-        print('')
-        print('The optimization duration was ' + str((timer2 - timer) / 60) + ' minutes')
-        print('')
+        except:
+            print('The optimization encountered an error when being solved, optimization parameters have been returned')
+            return {'times': self.times, 'vehicles': self.vehicles, 'd': self.d, 'r': self.r,
+                    'pmax': self.pmax, 'pmin': self.pmin, 'emin': self.emin, 'emax': self.emax,
+                    'rampu': self.rampu, 'rampd': self.rampd, 'efinal': self.efinal}
 
         # Post process results
         return self.post_process(project, net_load, opti_model, result, plot)
@@ -151,7 +118,7 @@ class CentralOptimization(object):
         if real_number_of_vehicle:
             # Set scaling factor
             scaling_factor = len(project.vehicles) / real_number_of_vehicle
-            
+
             # Scale the temp net load
             new_net_load['netload'] *= scaling_factor
 
