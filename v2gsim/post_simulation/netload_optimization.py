@@ -68,11 +68,11 @@ class CentralOptimization(object):
         self.rampd = {}
         self.efinal = {}
 
-        try:
-            # Set the variables for the optimization
-            new_net_load = self.initialize_net_load(net_load, real_number_of_vehicle, project)
-            self.initialize_model(project, new_net_load, SOC_margin, SOC_offset)
+        # Set the variables for the optimization
+        new_net_load = self.initialize_net_load(net_load, real_number_of_vehicle, project)
+        self.initialize_model(project, new_net_load, SOC_margin, SOC_offset)
 
+        try:
             # Run the optimization
             timer = time.time()
             opti_model, result = self.process(self.times, self.vehicles, self.d, self.r, self.pmax,
