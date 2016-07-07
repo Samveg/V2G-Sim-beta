@@ -3,6 +3,7 @@ from __future__ import division
 from pyomo.opt import SolverFactory
 from pyomo.environ import *
 import time
+import traceback
 import pandas
 import numpy
 import matplotlib.pyplot as plt
@@ -42,7 +43,7 @@ class CentralOptimization(object):
         #              'feasible'])
 
     def solve(self, project, net_load, real_number_of_vehicle, SOC_margin=0.02,
-              SOC_offset=0.0, peak_shaving=True, beta=None, plot=False):
+              SOC_offset=0.0, peak_shaving='peak_shaving', penalization=5, beta=None, plot=False):
         """Launch the optimization and the post_processing fucntion. Results
         and assumptions are appended to a data frame.
 
@@ -77,7 +78,7 @@ class CentralOptimization(object):
             timer = time.time()
             opti_model, result = self.process(self.times, self.vehicles, self.d, self.r, self.pmax,
                                               self.pmin, self.emin, self.emax, self.rampu,
-                                              self.rampd, self.efinal, peak_shaving=peak_shaving)
+                                              self.rampd, self.efinal, peak_shaving, penalization)
             timer2 = time.time()
             print('')
             print('The optimization duration was ' + str((timer2 - timer) / 60) + ' minutes')
@@ -85,6 +86,7 @@ class CentralOptimization(object):
 
         except:
             print('The optimization encountered an error when being solved, optimization parameters have been returned')
+            print(traceback.format_exc())
             return {'times': self.times, 'vehicles': self.vehicles, 'd': self.d, 'r': self.r,
                     'pmax': self.pmax, 'pmin': self.pmin, 'emin': self.emin, 'emax': self.emax,
                     'rampu': self.rampu, 'rampd': self.rampd, 'efinal': self.efinal}
@@ -275,7 +277,7 @@ class CentralOptimization(object):
         print('')
 
     def process(self, times, vehicles, d, r, pmax, pmin, emin, emax, rampu, rampd,
-                efinal, peak_shaving, solver="gurobi"):
+                efinal, peak_shaving, penalization, solver="gurobi"):
         """The process function creates the pyomo model and solve it.
         Minimize sum( net_load(t) + sum(power_demand(t, v)))**2
         subject to:
@@ -303,6 +305,8 @@ class CentralOptimization(object):
 
         # Select gurobi solver
         with SolverFactory(solver) as opt:
+            # Solver option see Gurobi website
+            # opt.options['Method'] = 1
 
             # Creation of a Concrete Model
             model = ConcreteModel()
@@ -352,11 +356,18 @@ class CentralOptimization(object):
             model.final_energy_rule = Constraint(model.v, rule=final_energy_balance, doc='E final rule')
 
             # Set the objective to be either peak shaving or ramp mitigation
-            if peak_shaving:
+            if peak_shaving == 'peak_shaving':
                 def objective_rule(model):
                     return sum([(model.d[t] + sum([model.u[t, v] for v in model.v]))**2 for t in model.t])
                 model.objective = Objective(rule=objective_rule, sense=minimize, doc='Define objective function')
-            else:
+
+            elif peak_shaving == 'penalized_peak_shaving':
+                def objective_rule(model):
+                    return (sum([(model.d[t] + sum([model.u[t, v] for v in model.v]))**2 for t in model.t]) +
+                            penalization * sum([sum([model.u[t, v]**2 for v in model.v]) for t in model.t]))
+                model.objective = Objective(rule=objective_rule, sense=minimize, doc='Define objective function')
+
+            elif peak_shaving == 'ramp_mitigation':
                 def objective_rule(model):
                     return sum([(model.d[t + 1] - model.d[t] + sum([model.u[t + 1, v] - model.u[t, v] for v in model.v]))**2 for t in model.t if t != last_t])
                 model.objective = Objective(rule=objective_rule, sense=minimize, doc='Define objective function')
