@@ -39,10 +39,10 @@ def save_location_state(location, timestep, date_from, date_to,
             location.result['power_demand'][location_index1:location_index2] += (
                 power_demand[activity_index1:activity_index2])
 
-            # Examples:
             # Add 'number_of_vehicle_parked' in the initialization section
-            # Then location.result['number_of_vehicle_parked'][location_index1:location_index2] += 1
+            location.result['number_of_vehicle_parked'][location_index1:location_index2] += 1
 
+            # Examples:
             # Add 'available_energy' in the initialization section
             # Then location.result['available_energy'][location_index1:location_index2] += (
             #          [soc * vehicle.car_model.battery_capacity
@@ -50,7 +50,8 @@ def save_location_state(location, timestep, date_from, date_to,
 
     elif init:
         # Initiate a dictionary of numpy array to hold result (faster than DataFrame)
-        location.result = {'power_demand': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep))}
+        location.result = {'power_demand': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep)),
+                           'number_of_vehicle_parked': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep))}
 
     elif post:
         # Convert location result back into pandas DataFrame (faster that way)
@@ -61,7 +62,7 @@ def save_location_state(location, timestep, date_from, date_to,
 
 def save_vehicle_state(vehicle, timestep, date_from,
                        date_to, activity=None, power_demand=None, SOC=None,
-                       nb_interval=None, init=False, run=False, post=False):
+                       detail=None, nb_interval=None, init=False, run=False, post=False):
     """Placeholder function to save individual vehicle's state. Do nothing.
     """
     if init:
@@ -69,18 +70,35 @@ def save_vehicle_state(vehicle, timestep, date_from,
         vehicle.result = None
 
 
-def total_power_demand(project):
-    """Sum the power demand of each location and return a data frame with the result
+def save_detailed_vehicle_state(vehicle, timestep, date_from,
+                                date_to, activity=None, power_demand=None, SOC=None,
+                                detail=None, nb_interval=None, init=False, run=False, post=False):
+    """Save vehicle detailed powertrain output. Only use with the detailed
+    detailed power train model.
     """
-    result = pandas.DataFrame()
-    for location in project.locations:
-        temp = location.result.copy()
-        temp = temp.rename(columns={'power_demand': str(location.category) + '_demand'})
-        result = pandas.concat([result, temp[str(location.category) + '_demand']], axis=1)
+    if run and detail:
+        activity_index1, activity_index2, location_index1, location_index2, save = _map_index(
+            activity.start, activity.end, date_from, date_to, len(power_demand),
+            len(vehicle.result['battery_temp']), timestep)
 
-    result['total'] = result.sum(axis=1)
-    del temp
-    return result
+        # Save a lot of interesting result
+        if save:
+            vehicle.result['battery_temp'][location_index1:location_index2] += (
+                detail.ess.T_cell[activity_index1:activity_index2])
+
+            vehicle.result['output_current'][location_index1:location_index2] += (
+                detail.ess.i_out[activity_index1:activity_index2])
+
+    elif init:
+        vehicle.SOC = [vehicle.SOC[0]]
+        vehicle.result = {'battery_temp': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep)),
+                          'output_current': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep))}
+
+    elif post:
+        # Convert location result back into pandas DataFrame (faster that way)
+        i = pandas.date_range(start=date_from, end=date_to,
+                              freq=str(timestep) + 's', closed='left')
+        vehicle.result = pandas.DataFrame(index=i, data=vehicle.result)
 
 
 def _map_index(activity_start, activity_end, date_from, date_to, vector_size,

@@ -189,3 +189,63 @@ def copy_append(project, nb_copies=2):
             print(vehicle)
 
     return project
+
+
+def get_itineraries_statistics(project, verbose=False):
+    """This function return 'number_of_trip', 'morning_start', 'total_distance',
+    'went_to_work', 'last_trip_time' for each vehicle.
+    note: the function do not handle vehicles with only 1 driving activity
+    and no parked activities.
+
+    Args:
+        project (Project): project
+
+    Return:
+        stat (DataFrame): data frame with index vehicle ids
+    """
+
+    stat = pandas.DataFrame(index=[vehicle.id for vehicle in project.vehicles],
+                            columns=['number_of_trip', 'morning_start', 'total_distance',
+                                     'went_to_work', 'last_trip_time'])
+
+    for vehicle in project.vehicles:
+
+        # Count the number of trip in a day
+        counter = 0
+        for activity in vehicle.activities:
+            if isinstance(activity, Driving):
+                counter += 1
+        stat.loc[vehicle.id, 'number_of_trip'] = counter
+
+        # Find the morning start
+        if isinstance(vehicle.activities[0], Parked):
+            stat.loc[vehicle.id, 'morning_start'] = vehicle.activities[0].end
+        elif isinstance(vehicle.activities[0], Driving):
+            if verbose:
+                print('Vehicle: ' + str(vehicle.id) + ' started the day driving.')
+            stat.loc[vehicle.id, 'morning_start'] = vehicle.activities[1].end
+
+        # Find total distance traveled [km] and average distance
+        counter = 0
+        for activity in vehicle.activities:
+            if isinstance(activity, Driving):
+                counter += activity.distance
+        stat.loc[vehicle.id, 'total_distance'] = counter
+
+        # Went to work ?
+        stat.loc[vehicle.id, 'went_to_work'] = False
+        for activity in vehicle.activities:
+            if isinstance(activity, Parked):
+                if activity.location.category in ['Work']:
+                    stat.loc[vehicle.id, 'went_to_work'] = True
+                    break
+
+        # When did you go back home ?
+        if isinstance(vehicle.activities[-1], Parked):
+            stat.loc[vehicle.id, 'last_trip_time'] = vehicle.activities[-1].start
+        elif isinstance(vehicle.activities[-1], Driving):
+            if verbose:
+                print('Vehicle: ' + str(vehicle.id) + ' ended the day driving.')
+            stat.loc[vehicle.id, 'last_trip_time'] = vehicle.activities[-2].start
+
+    return stat

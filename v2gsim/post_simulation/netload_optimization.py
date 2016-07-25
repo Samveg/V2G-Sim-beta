@@ -488,7 +488,7 @@ class CentralOptimization(object):
 
 def save_vehicle_state_for_optimization(vehicle, timestep, date_from,
                                         date_to, activity=None, power_demand=None,
-                                        SOC=None, nb_interval=None, init=False,
+                                        SOC=None, detail=None, nb_interval=None, init=False,
                                         run=False, post=False):
     """Save results for individual vehicles. Power demand is positive when charging
     negative when driving. Energy consumption is positive when driving and negative

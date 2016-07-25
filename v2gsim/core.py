@@ -45,10 +45,10 @@ def run(project, charging_option=None, date_from=None, date_to=None,
             # Calculate the duration of the activity
             nb_interval = int((activity.end - activity.start).total_seconds() / project.timestep)
             if isinstance(activity, model.Driving):
-                SOC, power_demand, stranded = vehicle.car_model.driving(activity,
-                                                                        vehicle,
-                                                                        nb_interval,
-                                                                        project.timestep)
+                SOC, power_demand, stranded, detail = vehicle.car_model.driving(activity,
+                                                                                vehicle,
+                                                                                nb_interval,
+                                                                                project.timestep)
                 vehicle.SOC.extend(SOC)
                 # Log stranded vehicles
                 if stranded:
@@ -62,6 +62,7 @@ def run(project, charging_option=None, date_from=None, date_to=None,
                                                                                           vehicle)
 
                 # Compute the consumption at the charging station
+                detail = False
                 SOC, power_demand = activity.charging_station.charging(activity,
                                                                        vehicle,
                                                                        nb_interval,
@@ -78,7 +79,7 @@ def run(project, charging_option=None, date_from=None, date_to=None,
                                                       nb_interval, run=True)
             vehicle.result_function(vehicle, project.timestep, date_from,
                                     date_to, activity, power_demand, SOC,
-                                    nb_interval, run=True)
+                                    detail, nb_interval, run=True)
         # Remove initial SOC
         del vehicle.SOC[0]
         progress.update(indexV + 1)
@@ -155,9 +156,9 @@ def initialize_SOC(project, nb_iteration=1, charging_option=None):
                 # Calculate the duration of the activity
                 nb_interval = int((activity.end - activity.start).total_seconds() / project.timestep)
                 if isinstance(activity, model.Driving):
-                    SOC, _1, _2 = vehicle.car_model.driving(activity, vehicle,
-                                                            nb_interval,
-                                                            project.timestep)
+                    SOC, _1, _2, _3 = vehicle.car_model.driving(activity, vehicle,
+                                                                nb_interval,
+                                                                project.timestep)
                     if len(SOC) != 0:
                         vehicle.SOC.append(SOC[-1])
 

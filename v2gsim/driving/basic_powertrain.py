@@ -17,6 +17,7 @@ def consumption(activity, vehicle, nb_interval, timestep, verbose=False):
         power_demand (list): power demand/
         stranded (boolean): True if the vehicle run out of charge during the
         activity
+        detail (any type): optional data
     """
 
     # Calculate the duration
@@ -54,7 +55,7 @@ def consumption(activity, vehicle, nb_interval, timestep, verbose=False):
     constant_power_demand = energy * 3600 / (nb_interval * timestep)
     power_demand = [constant_power_demand] * nb_interval
 
-    return SOC, power_demand, stranded
+    return SOC, power_demand, stranded, False
 
 
 def _drivecycle_energy_per_distance(car_model, mean_speed):
