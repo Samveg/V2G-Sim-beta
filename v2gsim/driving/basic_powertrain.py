@@ -29,7 +29,7 @@ def consumption(activity, vehicle, nb_interval, timestep, verbose=False):
     else:
         if verbose:
             print('Activity duration is shorter than timestep')
-        return [], [], False
+        return [], [], False, False
 
     # Get the energy Wh consumption per km
     energyConsumption = _drivecycle_energy_per_distance(vehicle.car_model, mean_speed)
