@@ -1,0 +1,99 @@
+import math
+import math.exp as exp
+
+# ambientT[activity.start:activity.end]
+# every vehicle.outputInterval
+def driving_temperature(vehicle, driving, ambientT, rad, resistance, current, coefTemp):
+	""" coefTemp is a dictionnary of known keys
+    *******VERY IMPORTANT	NEED TWO TEMPERATURE*****
+    *******ONE IS THE CABIN TEMP AND ONE IS BATTERY TEMP*****
+
+    ****Assume that ambientT and rad already knows the duration of the activity****
+    ***ambientT and rad are the length of the day but the resistance  and the current are the length of the duration
+	"""
+	# duration in hours = driving.end - driving.start
+	# hourlySteps=3600/vehicle.outputInterval
+	# duration in interval which could be second or minutes = int(parked.end*hourlySteps)-int(parked.start*hourlySteps)
+	# 比较vehicle.charging_temperature 和 vehicle.idle_temperature的时间大小然后决定第一个temp
+# ****NOTE: make sure () is [] and make sure that the slicing on the ambienT and rad is correct sicne they have the lenght of a day.
+# 10.22: is the end time included in the activity??
+	ambienT = ambienT[int(driving.start*60):int(driving.end*60)+1]
+	rad = rad[int(driving.start*60):int(driving.end*60)+1]
+	for i in range(len(resistance)):
+	# calculate temperature at each time due to differnt time interval
+		if vehicle.cabinT[-1] >= 25 and vehicle.batteryT[-1] >= 20:
+			cabinTemp = vehicle.cabinT[-1]+(coefTemp['K_ac']*(ambientT[i]-vehicle.cabinT[-1])+coefTemp['K_bc']*(vehicle.batteryT[i]-vehicle.cabinT[i])+rad[i]-4500)/coefTemp['M_c']
+			batteryTemp = vehicle.batteryT[-1]+(coefTemp['K_ac']*(ambientT[i]-vehicle.batteryT[-1])+coefTemp['K_bc']*(vehicle.cabinT[i]-vehicle.batteryT[i])+resistance*current^2-354*(vehicle.batteryT[-1]-20))/coefTemp['M_b']
+		elif vehicle.cabinT[-1] < 25 and vehicle.batteryT[-1] < 20:
+			cabinTemp = vehicle.cabinT[-1]+(coefTemp['K_ac']*(ambientT[i]-vehicle.cabinT[-1])+coefTemp['K_bc']*(vehicle.batteryT[i]-vehicle.cabinT[i])+rad[i])/coefTemp['M_c']
+			batteryTemp = vehicle.batteryT[-1]+(coefTemp['K_ac']*(ambientT[i]-vehicle.batteryT[-1])+coefTemp['K_bc']*(vehicle.cabinT[i]-vehicle.batteryT[i])+resistance*current^2))/coefTemp['M_b']
+		elif vehicle.cabinT[-1] >= 25 and vehicle.batteryT[-1] < 20:
+			cabinTemp = vehicle.cabinT[-1]+(coefTemp['K_ac']*(ambientT[i]-vehicle.cabinT[-1])+coefTemp['K_bc']*(vehicle.batteryT[i]-vehicle.cabinT[i])+rad[i]-4500)/coefTemp['M_c']
+			batteryTemp = vehicle.batteryT[-1]+(coefTemp['K_ac']*(ambientT[i]-vehicle.batteryT[-1])+coefTemp['K_bc']*(vehicle.cabinT[i]-vehicle.batteryT[i])+resistance*current^2))/coefTemp['M_b']
+		else
+			cabinTemp = vehicle.cabinT[-1]+(coefTemp['K_ac']*(ambientT[i]-vehicle.cabinT[-1])+coefTemp['K_bc']*(vehicle.batteryT[i]-vehicle.cabinT[i])+rad[i])/coefTemp['M_c']
+			batteryTemp = vehicle.batteryT[-1]+(coefTemp['K_ac']*(ambientT[i]-vehicle.batteryT[-1])+coefTemp['K_bc']*(vehicle.cabinT[i]-vehicle.batteryT[i])+resistance*current^2-354*(vehicle.batteryT[-1]-20))/coefTemp['M_b']
+		vehicle.cabinT.append(cabinTemp)
+		vehicle.batteryT.append(batteryTemp)
+
+
+def charging_temperature(vehicle, charging, ambientT, rad, resistance, current, coefTemp):
+	ambienT = ambienT[int(charging.start*60):int(charging.end*60)+1]
+	rad = rad[int(charging.start*60):int(charging.end*60)+1]
+	for i in range(len(resistance)):
+		cabinTemp = vehicle.cabinT[-1]+(coefTemp['K_ac']*(ambientT(i)-vehicle.cabinT[-1])+coefTemp['K_bc']*(vehicle.batteryT[i]-vehicle.cabinT[i])+rad[i])/coefTemp['M_c']
+		batteryTemp = vehicle.batteryT[-1]+(coefTemp['K_ac']*(ambientT(i)-vehicle.batteryT[-1])+coefTemp['K_bc']*(vehicle.cabinT[i]-vehicle.batteryT[i])+resistance*current^2))/coefTemp['M_b']
+		vehicle.cabinT.append(cabinTemp)
+		vehicle.batteryT.append(batteryTemp)
+
+def idle_temperature(vehecle, parked, ambientT, rad, coefTemp):
+	ambienT = ambienT[int(parked.start*60):int(parked.end*60)+1]
+	rad = rad[int(parked.start*60):int(parked.end*60)+1]
+	duration = vehicle.parked.end - vehicle.parked.start
+	for i in range(duration):
+		cabinTemp = vehicle.cabinT[-1]+(coefTemp['K_ac']*(ambientT(i)-vehicle.cabinT[-1])+coefTemp['K_bc']*(vehicle.batteryT[i]-vehicle.cabinT[i])+rad[i])/coefTemp['M_c']
+		batteryTemp = vehicle.batteryT[-1]+(coefTemp['K_ac']*(ambientT(i)-vehicle.batteryT[-1])+coefTemp['K_bc']*(vehicle.cabinT[i]-vehicle.batteryT[i])+resistance*current^2))/coefTemp['M_b']
+		vehicle.cabinT.append(cabinTemp)
+		vehicle.batteryT.append(batteryTemp)
+
+# you would call this functin like this calendar_loss(vehicle.batteryT)
+# calender loss是把预知的一段行程 已知运行的时间 然后对每一个interval进行计算
+# translation: from the matlab codes, calender loss assumes that the length of the calender is already known
+#             therefore, the codes iterate over each interval to calculate the degradation.
+def calendar_loss(vehicle, activityT, coefLoss):
+    """
+	****Assume temperature has been converted to celsius
+	"""
+	if not vehicle.batteryLoss['calendar_loss']:
+		vehicle.batteryLoss['calendar_loss'] = [0]
+	else
+		calendarLoss = vehicle.batteryLoss['calendar_loss'][-1] +1/3600/24*0.5*coefLoss['f']*exp(-coefLoss['E']/coefLoss['R']/T)*
+	vehicle.batteryLoss['calendar_loss'].append()
+# cycle loss是预设idle 和charge不会对电池有损耗
+# translation: cyle_loss assumes that the activity idel and chargin won't have effects on the battery degradaiton.
+# 			so I could incoporate the cycle_loss codes into the driving activity.
+# for cycle_loss assume given soc with known and right range
+# maybe for the cycle_loss we don't need to measure it second-wise? Since by hour to hour, the degradation won't change significantly.
+
+# ****NOTE: vehicle.SOC 
+def cycle_loss(vehicle, activity, T, current, soc, coefLoss):
+	setup1 = soc[1] + soc[:]
+	setup2 = soc[:] + soc[-1]
+	deltsoctemp = []
+	cycleLoss = []
+	for i in range(len(setup1)):
+		deltsoctemp.append(setup1[i]-setup2[i])
+	deltsoc = deltsoctemp[:-1]
+	for i in range(length（T)):
+		cycleLoss.append = ([coefLoss['a']*T[i]**2+coefLoss['b']+coefLoss['c'])*exp((coefLoss['d']*T[i]+exp(1))*deltsoc[i]*3600)* current/3600/2
+	vehicle.batteryLoss['cycle_loss'].append(sum(cycleLoss))
+
+
+
+# Class name : VehicleClass
+# variable name : vehicleClass
+# function : vehicle_class
+
+
+
+用王岱的数据来检测这些func
