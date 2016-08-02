@@ -88,7 +88,7 @@ def from_excel(project, filename):
                                  'total': [float('inf'), float('inf'),
                                            float('inf')]})
     for location in project.locations:
-        location.available_charging_station = df2
+        location.available_charging_station = df2.copy()
 
     print('')
     return project
