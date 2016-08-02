@@ -10,7 +10,7 @@ import v2gsim
 
 
 project = v2gsim.model.Project(timestep=60)
-project = v2gsim.itinerary.from_excel(project, 'Tennessee_1.xlsx')
+project = v2gsim.itinerary.from_excel(project, '../data/NHTS/Tennessee_1.xlsx')
 project = v2gsim.itinerary.copy_append(project, nb_copies=2)
 
 # Create a detailed power train model
