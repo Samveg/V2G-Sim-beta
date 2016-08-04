@@ -1,6 +1,7 @@
 from __future__ import division
 import pandas
 import datetime
+import random
 from model import (Vehicle, ChargingStation, Location, Parked, Driving,
                    BasicCarModel)
 
@@ -249,3 +250,66 @@ def get_itineraries_statistics(project, verbose=False):
             stat.loc[vehicle.id, 'last_trip_time'] = vehicle.activities[-2].start
 
     return stat
+
+
+def set_fleet_mix(vehicles, mix):
+    """Set the fleet mix
+
+    Args:
+        vehicles (Vehicle): list of vehicle
+        mix (pandas.DataFrame): a row has a car model 
+            with an associated penetration
+    """
+
+    # Calculate the number of vehicles for each model
+    fleetMix = mix.copy()
+    fleetMix['number_of_vehicle'] = fleetMix['percentage'] * len(vehicles)
+    fleetMix['number_of_vehicle'] = fleetMix['number_of_vehicle'].apply(int)
+    fleetMix['vehicle_using_it'] = [0] * len(fleetMix)
+
+    # The total number of vehicles is higher than the sum of what was given for each model
+    diff = len(vehicles) - fleetMix['number_of_vehicle'].sum()
+    if diff != 0:
+        # randomly pick a model to increase the number of vehicle associated to it
+        for i in range(0, diff):
+            fleetMix.loc[random.choice(fleetMix.index.tolist()), 'number_of_vehicle'] += 1
+
+    for vehicle in vehicles:
+        # Update the list of available models
+        available_model_category = fleetMix[fleetMix['vehicle_using_it'] < fleetMix['number_of_vehicle']].index.tolist()
+
+        # Pick the model index
+        model_index = int(random.choice(available_model_category))
+
+        # Set the right model
+        vehicle.carModel = fleetMix.ix[model_index]['car_model']
+        fleetMix.loc[model_index, 'vehicle_using_it'] += 1
+
+
+def get_cycling_itineraries(project):
+    """Put aside vehicles that does not come back
+    at the same location as they started their day from.
+    Also putting aside vehicle that ends or starts with a
+    driving activity.
+
+    Args:
+        project (Project): a project with vehicles
+
+    Return:
+        a list of vehicle (list)
+    """
+    good_vehicles = []
+    for vehicle in project.vehicles:
+        if (isinstance(vehicle.activities[0], Parked) and
+            isinstance(vehicle.activities[-1], Parked)):
+            if (vehicle.activities[0].location.category ==
+                vehicle.activities[-1].location.category):
+                good_vehicles.append(vehicle)
+    
+    previous_count = len(project.vehicles)
+    new_count = len(good_vehicles)
+    print(str(previous_count - new_count) +
+        ' vehicles did not finished at the same location as they have started the day')
+    print('')
+
+    return good_vehicles

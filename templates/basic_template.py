@@ -1,8 +1,10 @@
+from __future__ import division
 import datetime
 import matplotlib.pyplot as plt
 import pandas
 import os
 import sys
+import pdb
 import v2gsim
 
 project = v2gsim.model.Project()
@@ -21,6 +23,9 @@ total_power_demand = v2gsim.post_simulation.result.total_power_demand(project)
 
 # Plot the result
 plt.figure()
-plt.plot(total_power_demand.index.tolist(), total_power_demand['total'].values.tolist())
-plt.plot(total_power_demand.index.tolist(), total_power_demand['Home_demand'].values.tolist())
+plt.plot(total_power_demand['total'])
+plt.plot(total_power_demand['Home_demand'])
 plt.show()
+
+print('Press c and then enter to quit debugger')
+pdb.set_trace()

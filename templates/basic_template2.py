@@ -1,3 +1,4 @@
+from __future__ import division
 import datetime
 import matplotlib.pyplot as plt
 import pandas
@@ -12,18 +13,7 @@ project = v2gsim.model.Project()
 project = v2gsim.itinerary.from_excel(project, '../data/NHTS/California.xlsx')
 
 # Putting aside vehicle that does not cycle in one day
-good_vehicles = []
-for vehicle in project.vehicles:
-    if (isinstance(vehicle.activities[0], v2gsim.model.Parked) and
-        isinstance(vehicle.activities[-1], v2gsim.model.Parked)):
-        if (vehicle.activities[0].location.category ==
-            vehicle.activities[-1].location.category):
-            good_vehicles.append(vehicle)
-previous_count = len(project.vehicles)
-project.vehicles = good_vehicles
-new_count = len(project.vehicles)
-print(str(previous_count - new_count) + ' vehicles did not finished as they started')
-print('')
+project.vehicles = v2gsim.itinerary.get_cycling_itineraries(project)
 
 project = v2gsim.itinerary.copy_append(project, nb_copies=2)
 

@@ -124,7 +124,7 @@ def _post_run(project, date_from, date_to):
 
 def initialize_SOC(project, nb_iteration=1, charging_option=None):
     """Initialize the state of charge of each vehicle by running a simulation
-    on previous days.
+    on previous days. Reset any charging infrastructure assigned to None.
 
     Args:
         project (Project): project to simulate
@@ -145,6 +145,12 @@ def initialize_SOC(project, nb_iteration=1, charging_option=None):
                                                 progressbar.Percentage(),
                                                 progressbar.Bar()],
                                        maxval=nb_iteration * len(project.vehicles)).start()
+
+    # Reset assigned charging station
+    for vehicle in project.vehicles:
+        for activity in vehicle.activities:
+            if isinstance(activity, model.Parked):
+                activity.charging_station = None
 
     # For each iteration
     count = 0
