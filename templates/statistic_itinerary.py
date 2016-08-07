@@ -6,26 +6,35 @@ import os
 import sys
 import pdb
 import v2gsim
+import pdb, traceback, sys
 
 project = v2gsim.model.Project()
-project = v2gsim.itinerary.from_excel(project, '../data/NHTS/Tennessee_100.xlsx')
-project = v2gsim.itinerary.copy_append(project, nb_copies=2)
+project = v2gsim.itinerary.from_excel(project, '../data/NHTS/Tennessee.xlsx')
 
-# Initiate SOC and charging infra
-conv = v2gsim.core.initialize_SOC(project, nb_iteration=1)
+# try:
+project.itinerary_statistics = v2gsim.itinerary.find_all_itinerary_combination(project)
+# except:
+#     type, value, tb = sys.exc_info()
+#     traceback.print_exc()
+#     pdb.post_mortem(tb)
 
-# Launch the simulation
-v2gsim.core.run(project, date_from=project.date + datetime.timedelta(hours=12),
-                date_to=project.date + datetime.timedelta(days=2, hours=12))
+# project = v2gsim.itinerary.copy_append(project, nb_copies=2)
 
-# Look at the results
-total_power_demand = v2gsim.post_simulation.result.total_power_demand(project)
+# # Initiate SOC and charging infra
+# conv = v2gsim.core.initialize_SOC(project, nb_iteration=1)
 
-# Plot the result
-plt.figure()
-plt.plot(total_power_demand['total'])
-plt.plot(total_power_demand['Home_demand'])
-plt.show()
+# # Launch the simulation
+# v2gsim.core.run(project, date_from=project.date + datetime.timedelta(hours=12),
+#                 date_to=project.date + datetime.timedelta(days=2, hours=12))
+
+# # Look at the results
+# total_power_demand = v2gsim.post_simulation.result.total_power_demand(project)
+
+# # Plot the result
+# plt.figure()
+# plt.plot(total_power_demand['total'])
+# plt.plot(total_power_demand['Home_demand'])
+# plt.show()
 
 print('Press c and then enter to quit debugger')
 pdb.set_trace()

@@ -1,6 +1,7 @@
 from __future__ import division
 import pandas
 import datetime
+import progressbar
 import random
 from model import (Vehicle, ChargingStation, Location, Parked, Driving,
                    BasicCarModel)
@@ -192,7 +193,7 @@ def copy_append(project, nb_copies=2):
     return project
 
 
-def get_itineraries_statistics(project, verbose=False):
+def get_vehicle_statistics(project, verbose=False):
     """This function return 'number_of_trip', 'morning_start', 'total_distance',
     'went_to_work', 'last_trip_time' for each vehicle.
     note: the function do not handle vehicles with only 1 driving activity
@@ -257,7 +258,7 @@ def set_fleet_mix(vehicles, mix):
 
     Args:
         vehicles (Vehicle): list of vehicle
-        mix (pandas.DataFrame): a row has a car model 
+        mix (pandas.DataFrame): a row has a car model
             with an associated penetration
     """
 
@@ -305,11 +306,114 @@ def get_cycling_itineraries(project):
             if (vehicle.activities[0].location.category ==
                 vehicle.activities[-1].location.category):
                 good_vehicles.append(vehicle)
-    
+
     previous_count = len(project.vehicles)
     new_count = len(good_vehicles)
     print(str(previous_count - new_count) +
-        ' vehicles did not finished at the same location as they have started the day')
+          ' vehicles did not finished at the same location as they have started the day')
     print('')
 
     return good_vehicles
+
+
+def find_all_itinerary_combination(project, verbose=True):
+    """Find all combination of locations in the vehicle itinerary data.
+
+    Args:
+        project (Project): a project
+
+    Returns:
+        a pandas DataFrame with combination, vehicles and some high level statistics.
+    """
+    if verbose:
+        progress = progressbar.ProgressBar(widgets=['Parsing: ',
+                                                    progressbar.Percentage(), progressbar.Bar()],
+                                           maxval=len(project.vehicles)).start()
+
+    # Create the dataframe holding the results
+    frame = pandas.DataFrame(columns={'locations', 'vehicles'})
+
+    # Iterate through all the vehicles
+    for vehicle in project.vehicles:
+        itinerary = []
+        existing = False
+
+        # Get the list of locations
+        for activity in vehicle.activities:
+            if isinstance(activity, Parked):
+                itinerary.append(activity.location.category)
+
+        # Is the temporary itinerary already existing?
+        for index, row in frame.iterrows():
+            if row.locations == itinerary:
+                existing = True
+                frame.loc[index, 'vehicles'].append(vehicle)
+                break
+
+        if not existing:
+            # Create a new row in the dataframe
+            frame = pandas.concat([
+                frame, pandas.DataFrame(
+                    data={'locations': [itinerary], 'vehicles': [[vehicle]]})], axis=0,
+                ignore_index=True)
+        if verbose:
+            progress.update(index + 1)
+
+    if verbose:
+        progress.finish()
+
+    # Get some basic filtering value
+    frame['nb_of_parked_activity'] = (
+        frame.locations.apply(lambda x: len(x)))
+
+    frame['nb_of_vehicles'] = (
+        frame.vehicles.apply(lambda x: len(x)))
+
+    frame['worker'] = (
+        frame.locations.apply(lambda x: True if 'Work' in x else False))
+
+    if verbose:
+        print('')
+    return frame
+
+
+def merge_itinerary_combination(project, locations_to_save):
+    """Merge location combination, do not remove any vehicle.
+    itinerary_statistics will only keep the locations in *locations_to_save* or
+    *"someWhere"*. Regroup ItineraryBin that are now similar and
+    merge their assigned vehicles.
+
+    Args:
+        project (Project): a project
+        locations_to_save (list): collection of location name to preserve
+
+    Returns:
+        a pandas DataFrame with combination, vehicles and some high level statistics.
+    """
+    def _remove_other_location(locations, locations_to_save):
+        new_locations = []
+        for location_category in locations:
+            if location_category not in locations_to_save:
+                new_locations.append('other_location')
+            else:
+                new_locations.append(location_category)
+        return new_locations
+
+    # Copy the frame
+    frame = project.itinerary_statistics.copy()
+
+    # Simplify the name of locations
+    frame.locations = frame.locations.apply(
+        lambda locations: _remove_other_location(locations, locations_to_save))
+
+    # Get all unique combination of locations
+    frame.locations = frame.locations.apply(tuple)
+    unique_locations = frame.locations.unique().tolist()
+
+    # Create the dataframe with unique locations
+    frame2 = pandas.DataFrame(index=range(0, len(unique_locations)),
+                              data={'locations': unique_locations,
+                                    'vehicles': [[] for i in range(0, len(unique_locations))]})
+
+    # For each of the unique itinerary merge the vehicles from the duplicate itineraries
+    
