@@ -44,7 +44,7 @@ v2gsim.core.run(project, date_from=project.date + datetime.timedelta(hours=12),
                                  'post_DR_window_fraction': 1.5,
                                  'thresholdSOC': 0.2})
 
-total_power_demand = v2gsim.result.total_power_demand(project)
+total_power_demand = v2gsim.post_simulation.result.total_power_demand(project)
 
 # Plot the result
 plt.figure()

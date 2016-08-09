@@ -62,10 +62,10 @@ def demand_response(parked, vehicle, nb_interval, timestep, option):
                 temp_nb_interval = int((activity.end - activity.start).total_seconds() / timestep)
                 # Compute consumption for driving and parked activities
                 if isinstance(activity, v2gsim.model.Driving):
-                    SOC, powerDemandTemp, stranded = vehicle.car_model.driving(activity,
-                                                                               vehicle,
-                                                                               temp_nb_interval,
-                                                                               timestep)
+                    SOC, powerDemandTemp, stranded, detail = vehicle.car_model.driving(activity,
+                                                                                       vehicle,
+                                                                                       temp_nb_interval,
+                                                                                       timestep)
                     if len(SOC) > 0:
                         vehicle.SOC.append(SOC[-1])
                         tempSOCList.append(SOC[-1])
