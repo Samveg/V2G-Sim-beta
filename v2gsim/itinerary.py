@@ -73,7 +73,7 @@ def from_excel(project, filename):
             print('Itinerary does not respect the constraints')
             print(vehicle)
         project.vehicles.append(vehicle)
-    
+
     # Initialize charging station at each location
     reset_charging_infrastructures(project)
 
@@ -465,17 +465,17 @@ def merge_itinerary_combination(project, locations_to_save, verbose=True):
 
 def get_itinerary_statistic(project, verbose=True):
     """For each itinerary creates a specific dataframe containing
-    primary statistical metrics on each activity using data from all the 
+    primary statistical metrics on each activity using data from all the
     vehicles in the itinerary's category. Note date are assumed to be UTC.
 
     Args:
         project (Project): a project
-    
+
     Returns:
         a pandas DataFrame with locations, vehicles, high level statistics and detailed
         activity statistics.
     """
-    
+
     # Copy the data
     frame = project.itinerary_statistics.copy()
 
@@ -483,7 +483,7 @@ def get_itinerary_statistic(project, verbose=True):
     total_vehicle = frame.nb_of_vehicles.sum()
     if total_vehicle != len(project.vehicles):
         print('Warning vehicles are missing: ' +
-            str(total_vehicle - len(project.vehicles)) + ' vehicles')
+              str(total_vehicle - len(project.vehicles)) + ' vehicles')
 
     # For each combination
     epoch = datetime.datetime.utcfromtimestamp(0)  # Needed to change dates into floats (assume dates are UTC)
@@ -492,7 +492,7 @@ def get_itinerary_statistic(project, verbose=True):
         # Create the structure holding the results for the whole day
         total_number_of_activities = (row.nb_of_parked_activity * 2) - 1
         activity_stat = pandas.DataFrame(index=range(0, total_number_of_activities),
-                                         columns=['start_loc', 'start_scale', 
+                                         columns=['start_loc', 'start_scale',
                                                   'duration_loc', 'duration_scale',
                                                   'end_loc', 'end_scale',
                                                   'distance_loc', 'distance_scale',
@@ -512,7 +512,7 @@ def get_itinerary_statistic(project, verbose=True):
 
                 elif isinstance(activity, Driving):
                     vehicle_stat.loc[i, 'start'] = (activity.start - epoch).total_seconds()
-                    vehicle_stat.loc[i, 'duration'] = (activity.end - activity.start).total_seconds()    
+                    vehicle_stat.loc[i, 'duration'] = (activity.end - activity.start).total_seconds()
                     vehicle_stat.loc[i, 'distance'] = activity.distance
                     if vehicle_stat.loc[i, 'duration'] == 0:
                         vehicle_stat.loc[i, 'mean_speed'] = 0
@@ -532,7 +532,7 @@ def get_itinerary_statistic(project, verbose=True):
                 activity_stat.loc[activity_index, column + str('_loc')] = loc
                 activity_stat.loc[activity_index, column + str('_scale')] = scale
 
-        temp_frame_holding_stat = pandas.concat([temp_frame_holding_stat, 
+        temp_frame_holding_stat = pandas.concat([temp_frame_holding_stat,
                                                  pandas.DataFrame(index=[index],
                                                                   data={'activity_statistics': [activity_stat]})], axis=0)
 
@@ -542,7 +542,12 @@ def get_itinerary_statistic(project, verbose=True):
 
 
 def create_vehicles_from_stat(current_id, itinerary, project):
-    """Create one vehicle from a statistical itinerary
+    """Create a new vehicle from a statistical itinerary
+
+    Args:
+        current_id (Integer): id assigned to the new vehicle
+        itinerary (DataFrame): a row of project.itinerary_statistics
+        project (Project): a project to append new locations if necessary
 
     Return:
         a vehicle object with a full day of activities
@@ -558,7 +563,7 @@ def create_vehicles_from_stat(current_id, itinerary, project):
         is_first_activity = lambda x: True if x == 0 else False
         is_last_activity = lambda x, y=len(itinerary.activity_statistics) - 1: True if x == y else False
         is_duration_enough = lambda x: x if x > 60 else 60
-                    
+
         # The activities one by one
         location_index = 0
         parked = True
@@ -567,7 +572,7 @@ def create_vehicles_from_stat(current_id, itinerary, project):
             if is_first_activity(index):
                 # This activity is assumed to be parked
                 start = project.date
-                # duration is int() to avoid milliseconds 
+                # duration is int() to avoid milliseconds
                 duration = int(scipy.stats.norm.rvs(activity.duration_loc, activity.duration_scale, 1)[0])
                 # duration is rouded at project.timestep
                 duration -= duration % project.timestep
@@ -576,7 +581,7 @@ def create_vehicles_from_stat(current_id, itinerary, project):
                 location = itinerary.locations[location_index]
                 location_index += 1
                 parked = False
-                
+
                 # Append the activity
                 vehicle.activities.append(Parked(start, end, unique_location_category(location, project)))
 
@@ -585,7 +590,7 @@ def create_vehicles_from_stat(current_id, itinerary, project):
                 start = vehicle.activities[-1].end
                 end = project.date + datetime.timedelta(days=1)
                 location = itinerary.locations[location_index]
-                
+
                 # Append the activity
                 vehicle.activities.append(Parked(start, end, unique_location_category(location, project)))
 
@@ -598,7 +603,7 @@ def create_vehicles_from_stat(current_id, itinerary, project):
                 location = itinerary.locations[location_index]
                 location_index += 1
                 parked = False
-                
+
                 # Append the activity
                 vehicle.activities.append(Parked(start, end, unique_location_category(location, project)))
 
@@ -618,15 +623,15 @@ def create_vehicles_from_stat(current_id, itinerary, project):
                 # Some activity took too much time
                 try_again = True
                 break
-        
+
         if not try_again:
             not_completed = False
 
     return vehicle
 
 
-def new_project_using_stats(old_project, new_number_of_vehicle, only_worker=False, 
-                            min_vehicles_per_bin=False, remove_old_project=False, 
+def new_project_using_stats(old_project, new_number_of_vehicle, only_worker=False,
+                            min_vehicles_per_bin=False, remove_old_project=False,
                             advanced_filtering_func=False, creating_vehicle_func=create_vehicles_from_stat):
     """Creates a new project from statistical itineraries of an existing project.
     Note: In the default version, itinerary should be able to cycle day after day, see
@@ -637,7 +642,7 @@ def new_project_using_stats(old_project, new_number_of_vehicle, only_worker=Fals
         new_number_of_vehicle (Integer): number of vehicles to create from the statistics
         only_worker (Boolean): remove non worker from the pool
         min_vehicles_per_bin (Integer): remove itineraries with too few vehicle representing it
-        remove_old_project (Boolean): remove the old project to free the memory before creating 
+        remove_old_project (Boolean): remove the old project to free the memory before creating
             the new project.
         advanced_filtering_func (Function): customizable filtering function
 
@@ -664,7 +669,7 @@ def new_project_using_stats(old_project, new_number_of_vehicle, only_worker=Fals
 
     if advanced_filtering_func:
         frame = advanced_filtering_func(frame)
-    
+
     # For each itinerary of the frame recreate
     current_id = 0
     total_number_of_vehicle = frame.nb_of_vehicles.sum()
@@ -692,7 +697,7 @@ def new_project_using_stats(old_project, new_number_of_vehicle, only_worker=Fals
     return project
 
 
-def plot_vehicle_itinerary(vehicles, title='No title'):
+def plot_vehicle_itinerary(vehicles, title=''):
     """Plot the itinerary of a vehicle through out the day
 
     Args:
@@ -714,10 +719,3 @@ def plot_vehicle_itinerary(vehicles, title='No title'):
         plt.plot(x, y, label='vehicle id ' + str(vehicle.id), linewidth=2.0, alpha=0.8)
     plt.legend(loc=0)
     plt.title(title)
-
-
-
-
-
-
-

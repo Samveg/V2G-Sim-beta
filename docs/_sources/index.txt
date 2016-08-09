@@ -29,6 +29,7 @@ Contents:
 	charging.rst
 	driving.rst
 	result.rst
+	post_simulation.rst
 	:maxdepth: 3
 
 .. Indices and tables

@@ -10,7 +10,7 @@ sns.set_style("whitegrid")
 sns.despine()
 
 project = v2gsim.model.Project()
-project = v2gsim.itinerary.from_excel(project, '../data/NHTS/California.xlsx')
+project = v2gsim.itinerary.from_excel(project, '../data/NHTS/Tennessee.xlsx')
 
 # Putting aside vehicle that does not cycle in one day
 project.vehicles = v2gsim.itinerary.get_cycling_itineraries(project)

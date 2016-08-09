@@ -89,6 +89,7 @@
 <li class="toctree-l1"><a class="reference internal" href="charging.html">charging package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="driving.html">driving package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="result.html">result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="post_simulation.html">Post simulation package</a></li>
 </ul>
 
             
@@ -133,11 +134,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-model">
-<span id="model"></span><h1>model<a class="headerlink" href="#module-model" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-v2gsim.model">
+<span id="model"></span><h1>model<a class="headerlink" href="#module-v2gsim.model" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
-<dt id="model.Activity">
-<em class="property">class </em><code class="descclassname">model.</code><code class="descname">Activity</code><span class="sig-paren">(</span><em>start</em>, <em>end</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Activity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Activity" title="Permalink to this definition">¶</a></dt>
+<dt id="v2gsim.model.Activity">
+<em class="property">class </em><code class="descclassname">v2gsim.model.</code><code class="descname">Activity</code><span class="sig-paren">(</span><em>start</em>, <em>end</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/model.html#Activity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.model.Activity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Activity is an abstract class that is implemented in Driving and Parked.
 Data is indexed with the project timestep.</p>
@@ -148,7 +149,6 @@ Data is indexed with the project timestep.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>start</strong> (<em>float</em>) &#8211; start time of the activity in hours [h]</li>
 <li><strong>end</strong> (<em>float</em>) &#8211; end time of the activity in hours [h]</li>
-<li><strong>power_demand</strong> (<em>list</em>) &#8211; he power consumption during the activity [W]</li>
 </ul>
 </td>
 </tr>
@@ -157,8 +157,8 @@ Data is indexed with the project timestep.</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="model.BasicCarModel">
-<em class="property">class </em><code class="descclassname">model.</code><code class="descname">BasicCarModel</code><span class="sig-paren">(</span><em>name</em>, <em>driving=&lt;function consumption&gt;</em>, <em>maker=None</em>, <em>year=None</em>, <em>UDDS=145.83</em>, <em>HWFET=163.69</em>, <em>US06=223.62</em>, <em>Delhi=138.3</em>, <em>maximum_SOC=0.95</em>, <em>decay=0.95</em>, <em>battery_capacity=23832</em>, <em>battery_efficiency_charging=1.0</em>, <em>battery_efficiency_discharging=1.0</em>, <em>maximum_power=6600</em>, <em>minimum_power=-6600</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#BasicCarModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.BasicCarModel" title="Permalink to this definition">¶</a></dt>
+<dt id="v2gsim.model.BasicCarModel">
+<em class="property">class </em><code class="descclassname">v2gsim.model.</code><code class="descname">BasicCarModel</code><span class="sig-paren">(</span><em>name</em>, <em>driving=&lt;function consumption&gt;</em>, <em>maker=None</em>, <em>year=None</em>, <em>UDDS=145.83</em>, <em>HWFET=163.69</em>, <em>US06=223.62</em>, <em>Delhi=138.3</em>, <em>maximum_SOC=0.95</em>, <em>decay=0.95</em>, <em>battery_capacity=23832</em>, <em>battery_efficiency_charging=1.0</em>, <em>battery_efficiency_discharging=1.0</em>, <em>maximum_power=6600</em>, <em>minimum_power=-6600</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/model.html#BasicCarModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.model.BasicCarModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>BasicCarModel describes a very basic car model using deterministic
 consumption for typical drivecycles. Equivalent to assigning consumption
@@ -193,8 +193,8 @@ profile is not linear</li>
 </dd></dl>
 
 <dl class="class">
-<dt id="model.ChargingStation">
-<em class="property">class </em><code class="descclassname">model.</code><code class="descname">ChargingStation</code><span class="sig-paren">(</span><em>charging=&lt;function consumption&gt;</em>, <em>maximum_power=1440</em>, <em>minimum_power=-1440</em>, <em>v2g=False</em>, <em>name='charger'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#ChargingStation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.ChargingStation" title="Permalink to this definition">¶</a></dt>
+<dt id="v2gsim.model.ChargingStation">
+<em class="property">class </em><code class="descclassname">v2gsim.model.</code><code class="descname">ChargingStation</code><span class="sig-paren">(</span><em>charging=&lt;function consumption&gt;</em>, <em>maximum_power=1440</em>, <em>minimum_power=-1440</em>, <em>post_simulation=False</em>, <em>name='charger'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/model.html#ChargingStation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.model.ChargingStation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Charging station represents a type of infrastructure</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -205,7 +205,7 @@ profile is not linear</li>
 <li><strong>name</strong> (<em>string</em>) &#8211; name associated with the infrastructure</li>
 <li><strong>charging</strong> (<em>func</em>) &#8211; function to control
 the charging behavior</li>
-<li><strong>v2g</strong> (<em>boolean</em>) &#8211; True to allow potential flow from vehicle to the grid</li>
+<li><strong>post_simulation</strong> (<em>boolean</em>) &#8211; True station can be subject to post processing</li>
 <li><strong>maximum_power</strong> (<em>float</em>) &#8211; maximum rate at which a vehicle can charge</li>
 <li><strong>minimum_power</strong> (<em>float</em>) &#8211; minimum rate at which a vehicle can charge</li>
 </ul>
@@ -216,9 +216,9 @@ the charging behavior</li>
 </dd></dl>
 
 <dl class="class">
-<dt id="model.Driving">
-<em class="property">class </em><code class="descclassname">model.</code><code class="descname">Driving</code><span class="sig-paren">(</span><em>start</em>, <em>end</em>, <em>distance</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Driving"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Driving" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#model.Activity" title="model.Activity"><code class="xref py py-class docutils literal"><span class="pre">model.Activity</span></code></a></p>
+<dt id="v2gsim.model.Driving">
+<em class="property">class </em><code class="descclassname">v2gsim.model.</code><code class="descname">Driving</code><span class="sig-paren">(</span><em>start</em>, <em>end</em>, <em>distance</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/model.html#Driving"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.model.Driving" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#v2gsim.model.Activity" title="v2gsim.model.Activity"><code class="xref py py-class docutils literal"><span class="pre">v2gsim.model.Activity</span></code></a></p>
 <p>Driving represents a drivecycle, it inherits from Activity.
 Note that units differ from the SI units since distance is in [km]
 and speed in [km/h]. Data is indexed with at project timestep rate.</p>
@@ -238,8 +238,8 @@ and speed in [km/h]. Data is indexed with at project timestep rate.</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="model.ItineraryBin">
-<em class="property">class </em><code class="descclassname">model.</code><code class="descname">ItineraryBin</code><span class="sig-paren">(</span><em>vehicles</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#ItineraryBin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.ItineraryBin" title="Permalink to this definition">¶</a></dt>
+<dt id="v2gsim.model.ItineraryBin">
+<em class="property">class </em><code class="descclassname">v2gsim.model.</code><code class="descname">ItineraryBin</code><span class="sig-paren">(</span><em>vehicles</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/model.html#ItineraryBin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.model.ItineraryBin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Hold statistics for specific itineraries</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -259,8 +259,8 @@ duration, distance, ...)</li>
 </dd></dl>
 
 <dl class="class">
-<dt id="model.Location">
-<em class="property">class </em><code class="descclassname">model.</code><code class="descname">Location</code><span class="sig-paren">(</span><em>category</em>, <em>name</em>, <em>position=(0</em>, <em>0)</em>, <em>assign_charging_station=&lt;function randomly_assign&gt;</em>, <em>result_function=&lt;function save_power_demand_at_location&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Location"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Location" title="Permalink to this definition">¶</a></dt>
+<dt id="v2gsim.model.Location">
+<em class="property">class </em><code class="descclassname">v2gsim.model.</code><code class="descname">Location</code><span class="sig-paren">(</span><em>category</em>, <em>name</em>, <em>position=(0</em>, <em>0)</em>, <em>assign_charging_station=&lt;function randomly_assign&gt;</em>, <em>result_function=&lt;function save_location_state&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/model.html#Location"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.model.Location" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Location physical place or a category of place.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -287,9 +287,9 @@ charging station to an incoming vehicle</li>
 </dd></dl>
 
 <dl class="class">
-<dt id="model.Parked">
-<em class="property">class </em><code class="descclassname">model.</code><code class="descname">Parked</code><span class="sig-paren">(</span><em>start</em>, <em>end</em>, <em>location</em>, <em>plugged_in=False</em>, <em>charging_station=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Parked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Parked" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#model.Activity" title="model.Activity"><code class="xref py py-class docutils literal"><span class="pre">model.Activity</span></code></a></p>
+<dt id="v2gsim.model.Parked">
+<em class="property">class </em><code class="descclassname">v2gsim.model.</code><code class="descname">Parked</code><span class="sig-paren">(</span><em>start</em>, <em>end</em>, <em>location</em>, <em>charging_station=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/model.html#Parked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.model.Parked" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#v2gsim.model.Activity" title="v2gsim.model.Activity"><code class="xref py py-class docutils literal"><span class="pre">v2gsim.model.Activity</span></code></a></p>
 <p>Parked activity inherits from Activity. It represents a car parked at
 a location.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -297,11 +297,9 @@ a location.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>location</strong> (<a class="reference internal" href="#model.Location" title="model.Location"><em>Location</em></a>) &#8211; (required) location object at which the vehicle
+<li><strong>location</strong> (<a class="reference internal" href="#v2gsim.model.Location" title="v2gsim.model.Location"><em>Location</em></a>) &#8211; (required) location object at which the vehicle
 is parked</li>
-<li><strong>plugged_in</strong> (<em>boolean</em>) &#8211; True if the vehicle is plugged to a charging
-infrastructure</li>
-<li><strong>charging_station</strong> (<a class="reference internal" href="#model.ChargingStation" title="model.ChargingStation"><em>ChargingStation</em></a>) &#8211; charging station at which a
+<li><strong>charging_station</strong> (<a class="reference internal" href="#v2gsim.model.ChargingStation" title="v2gsim.model.ChargingStation"><em>ChargingStation</em></a>) &#8211; charging station at which a
 vehicle is plugged</li>
 </ul>
 </td>
@@ -311,8 +309,8 @@ vehicle is plugged</li>
 </dd></dl>
 
 <dl class="class">
-<dt id="model.Project">
-<em class="property">class </em><code class="descclassname">model.</code><code class="descname">Project</code><span class="sig-paren">(</span><em>description='no description'</em>, <em>timestep=60</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Project" title="Permalink to this definition">¶</a></dt>
+<dt id="v2gsim.model.Project">
+<em class="property">class </em><code class="descclassname">v2gsim.model.</code><code class="descname">Project</code><span class="sig-paren">(</span><em>description='no description'</em>, <em>timestep=60</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/model.html#Project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.model.Project" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>V2G-Sim project holder. It contains all the vehicles, locations,
 car models and charging stations used in the project. It also includes
@@ -338,14 +336,20 @@ itinerary combinaisons (number of vehicles, ...)</li>
 </tbody>
 </table>
 <dl class="method">
-<dt id="model.Project.check_integrity">
-<code class="descname">check_integrity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Project.check_integrity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Project.check_integrity" title="Permalink to this definition">¶</a></dt>
+<dt id="v2gsim.model.Project.check_integrity">
+<code class="descname">check_integrity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/model.html#Project.check_integrity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.model.Project.check_integrity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Launch tests on the project</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="model.Project.load">
-<code class="descname">load</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Project.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Project.load" title="Permalink to this definition">¶</a></dt>
+<dt id="v2gsim.model.Project.copy">
+<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/model.html#Project.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.model.Project.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deep copy the project and return the copy</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="v2gsim.model.Project.load">
+<code class="descname">load</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/model.html#Project.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.model.Project.load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a project</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -358,8 +362,8 @@ itinerary combinaisons (number of vehicles, ...)</li>
 </dd></dl>
 
 <dl class="method">
-<dt id="model.Project.save">
-<code class="descname">save</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Project.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Project.save" title="Permalink to this definition">¶</a></dt>
+<dt id="v2gsim.model.Project.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/model.html#Project.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.model.Project.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the project</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -374,8 +378,8 @@ itinerary combinaisons (number of vehicles, ...)</li>
 </dd></dl>
 
 <dl class="class">
-<dt id="model.Vehicle">
-<em class="property">class </em><code class="descclassname">model.</code><code class="descname">Vehicle</code><span class="sig-paren">(</span><em>index</em>, <em>car_model</em>, <em>initial_SOC=0.95</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Vehicle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Vehicle" title="Permalink to this definition">¶</a></dt>
+<dt id="v2gsim.model.Vehicle">
+<em class="property">class </em><code class="descclassname">v2gsim.model.</code><code class="descname">Vehicle</code><span class="sig-paren">(</span><em>index</em>, <em>car_model</em>, <em>initial_SOC=0.95</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/model.html#Vehicle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.model.Vehicle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Vehicle represents a single car with a specific model and set of
 activities throughout the day. Vehicles keep track of their SOC as well
@@ -395,15 +399,17 @@ as their stranding log.</p>
 gap of time, the end of an activity must correspond with the start
 of the next one</li>
 <li><strong>stranding_log</strong> (<em>list</em>) &#8211; time at which the vehicle has stranded [hour]</li>
-<li><strong>car_model</strong> (<a class="reference internal" href="#model.BasicCarModel" title="model.BasicCarModel"><em>BasicCarModel</em></a>) &#8211; car model associated to the vehicle</li>
+<li><strong>car_model</strong> (<a class="reference internal" href="#v2gsim.model.BasicCarModel" title="v2gsim.model.BasicCarModel"><em>BasicCarModel</em></a>) &#8211; car model associated to the vehicle</li>
+<li><strong>result_function</strong> (<em>func</em>) &#8211; function describing the way results are saved</li>
+<li><strong>result</strong> (<em>any</em>) &#8211; result structure returned by the result function</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
-<dt id="model.Vehicle.check_activities">
-<code class="descname">check_activities</code><span class="sig-paren">(</span><em>start_date</em>, <em>end_date</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Vehicle.check_activities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Vehicle.check_activities" title="Permalink to this definition">¶</a></dt>
+<dt id="v2gsim.model.Vehicle.check_activities">
+<code class="descname">check_activities</code><span class="sig-paren">(</span><em>start_date</em>, <em>end_date</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/model.html#Vehicle.check_activities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.model.Vehicle.check_activities" title="Permalink to this definition">¶</a></dt>
 <dd><p>Verify if every activity start at the end of the previous activity</p>
 </dd></dl>
 

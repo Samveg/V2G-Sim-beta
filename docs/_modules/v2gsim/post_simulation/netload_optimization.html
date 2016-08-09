@@ -1,0 +1,734 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>v2gsim.post_simulation.netload_optimization &mdash; V2G-Sim 0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="V2G-Sim 0.1 documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> V2G-Sim
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../v2gconcept.html">what is vehicle to grid?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../core.html">core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../model.html">model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../itinerary.html">itinerary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../charging.html">charging package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../driving.html">driving package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../result.html">result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../post_simulation.html">post simulation package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../index.html">V2G-Sim</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      
+    <li>v2gsim.post_simulation.netload_optimization</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for v2gsim.post_simulation.netload_optimization</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">pyomo.opt</span> <span class="kn">import</span> <span class="n">SolverFactory</span>
+<span class="kn">from</span> <span class="nn">pyomo.environ</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">pandas</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="kn">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">v2gsim.model</span>
+<span class="kn">import</span> <span class="nn">v2gsim.result</span>
+
+
+<div class="viewcode-block" id="CentralOptimization"><a class="viewcode-back" href="../../../post_simulation.html#v2gsim.post_simulation.netload_optimization.CentralOptimization">[docs]</a><span class="k">class</span> <span class="nc">CentralOptimization</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates an object to perform optimization.</span>
+<span class="sd">    The object contains some general parameters for the optimization</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">optimization_timestep</span><span class="p">,</span> <span class="n">date_from</span><span class="p">,</span>
+                 <span class="n">date_to</span><span class="p">,</span> <span class="n">minimum_SOC</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">maximum_SOC</span><span class="o">=</span><span class="mf">0.95</span><span class="p">):</span>
+        <span class="c1"># All the variables are at the project timestep except for the model variables</span>
+        <span class="c1"># optimization_timestep is in minutes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimization_timestep</span> <span class="o">=</span> <span class="n">optimization_timestep</span>
+        <span class="c1"># Set minimum_SOC</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minimum_SOC</span> <span class="o">=</span> <span class="n">minimum_SOC</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maximum_SOC</span> <span class="o">=</span> <span class="n">maximum_SOC</span>
+        <span class="c1"># Set date boundaries, should be same as the one used during the simulation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">date_from</span> <span class="o">=</span> <span class="n">date_from</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">date_to</span> <span class="o">=</span> <span class="n">date_to</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SOC_index_from</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">date_from</span> <span class="o">-</span> <span class="n">project</span><span class="o">.</span><span class="n">date</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="n">project</span><span class="o">.</span><span class="n">timestep</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SOC_index_to</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">date_to</span> <span class="o">-</span> <span class="n">project</span><span class="o">.</span><span class="n">date</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="n">project</span><span class="o">.</span><span class="n">timestep</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CentralOptimization.solve"><a class="viewcode-back" href="../../../post_simulation.html#v2gsim.post_simulation.netload_optimization.CentralOptimization.solve">[docs]</a>    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">net_load</span><span class="p">,</span> <span class="n">real_number_of_vehicle</span><span class="p">,</span> <span class="n">SOC_margin</span><span class="o">=</span><span class="mf">0.02</span><span class="p">,</span>
+              <span class="n">SOC_offset</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">peak_shaving</span><span class="o">=</span><span class="s1">&#39;peak_shaving&#39;</span><span class="p">,</span> <span class="n">penalization</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Launch the optimization and the post_processing fucntion. Results</span>
+<span class="sd">        and assumptions are appended to a data frame.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project (Project): project</span>
+<span class="sd">            net_load (pandas.DataFrame): data frame with date index and a &#39;net_load&#39; column in [W]</span>
+<span class="sd">            real_number_of_vehicle (int): number of vehicle expected on the net load,</span>
+<span class="sd">                False if number is the same as in project</span>
+<span class="sd">            SOC_margin (float): SOC margin that can be used by the optimization at the end of the day [0, 1]</span>
+<span class="sd">            SOC_offset (float): energy offset [0, 1]</span>
+<span class="sd">            peak_shaving (bolean): if True ramping constraints are not taking in account within the objective else it is.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Reset model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vehicles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pmax</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pmin</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">emin</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">emax</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">efinal</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># Set the variables for the optimization</span>
+        <span class="n">new_net_load</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialize_net_load</span><span class="p">(</span><span class="n">net_load</span><span class="p">,</span> <span class="n">real_number_of_vehicle</span><span class="p">,</span> <span class="n">project</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize_model</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">new_net_load</span><span class="p">,</span> <span class="n">SOC_margin</span><span class="p">,</span> <span class="n">SOC_offset</span><span class="p">)</span>
+
+        <span class="c1"># Run the optimization</span>
+        <span class="n">timer</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">opti_model</span><span class="p">,</span> <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">times</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vehicles</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmax</span><span class="p">,</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">pmin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emax</span><span class="p">,</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">efinal</span><span class="p">,</span> <span class="n">peak_shaving</span><span class="p">,</span> <span class="n">penalization</span><span class="p">)</span>
+        <span class="n">timer2</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;The optimization duration was &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">((</span><span class="n">timer2</span> <span class="o">-</span> <span class="n">timer</span><span class="p">)</span> <span class="o">/</span> <span class="mi">60</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; minutes&#39;</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Post process results</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_process</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">net_load</span><span class="p">,</span> <span class="n">opti_model</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">plot</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CentralOptimization.initialize_net_load"><a class="viewcode-back" href="../../../post_simulation.html#v2gsim.post_simulation.netload_optimization.CentralOptimization.initialize_net_load">[docs]</a>    <span class="k">def</span> <span class="nf">initialize_net_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">net_load</span><span class="p">,</span> <span class="n">real_number_of_vehicle</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Make sure that the net load has the right size and scale the net</span>
+<span class="sd">        load for the optimization scale.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            net_load (pandas.DataFrame): data frame with date index and a &#39;net_load&#39; column in [W]</span>
+<span class="sd">            net_load_pmax (int): maximum power on the scaled net load</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Make sure we are not touching the initial data</span>
+        <span class="n">new_net_load</span> <span class="o">=</span> <span class="n">net_load</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># Resample the net load</span>
+        <span class="n">new_net_load</span> <span class="o">=</span> <span class="n">new_net_load</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimization_timestep</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;first&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Check against the actual lenght it should have</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">new_net_load</span><span class="p">)</span> <span class="o">-</span>
+                <span class="nb">int</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">date_to</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">date_from</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="mi">60</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization_timestep</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">diff</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># We should trim the net load with diff elements (normaly 1 because of slicing inclusion)</span>
+            <span class="n">new_net_load</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">new_net_load</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="n">diff</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">diff</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;The net load does not contain enough data points&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">real_number_of_vehicle</span><span class="p">:</span>
+            <span class="c1"># Set scaling factor</span>
+            <span class="n">scaling_factor</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">vehicles</span><span class="p">)</span> <span class="o">/</span> <span class="n">real_number_of_vehicle</span>
+
+            <span class="c1"># Scale the temp net load</span>
+            <span class="n">new_net_load</span><span class="p">[</span><span class="s1">&#39;netload&#39;</span><span class="p">]</span> <span class="o">*=</span> <span class="n">scaling_factor</span>
+
+        <span class="k">return</span> <span class="n">new_net_load</span>
+</div>
+<div class="viewcode-block" id="CentralOptimization.check_energy_constraints_feasible"><a class="viewcode-back" href="../../../post_simulation.html#v2gsim.post_simulation.netload_optimization.CentralOptimization.check_energy_constraints_feasible">[docs]</a>    <span class="k">def</span> <span class="nf">check_energy_constraints_feasible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vehicle</span><span class="p">,</span> <span class="n">SOC_init</span><span class="p">,</span> <span class="n">SOC_final</span><span class="p">,</span> <span class="n">SOC_offset</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Make sure that SOC final can be reached from SOC init under uncontrolled</span>
+<span class="sd">        charging (best case scenario). Print details when conditions are not met.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            vehicle (Vehicle): vehicle</span>
+<span class="sd">            SOC_init (float): state of charge at the begining of the optimization [0, 1]</span>
+<span class="sd">            SOC_final (float): state of charge at the end of the optimization [0, 1]</span>
+<span class="sd">            SOC_offset (float): energy offset [0, 1]</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">            (Boolean)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">print_status</span><span class="p">(</span><span class="n">SOC_final</span><span class="p">,</span> <span class="n">SOC_init</span><span class="p">,</span> <span class="n">diff</span><span class="p">):</span>
+                <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Set battery gain: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">((</span><span class="n">SOC_final</span> <span class="o">-</span> <span class="n">SOC_init</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;%&#39;</span><span class="p">)</span>
+                <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Simulation battery gain: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">diff</span> <span class="o">*</span> <span class="mi">100</span><span class="p">))</span>
+
+        <span class="c1"># Check if below minimum SOC at any time</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">SOC_index_from</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">SOC_index_to</span><span class="p">])</span> <span class="o">-</span> <span class="n">SOC_offset</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimum_SOC</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Vehicle: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">id</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; has a minimum SOC of &#39;</span> <span class="o">+</span>
+                      <span class="nb">str</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">SOC_index_from</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">SOC_index_to</span><span class="p">])</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;%&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="c1"># Check SOC difference between date_from and date_to ?</span>
+        <span class="c1"># Diff represent the minimum loss or the maximum gain</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">SOC_index_to</span><span class="p">]</span> <span class="o">-</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">SOC_index_from</span><span class="p">]</span>
+        <span class="c1"># Simulation show a battery gain</span>
+        <span class="k">if</span> <span class="n">diff</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Gain should be greater than the one we set up</span>
+            <span class="k">if</span> <span class="n">SOC_final</span> <span class="o">-</span> <span class="n">SOC_init</span> <span class="o">&lt;</span> <span class="n">diff</span><span class="p">:</span>
+                <span class="c1"># Good to go</span>
+                <span class="k">return</span> <span class="bp">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Set final SOC to be under diff</span>
+                <span class="n">print_status</span><span class="p">(</span><span class="n">SOC_final</span><span class="p">,</span> <span class="n">SOC_init</span><span class="p">,</span> <span class="n">diff</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">False</span>
+        <span class="c1"># Simulation show battery loss</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># energy balance should be negative</span>
+            <span class="k">if</span> <span class="n">SOC_final</span> <span class="o">-</span> <span class="n">SOC_init</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">print_status</span><span class="p">(</span><span class="n">SOC_final</span><span class="p">,</span> <span class="n">SOC_init</span><span class="p">,</span> <span class="n">diff</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">False</span>
+            <span class="c1"># Loss should be smaller than the one we set (less negative)</span>
+            <span class="k">if</span> <span class="n">diff</span> <span class="o">&lt;</span> <span class="n">SOC_init</span> <span class="o">-</span> <span class="n">SOC_final</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Set final SOC to include at least the lost</span>
+                <span class="n">print_status</span><span class="p">(</span><span class="n">SOC_final</span><span class="p">,</span> <span class="n">SOC_init</span><span class="p">,</span> <span class="n">diff</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="CentralOptimization.initialize_time_index"><a class="viewcode-back" href="../../../post_simulation.html#v2gsim.post_simulation.netload_optimization.CentralOptimization.initialize_time_index">[docs]</a>    <span class="k">def</span> <span class="nf">initialize_time_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">net_load</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Replace date index by time ids</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            net_load (pandas.DataFrame): data frame with date index and a &#39;net_load&#39; column in [W]</span>
+
+<span class="sd">        Retrun:</span>
+<span class="sd">            net_load as a dictionary with time ids, time ids</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">temp_index</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">net_load</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;index&#39;</span><span class="p">])</span>
+        <span class="c1"># Set temp_index</span>
+        <span class="n">temp_net_load</span> <span class="o">=</span> <span class="n">net_load</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">temp_net_load</span> <span class="o">=</span> <span class="n">temp_net_load</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">temp_index</span><span class="p">[</span><span class="s1">&#39;index&#39;</span><span class="p">])</span>
+        <span class="c1"># Return a dictionary</span>
+        <span class="k">return</span> <span class="n">temp_net_load</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()[</span><span class="s1">&#39;netload&#39;</span><span class="p">],</span> <span class="n">temp_index</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="CentralOptimization.get_initial_SOC"><a class="viewcode-back" href="../../../post_simulation.html#v2gsim.post_simulation.netload_optimization.CentralOptimization.get_initial_SOC">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial_SOC</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vehicle</span><span class="p">,</span> <span class="n">SOC_offset</span><span class="p">,</span> <span class="n">SOC_init</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the initial SOC with which people start the optimization</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">SOC_init</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">SOC_init</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">SOC_index_from</span><span class="p">]</span> <span class="o">-</span> <span class="n">SOC_offset</span>
+</div>
+<div class="viewcode-block" id="CentralOptimization.get_final_SOC"><a class="viewcode-back" href="../../../post_simulation.html#v2gsim.post_simulation.netload_optimization.CentralOptimization.get_final_SOC">[docs]</a>    <span class="k">def</span> <span class="nf">get_final_SOC</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vehicle</span><span class="p">,</span> <span class="n">SOC_margin</span><span class="p">,</span> <span class="n">SOC_offset</span><span class="p">,</span> <span class="n">SOC_end</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get final SOC that vehicle must reached at the end of the optimization</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">SOC_end</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">SOC_end</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">SOC_index_to</span><span class="p">]</span> <span class="o">-</span> <span class="n">SOC_offset</span> <span class="o">-</span> <span class="n">SOC_margin</span>
+</div>
+<div class="viewcode-block" id="CentralOptimization.initialize_model"><a class="viewcode-back" href="../../../post_simulation.html#v2gsim.post_simulation.netload_optimization.CentralOptimization.initialize_model">[docs]</a>    <span class="k">def</span> <span class="nf">initialize_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">net_load</span><span class="p">,</span> <span class="n">SOC_margin</span><span class="p">,</span> <span class="n">SOC_offset</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Select the vehicles that were plugged at controlled chargers and create</span>
+<span class="sd">        the optimization variables (see inputs of optimization)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project (Project): project</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">            times, vehicles, d, pmax, pmin, emin, emax, efinal</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Create a dict with the net load and get time index in a data frame</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialize_time_index</span><span class="p">(</span><span class="n">net_load</span><span class="p">)</span>
+        <span class="n">vehicle_to_optimize</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">unfeasible_vehicle</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">vehicle</span> <span class="ow">in</span> <span class="n">project</span><span class="o">.</span><span class="n">vehicles</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="c1"># Get SOC init and SOC end</span>
+                <span class="n">SOC_init</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_initial_SOC</span><span class="p">(</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">SOC_offset</span><span class="p">)</span>
+                <span class="n">SOC_final</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_final_SOC</span><span class="p">(</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">SOC_margin</span><span class="p">,</span> <span class="n">SOC_offset</span><span class="p">)</span>
+
+                <span class="c1"># Find out if vehicle itinerary is feasible</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_energy_constraints_feasible</span><span class="p">(</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">SOC_init</span><span class="p">,</span> <span class="n">SOC_final</span><span class="p">,</span> <span class="n">SOC_offset</span><span class="p">):</span>
+                    <span class="c1"># Reset vehicle result to None</span>
+                    <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="bp">None</span>
+                    <span class="n">unfeasible_vehicle</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">continue</span>
+
+                <span class="c1"># Add vehicle id to a list</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">vehicles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+                <span class="n">vehicle_to_optimize</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                <span class="c1"># Resample vehicle result</span>
+                <span class="n">temp_vehicle_result</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimization_timestep</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;T&#39;</span><span class="p">,</span>
+                                                              <span class="n">how</span><span class="o">=</span><span class="s1">&#39;first&#39;</span><span class="p">)</span>
+
+                <span class="c1"># Set time_vehicle_index</span>
+                <span class="n">temp_vehicle_result</span> <span class="o">=</span> <span class="n">temp_vehicle_result</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                    <span class="n">index</span><span class="o">=</span><span class="p">[(</span><span class="n">time</span><span class="p">,</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">id</span><span class="p">)</span> <span class="k">for</span> <span class="n">time</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">times</span><span class="p">])</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+
+                <span class="c1"># Push pmax and pmin with vehicle and time key</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pmin</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">temp_vehicle_result</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()[</span><span class="s1">&#39;p_min&#39;</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pmax</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">temp_vehicle_result</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()[</span><span class="s1">&#39;p_max&#39;</span><span class="p">])</span>
+
+                <span class="c1"># Push emin and emax with vehicle and time key</span>
+                <span class="c1"># Units! if project.timestep in seconds, self.timestep in minutes and battery in Wh</span>
+                <span class="c1"># Units! Wproject.timestep --&gt; Wself.timestep * (project.timestep / (60 * self.timestep))</span>
+                <span class="c1"># Units! Wtimestep --&gt; Wh * (60 / self.timestep)</span>
+                <span class="n">temp_vehicle_result</span><span class="p">[</span><span class="s1">&#39;emin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">temp_vehicle_result</span><span class="o">.</span><span class="n">energy</span> <span class="o">*</span> <span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">timestep</span> <span class="o">/</span> <span class="p">(</span><span class="mi">60</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization_timestep</span><span class="p">))</span> <span class="o">+</span>
+                                               <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minimum_SOC</span> <span class="o">-</span> <span class="n">SOC_init</span><span class="p">)</span> <span class="o">*</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">car_model</span><span class="o">.</span><span class="n">battery_capacity</span> <span class="o">*</span>
+                                               <span class="p">(</span><span class="mi">60</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization_timestep</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">emin</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">temp_vehicle_result</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()[</span><span class="s1">&#39;emin&#39;</span><span class="p">])</span>
+                <span class="n">temp_vehicle_result</span><span class="p">[</span><span class="s1">&#39;emax&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">temp_vehicle_result</span><span class="o">.</span><span class="n">energy</span> <span class="o">*</span> <span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">timestep</span> <span class="o">/</span> <span class="p">(</span><span class="mi">60</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization_timestep</span><span class="p">))</span> <span class="o">+</span> <span class="mi">10000</span> <span class="o">+</span>
+                                               <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maximum_SOC</span> <span class="o">-</span> <span class="n">SOC_init</span><span class="p">)</span> <span class="o">*</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">car_model</span><span class="o">.</span><span class="n">battery_capacity</span> <span class="o">*</span>
+                                               <span class="p">(</span><span class="mi">60</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization_timestep</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">emax</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">temp_vehicle_result</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()[</span><span class="s1">&#39;emax&#39;</span><span class="p">])</span>
+
+                <span class="c1"># Push efinal with vehicle key</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">efinal</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">vehicle</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="p">(</span><span class="n">temp_vehicle_result</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">timestep</span> <span class="o">/</span> <span class="p">(</span><span class="mi">60</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization_timestep</span><span class="p">))</span> <span class="o">+</span>
+                                                 <span class="p">(</span><span class="n">SOC_final</span> <span class="o">-</span> <span class="n">SOC_init</span><span class="p">)</span> <span class="o">*</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">car_model</span><span class="o">.</span><span class="n">battery_capacity</span> <span class="o">*</span>
+                                                 <span class="p">(</span><span class="mi">60</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization_timestep</span><span class="p">))})</span>
+
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;There is &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">vehicle_to_optimize</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; vehicle participating in the optimization (&#39;</span> <span class="o">+</span>
+              <span class="nb">str</span><span class="p">(</span><span class="n">vehicle_to_optimize</span> <span class="o">*</span> <span class="mi">100</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">vehicles</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;%)&#39;</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;There is &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">unfeasible_vehicle</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; unfeasible vehicle.&#39;</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CentralOptimization.process"><a class="viewcode-back" href="../../../post_simulation.html#v2gsim.post_simulation.netload_optimization.CentralOptimization.process">[docs]</a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">vehicles</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">pmax</span><span class="p">,</span> <span class="n">pmin</span><span class="p">,</span> <span class="n">emin</span><span class="p">,</span> <span class="n">emax</span><span class="p">,</span>
+                <span class="n">efinal</span><span class="p">,</span> <span class="n">peak_shaving</span><span class="p">,</span> <span class="n">penalization</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s2">&quot;gurobi&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The process function creates the pyomo model and solve it.</span>
+<span class="sd">        Minimize sum( net_load(t) + sum(power_demand(t, v)))**2</span>
+<span class="sd">        subject to:</span>
+<span class="sd">        pmin(t, v) &lt;= power_demand(t, v) &lt;= pmax(t, v)</span>
+<span class="sd">        emin(t, v) &lt;= sum(power_demand(t, v)) &lt;= emax(t, v)</span>
+<span class="sd">        sum(power_demand(t, v)) &gt;= efinal(v)</span>
+<span class="sd">        rampmin(t) &lt;= net_load_ramp(t) + power_demand_ramp(t, v) &lt;= rampmax(t)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            times (list): timestep list</span>
+<span class="sd">            vehicles (list): unique list of vehicle ids</span>
+<span class="sd">            d (dict): time - net load at t</span>
+<span class="sd">            pmax (dict): (time, id) - power maximum at t for v</span>
+<span class="sd">            pmin (dict): (time, id) - power minimum at t for v</span>
+<span class="sd">            emin (dict): (time, id) - energy minimum at t for v</span>
+<span class="sd">            emax (dict): (time, id) - energy maximum at t for v</span>
+<span class="sd">            efinal (dict): id - final SOC</span>
+<span class="sd">            solver (string): name of the solver to use (default is gurobi)</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">            model (ConcreteModel), result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Select gurobi solver</span>
+        <span class="k">with</span> <span class="n">SolverFactory</span><span class="p">(</span><span class="n">solver</span><span class="p">)</span> <span class="k">as</span> <span class="n">opt</span><span class="p">:</span>
+            <span class="c1"># Solver option see Gurobi website</span>
+            <span class="c1"># opt.options[&#39;Method&#39;] = 1</span>
+
+            <span class="c1"># Creation of a Concrete Model</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">ConcreteModel</span><span class="p">()</span>
+
+            <span class="c1"># ###### Set</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">Set</span><span class="p">(</span><span class="n">initialize</span><span class="o">=</span><span class="n">times</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;Time&#39;</span><span class="p">,</span> <span class="n">ordered</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="n">last_t</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">last</span><span class="p">()</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="n">Set</span><span class="p">(</span><span class="n">initialize</span><span class="o">=</span><span class="n">vehicles</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;Vehicles&#39;</span><span class="p">)</span>
+
+            <span class="c1"># ###### Parameters</span>
+            <span class="c1"># Net load</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">d</span> <span class="o">=</span> <span class="n">Param</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">initialize</span><span class="o">=</span><span class="n">d</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;Net load&#39;</span><span class="p">)</span>
+
+            <span class="c1"># Power</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">p_max</span> <span class="o">=</span> <span class="n">Param</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">v</span><span class="p">,</span> <span class="n">initialize</span><span class="o">=</span><span class="n">pmax</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;P max&#39;</span><span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">p_min</span> <span class="o">=</span> <span class="n">Param</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">v</span><span class="p">,</span> <span class="n">initialize</span><span class="o">=</span><span class="n">pmin</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;P min&#39;</span><span class="p">)</span>
+
+            <span class="c1"># Energy</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">e_min</span> <span class="o">=</span> <span class="n">Param</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">v</span><span class="p">,</span> <span class="n">initialize</span><span class="o">=</span><span class="n">emin</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;E min&#39;</span><span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">e_max</span> <span class="o">=</span> <span class="n">Param</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">v</span><span class="p">,</span> <span class="n">initialize</span><span class="o">=</span><span class="n">emax</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;E max&#39;</span><span class="p">)</span>
+
+            <span class="n">model</span><span class="o">.</span><span class="n">e_final</span> <span class="o">=</span> <span class="n">Param</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">v</span><span class="p">,</span> <span class="n">initialize</span><span class="o">=</span><span class="n">efinal</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;final energy balance&#39;</span><span class="p">)</span>
+            <span class="c1"># model.beta = Param(initialize=beta, doc=&#39;beta&#39;)</span>
+
+            <span class="c1"># ###### Variable</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">u</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">v</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">Integers</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;Power used&#39;</span><span class="p">)</span>
+
+            <span class="c1"># ###### Rules</span>
+            <span class="k">def</span> <span class="nf">maximum_power_rule</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">model</span><span class="o">.</span><span class="n">p_max</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">power_max_rule</span> <span class="o">=</span> <span class="n">Constraint</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">v</span><span class="p">,</span> <span class="n">rule</span><span class="o">=</span><span class="n">maximum_power_rule</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;P max rule&#39;</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">minimum_power_rule</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">model</span><span class="o">.</span><span class="n">p_min</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">power_min_rule</span> <span class="o">=</span> <span class="n">Constraint</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">v</span><span class="p">,</span> <span class="n">rule</span><span class="o">=</span><span class="n">minimum_power_rule</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;P min rule&#39;</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">minimum_energy_rule</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+                <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">t</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">&gt;=</span> <span class="n">model</span><span class="o">.</span><span class="n">e_min</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">minimum_energy_rule</span> <span class="o">=</span> <span class="n">Constraint</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">v</span><span class="p">,</span> <span class="n">rule</span><span class="o">=</span><span class="n">minimum_energy_rule</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;E min rule&#39;</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">maximum_energy_rule</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+                <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">t</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="n">model</span><span class="o">.</span><span class="n">e_max</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">maximum_energy_rule</span> <span class="o">=</span> <span class="n">Constraint</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">v</span><span class="p">,</span> <span class="n">rule</span><span class="o">=</span><span class="n">maximum_energy_rule</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;E max rule&#39;</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">final_energy_balance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+                <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">t</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">model</span><span class="o">.</span><span class="n">e_final</span><span class="p">[</span><span class="n">v</span><span class="p">]</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">final_energy_rule</span> <span class="o">=</span> <span class="n">Constraint</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">v</span><span class="p">,</span> <span class="n">rule</span><span class="o">=</span><span class="n">final_energy_balance</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;E final rule&#39;</span><span class="p">)</span>
+
+            <span class="c1"># Set the objective to be either peak shaving or ramp mitigation</span>
+            <span class="k">if</span> <span class="n">peak_shaving</span> <span class="o">==</span> <span class="s1">&#39;peak_shaving&#39;</span><span class="p">:</span>
+                <span class="k">def</span> <span class="nf">objective_rule</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="nb">sum</span><span class="p">([(</span><span class="n">model</span><span class="o">.</span><span class="n">d</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">([</span><span class="n">model</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">v</span><span class="p">]))</span><span class="o">**</span><span class="mi">2</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">t</span><span class="p">])</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">objective</span> <span class="o">=</span> <span class="n">Objective</span><span class="p">(</span><span class="n">rule</span><span class="o">=</span><span class="n">objective_rule</span><span class="p">,</span> <span class="n">sense</span><span class="o">=</span><span class="n">minimize</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;Define objective function&#39;</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">peak_shaving</span> <span class="o">==</span> <span class="s1">&#39;penalized_peak_shaving&#39;</span><span class="p">:</span>
+                <span class="k">def</span> <span class="nf">objective_rule</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="p">(</span><span class="nb">sum</span><span class="p">([(</span><span class="n">model</span><span class="o">.</span><span class="n">d</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">([</span><span class="n">model</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">v</span><span class="p">]))</span><span class="o">**</span><span class="mi">2</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">t</span><span class="p">])</span> <span class="o">+</span>
+                            <span class="n">penalization</span> <span class="o">*</span> <span class="nb">sum</span><span class="p">([</span><span class="nb">sum</span><span class="p">([</span><span class="n">model</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">v</span><span class="p">])</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">t</span><span class="p">]))</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">objective</span> <span class="o">=</span> <span class="n">Objective</span><span class="p">(</span><span class="n">rule</span><span class="o">=</span><span class="n">objective_rule</span><span class="p">,</span> <span class="n">sense</span><span class="o">=</span><span class="n">minimize</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;Define objective function&#39;</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">peak_shaving</span> <span class="o">==</span> <span class="s1">&#39;ramp_mitigation&#39;</span><span class="p">:</span>
+                <span class="k">def</span> <span class="nf">objective_rule</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="nb">sum</span><span class="p">([(</span><span class="n">model</span><span class="o">.</span><span class="n">d</span><span class="p">[</span><span class="n">t</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">model</span><span class="o">.</span><span class="n">d</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">([</span><span class="n">model</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">t</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="o">-</span> <span class="n">model</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">v</span><span class="p">]))</span><span class="o">**</span><span class="mi">2</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">t</span> <span class="k">if</span> <span class="n">t</span> <span class="o">!=</span> <span class="n">last_t</span><span class="p">])</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">objective</span> <span class="o">=</span> <span class="n">Objective</span><span class="p">(</span><span class="n">rule</span><span class="o">=</span><span class="n">objective_rule</span><span class="p">,</span> <span class="n">sense</span><span class="o">=</span><span class="n">minimize</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;Define objective function&#39;</span><span class="p">)</span>
+
+            <span class="n">results</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+            <span class="c1"># results.write()</span>
+
+        <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">results</span>
+</div>
+<div class="viewcode-block" id="CentralOptimization.plot_result"><a class="viewcode-back" href="../../../post_simulation.html#v2gsim.post_simulation.netload_optimization.CentralOptimization.plot_result">[docs]</a>    <span class="k">def</span> <span class="nf">plot_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a plot showing the power constraints, the energy constraints and the ramp</span>
+<span class="sd">        constraints as well as the final net load.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Set the graph style</span>
+        <span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s2">&quot;whitegrid&quot;</span><span class="p">)</span>
+        <span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">()</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+        <span class="c1"># Get the result</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;power&#39;</span><span class="p">],</span> <span class="n">data</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">u</span><span class="o">.</span><span class="n">get_values</span><span class="p">())</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="c1"># Ramp of the result</span>
+        <span class="n">mylist</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">mylist</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;power&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)))</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;ramppower&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mylist</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">result</span><span class="p">,</span> <span class="n">df</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># cum sum of the result</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;anything&#39;</span><span class="p">],</span>
+                <span class="n">data</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">u</span><span class="o">.</span><span class="n">get_values</span><span class="p">())</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">.</span><span class="n">unstack</span><span class="p">()</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;powercum&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="mi">5</span> <span class="o">/</span> <span class="mi">60</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">result</span><span class="p">,</span> <span class="n">df</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Get pmax and pmin units of power [W]</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pmax&#39;</span><span class="p">],</span> <span class="n">data</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">p_max</span><span class="o">.</span><span class="n">extract_values</span><span class="p">())</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">result</span><span class="p">,</span> <span class="n">df</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pmin&#39;</span><span class="p">],</span> <span class="n">data</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">p_min</span><span class="o">.</span><span class="n">extract_values</span><span class="p">())</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">result</span><span class="p">,</span> <span class="n">df</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Get emin and emax units of energy [Wh]</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;emax&#39;</span><span class="p">],</span> <span class="n">data</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">e_max</span><span class="o">.</span><span class="n">extract_values</span><span class="p">())</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="mi">5</span> <span class="o">/</span> <span class="mi">60</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">result</span><span class="p">,</span> <span class="n">df</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;emin&#39;</span><span class="p">],</span> <span class="n">data</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">e_min</span><span class="o">.</span><span class="n">extract_values</span><span class="p">())</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="mi">5</span> <span class="o">/</span> <span class="mi">60</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">result</span><span class="p">,</span> <span class="n">df</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Get the minimum final energy quantity</span>
+        <span class="n">e_final</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;efinal&#39;</span><span class="p">],</span> <span class="n">data</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">e_final</span><span class="o">.</span><span class="n">extract_values</span><span class="p">())</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="mi">5</span> <span class="o">/</span> <span class="mi">60</span><span class="p">)</span>
+
+        <span class="c1"># Get the actual ramp</span>
+        <span class="n">mylist</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;net_load&#39;</span><span class="p">],</span> <span class="n">data</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">d</span><span class="o">.</span><span class="n">extract_values</span><span class="p">())</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+        <span class="n">mylist</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;net_load&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)))</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;rampnet_load&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mylist</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">result</span><span class="p">,</span> <span class="n">df</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Plot power constraints</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">411</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">pmax</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;pmax&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">power</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;power&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">pmin</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;pmin&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Plot energy constraints</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">412</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">emax</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;emax&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">powercum</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;powercum&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">emin</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;emin&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">e_final</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;efinal&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Plot the result ramp</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">413</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">ramppower</span><span class="o">.</span><span class="n">values</span> <span class="o">+</span> <span class="n">result</span><span class="o">.</span><span class="n">rampnet_load</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;result ramp&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">rampnet_load</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;net_load ramp&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Plot the power demand results</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">414</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">net_load</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;net_load&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">net_load</span><span class="o">.</span><span class="n">values</span> <span class="o">+</span> <span class="n">result</span><span class="o">.</span><span class="n">power</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;net_load + vehicle&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="CentralOptimization.post_process"><a class="viewcode-back" href="../../../post_simulation.html#v2gsim.post_simulation.netload_optimization.CentralOptimization.post_process">[docs]</a>    <span class="k">def</span> <span class="nf">post_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">netload</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">plot</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Recompute SOC profiles and compute new total power demand</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project (Project): project</span>
+
+<span class="sd">        Note: Should check that &#39;vehicle before&#39; and &#39;after&#39; contain the same number of vehicles</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plot_result</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">for</span> <span class="n">vehicle</span> <span class="ow">in</span> <span class="n">project</span><span class="o">.</span><span class="n">vehicles</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
+                    <span class="n">temp</span><span class="p">[</span><span class="s1">&#39;vehicle_before&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;power_demand&#39;</span><span class="p">]</span>
+                    <span class="n">first</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">temp</span><span class="p">[</span><span class="s1">&#39;vehicle_before&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;power_demand&#39;</span><span class="p">]</span>
+
+        <span class="n">temp2</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;vehicle_after&#39;</span><span class="p">],</span> <span class="n">data</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">u</span><span class="o">.</span><span class="n">get_values</span><span class="p">())</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">date_from</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">date_to</span><span class="p">,</span>
+                              <span class="n">freq</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimization_timestep</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">)</span>
+        <span class="n">temp2</span> <span class="o">=</span> <span class="n">temp2</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">temp2</span> <span class="o">=</span> <span class="n">temp2</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">timestep</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;S&#39;</span><span class="p">)</span>
+        <span class="n">temp2</span> <span class="o">=</span> <span class="n">temp2</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;ffill&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;bfill&#39;</span><span class="p">)</span>
+
+        <span class="n">final_result</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="n">final_result</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">temp</span><span class="p">[</span><span class="s1">&#39;vehicle_before&#39;</span><span class="p">],</span> <span class="n">temp2</span><span class="p">[</span><span class="s1">&#39;vehicle_after&#39;</span><span class="p">]],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">final_result</span> <span class="o">=</span> <span class="n">final_result</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;ffill&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;bfill&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">final_result</span>
+
+</div></div>
+<div class="viewcode-block" id="save_vehicle_state_for_optimization"><a class="viewcode-back" href="../../../post_simulation.html#v2gsim.post_simulation.netload_optimization.save_vehicle_state_for_optimization">[docs]</a><span class="k">def</span> <span class="nf">save_vehicle_state_for_optimization</span><span class="p">(</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">date_from</span><span class="p">,</span>
+                                        <span class="n">date_to</span><span class="p">,</span> <span class="n">activity</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">power_demand</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                                        <span class="n">SOC</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">nb_interval</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                        <span class="n">run</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">post</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Save results for individual vehicles. Power demand is positive when charging</span>
+<span class="sd">    negative when driving. Energy consumption is positive when driving and negative</span>
+<span class="sd">    when charging. Charging station that offer after simulation processing should</span>
+<span class="sd">    have activity.charging_station.post_simulation True.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">run</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">activity_index1</span><span class="p">,</span> <span class="n">activity_index2</span><span class="p">,</span> <span class="n">location_index1</span><span class="p">,</span> <span class="n">location_index2</span><span class="p">,</span> <span class="n">save</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">_map_index</span><span class="p">(</span>
+                <span class="n">activity</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">activity</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">date_from</span><span class="p">,</span> <span class="n">date_to</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">power_demand</span><span class="p">),</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;power_demand&#39;</span><span class="p">]),</span> <span class="n">timestep</span><span class="p">)</span>
+            <span class="c1"># Time frame are matching</span>
+            <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+                <span class="c1"># If driving pmin and pmax are equal to 0 since we are not plugged</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Driving</span><span class="p">):</span>
+                    <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;p_max&#39;</span><span class="p">][</span><span class="n">location_index1</span><span class="p">:</span><span class="n">location_index2</span><span class="p">]</span> <span class="o">-=</span> <span class="p">(</span>
+                        <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">activity_index2</span> <span class="o">-</span> <span class="n">activity_index1</span><span class="p">))</span>
+                    <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;p_min&#39;</span><span class="p">][</span><span class="n">location_index1</span><span class="p">:</span><span class="n">location_index2</span><span class="p">]</span> <span class="o">-=</span> <span class="p">(</span>
+                        <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">activity_index2</span> <span class="o">-</span> <span class="n">activity_index1</span><span class="p">))</span>
+                    <span class="c1"># Energy consumed is directly the power demand (sum later)</span>
+                    <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">][</span><span class="n">location_index1</span><span class="p">:</span><span class="n">location_index2</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
+                        <span class="n">power_demand</span><span class="p">[</span><span class="n">activity_index1</span><span class="p">:</span><span class="n">activity_index2</span><span class="p">])</span>
+                    <span class="c1"># Power demand on the grid is 0 since we are driving</span>
+                    <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;power_demand&#39;</span><span class="p">][</span><span class="n">location_index1</span><span class="p">:</span><span class="n">location_index2</span><span class="p">]</span> <span class="o">-=</span> <span class="p">(</span>
+                        <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">activity_index2</span> <span class="o">-</span> <span class="n">activity_index1</span><span class="p">))</span>
+
+                <span class="c1"># If parked pmin and pmax are not necessary the same</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Parked</span><span class="p">):</span>
+                    <span class="c1"># Save the positive power demand of this specific vehicle</span>
+                    <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;power_demand&#39;</span><span class="p">][</span><span class="n">location_index1</span><span class="p">:</span><span class="n">location_index2</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
+                        <span class="n">power_demand</span><span class="p">[</span><span class="n">activity_index1</span><span class="p">:</span><span class="n">activity_index2</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="n">activity</span><span class="o">.</span><span class="n">charging_station</span><span class="o">.</span><span class="n">post_simulation</span><span class="p">:</span>
+                        <span class="c1"># Find if vehicle or infra is limiting</span>
+                        <span class="n">pmax</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">charging_station</span><span class="o">.</span><span class="n">maximum_power</span><span class="p">,</span>
+                                   <span class="n">vehicle</span><span class="o">.</span><span class="n">car_model</span><span class="o">.</span><span class="n">maximum_power</span><span class="p">)</span>
+                        <span class="n">pmin</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">charging_station</span><span class="o">.</span><span class="n">minimum_power</span><span class="p">,</span>
+                                   <span class="n">vehicle</span><span class="o">.</span><span class="n">car_model</span><span class="o">.</span><span class="n">minimum_power</span><span class="p">)</span>
+                        <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;p_max&#39;</span><span class="p">][</span><span class="n">location_index1</span><span class="p">:</span><span class="n">location_index2</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
+                            <span class="p">[</span><span class="n">pmax</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">activity_index2</span> <span class="o">-</span> <span class="n">activity_index1</span><span class="p">))</span>
+                        <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;p_min&#39;</span><span class="p">][</span><span class="n">location_index1</span><span class="p">:</span><span class="n">location_index2</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
+                            <span class="p">[</span><span class="n">pmin</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">activity_index2</span> <span class="o">-</span> <span class="n">activity_index1</span><span class="p">))</span>
+                        <span class="c1"># Energy consumed is 0 the optimization will decide</span>
+                        <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">][</span><span class="n">location_index1</span><span class="p">:</span><span class="n">location_index2</span><span class="p">]</span> <span class="o">-=</span> <span class="p">(</span>
+                            <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">activity_index2</span> <span class="o">-</span> <span class="n">activity_index1</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;p_max&#39;</span><span class="p">][</span><span class="n">location_index1</span><span class="p">:</span><span class="n">location_index2</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
+                            <span class="n">power_demand</span><span class="p">[</span><span class="n">activity_index1</span><span class="p">:</span><span class="n">activity_index2</span><span class="p">])</span>
+                        <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;p_min&#39;</span><span class="p">][</span><span class="n">location_index1</span><span class="p">:</span><span class="n">location_index2</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
+                            <span class="n">power_demand</span><span class="p">[</span><span class="n">activity_index1</span><span class="p">:</span><span class="n">activity_index2</span><span class="p">])</span>
+                        <span class="c1"># Energy is 0.0 because it&#39;s already accounted in power_demand</span>
+                        <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">][</span><span class="n">location_index1</span><span class="p">:</span><span class="n">location_index2</span><span class="p">]</span> <span class="o">-=</span> <span class="p">(</span>
+                            <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">activity_index2</span> <span class="o">-</span> <span class="n">activity_index1</span><span class="p">))</span>
+
+    <span class="k">elif</span> <span class="n">init</span><span class="p">:</span>
+        <span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span> <span class="o">=</span> <span class="p">[</span><span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">for</span> <span class="n">activity</span> <span class="ow">in</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Parked</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">activity</span><span class="o">.</span><span class="n">charging_station</span><span class="o">.</span><span class="n">post_simulation</span><span class="p">:</span>
+                    <span class="c1"># Initiate a dictionary of numpy array to hold result (faster than DataFrame)</span>
+                    <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;power_demand&#39;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">int</span><span class="p">((</span><span class="n">date_to</span> <span class="o">-</span> <span class="n">date_from</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">)),</span>
+                                      <span class="s1">&#39;p_max&#39;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">int</span><span class="p">((</span><span class="n">date_to</span> <span class="o">-</span> <span class="n">date_from</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">)),</span>
+                                      <span class="s1">&#39;p_min&#39;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">int</span><span class="p">((</span><span class="n">date_to</span> <span class="o">-</span> <span class="n">date_from</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">)),</span>
+                                      <span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">int</span><span class="p">((</span><span class="n">date_to</span> <span class="o">-</span> <span class="n">date_from</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))}</span>
+                    <span class="c1"># Leave the init function</span>
+                    <span class="k">return</span>
+    <span class="k">elif</span> <span class="n">post</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c1"># Convert location result back into pandas DataFrame (faster that way)</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">date_from</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">date_to</span><span class="p">,</span>
+                                  <span class="n">freq</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">timestep</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">)</span>
+            <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">vehicle</span><span class="o">.</span><span class="n">result</span><span class="p">)</span>
+            <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Lawrence Berkeley National Laboratory.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

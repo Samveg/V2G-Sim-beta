@@ -31,6 +31,7 @@
 
   
     <link rel="top" title="V2G-Sim 0.1 documentation" href="index.html"/>
+        <link rel="next" title="Post simulation package" href="post_simulation.html"/>
         <link rel="prev" title="driving package" href="driving.html"/> 
 
   
@@ -82,12 +83,13 @@
             
                 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="v2gconcept.html">what is vehicle to grid?</a></li>
-<li class="toctree-l1"><a class="reference internal" href="core.html">core module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="model.html">model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="itinerary.html">itinerary</a></li>
 <li class="toctree-l1"><a class="reference internal" href="charging.html">charging package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="driving.html">driving package</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="post_simulation.html">Post simulation package</a></li>
 </ul>
 
             
@@ -132,26 +134,60 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-result">
-<span id="result"></span><h1>result<a class="headerlink" href="#module-result" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-v2gsim.result">
+<span id="result"></span><h1>result<a class="headerlink" href="#module-v2gsim.result" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
-<dt id="result.save_power_demand_at_location">
-<code class="descclassname">result.</code><code class="descname">save_power_demand_at_location</code><span class="sig-paren">(</span><em>location</em>, <em>timestep</em>, <em>vehicle=None</em>, <em>activity=None</em>, <em>power_demand=None</em>, <em>nb_interval=None</em>, <em>date_from=False</em>, <em>date_to=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/result.html#save_power_demand_at_location"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#result.save_power_demand_at_location" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save local result from a parked activity during running
+<dt id="v2gsim.result.location_potential_power_demand">
+<code class="descclassname">v2gsim.result.</code><code class="descname">location_potential_power_demand</code><span class="sig-paren">(</span><em>location</em>, <em>timestep</em>, <em>date_from</em>, <em>date_to</em>, <em>vehicle=None</em>, <em>activity=None</em>, <em>power_demand=None</em>, <em>SOC=None</em>, <em>nb_interval=None</em>, <em>init=False</em>, <em>run=False</em>, <em>post=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/result.html#location_potential_power_demand"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.result.location_potential_power_demand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save local power demand for ASAP, 50percent ASAP, nominal,
+50percent ALAP, ALAP.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>location</strong> (<a class="reference internal" href="model.html#v2gsim.model.Location" title="v2gsim.model.Location"><em>Location</em></a>) &#8211; location</li>
+<li><strong>timestep</strong> (<em>int</em>) &#8211; calculation timestep</li>
+<li><strong>date_from</strong> (<em>datetime.datetime</em>) &#8211; date to start recording power demand</li>
+<li><strong>date_to</strong> (<em>datetime.datetime</em>) &#8211; date to end recording power demand</li>
+<li><strong>vehicle</strong> (<a class="reference internal" href="model.html#v2gsim.model.Vehicle" title="v2gsim.model.Vehicle"><em>Vehicle</em></a>) &#8211; vehicle</li>
+<li><strong>activity</strong> (<a class="reference internal" href="model.html#v2gsim.model.Parked" title="v2gsim.model.Parked"><em>Parked</em></a>) &#8211; parked activity</li>
+<li><strong>power_demand</strong> (<em>list</em>) &#8211; power demand from parked activity</li>
+<li><strong>SOC</strong> (<em>list</em>) &#8211; state of charge from the parked activity</li>
+<li><strong>nb_interval</strong> (<em>int</em>) &#8211; number of timestep for the parked activity</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.result.save_detailed_vehicle_state">
+<code class="descclassname">v2gsim.result.</code><code class="descname">save_detailed_vehicle_state</code><span class="sig-paren">(</span><em>vehicle</em>, <em>timestep</em>, <em>date_from</em>, <em>date_to</em>, <em>activity=None</em>, <em>power_demand=None</em>, <em>SOC=None</em>, <em>detail=None</em>, <em>nb_interval=None</em>, <em>init=False</em>, <em>run=False</em>, <em>post=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/result.html#save_detailed_vehicle_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.result.save_detailed_vehicle_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save vehicle detailed powertrain output. Only use with the detailed
+detailed power train model.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.result.save_location_state">
+<code class="descclassname">v2gsim.result.</code><code class="descname">save_location_state</code><span class="sig-paren">(</span><em>location</em>, <em>timestep</em>, <em>date_from</em>, <em>date_to</em>, <em>vehicle=None</em>, <em>activity=None</em>, <em>power_demand=None</em>, <em>SOC=None</em>, <em>nb_interval=None</em>, <em>init=False</em>, <em>run=False</em>, <em>post=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/result.html#save_location_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.result.save_location_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save local results from a parked activity during running
 time. If date_from and date_to, set a fresh pandas DataFrame at locations.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>location</strong> (<a class="reference internal" href="model.html#model.Location" title="model.Location"><em>Location</em></a>) &#8211; location</li>
+<li><strong>location</strong> (<a class="reference internal" href="model.html#v2gsim.model.Location" title="v2gsim.model.Location"><em>Location</em></a>) &#8211; location</li>
 <li><strong>timestep</strong> (<em>int</em>) &#8211; calculation timestep</li>
-<li><strong>vehicle</strong> (<a class="reference internal" href="model.html#model.Vehicle" title="model.Vehicle"><em>Vehicle</em></a>) &#8211; vehicle</li>
-<li><strong>activity</strong> (<a class="reference internal" href="model.html#model.Parked" title="model.Parked"><em>Parked</em></a>) &#8211; parked activity</li>
-<li><strong>power_demand</strong> (<em>list</em>) &#8211; power demand from parked activity</li>
-<li><strong>nb_interval</strong> (<em>int</em>) &#8211; number of timestep for the parked activity</li>
 <li><strong>date_from</strong> (<em>datetime.datetime</em>) &#8211; date to start recording power demand</li>
 <li><strong>date_to</strong> (<em>datetime.datetime</em>) &#8211; date to end recording power demand</li>
+<li><strong>vehicle</strong> (<a class="reference internal" href="model.html#v2gsim.model.Vehicle" title="v2gsim.model.Vehicle"><em>Vehicle</em></a>) &#8211; vehicle</li>
+<li><strong>activity</strong> (<a class="reference internal" href="model.html#v2gsim.model.Parked" title="v2gsim.model.Parked"><em>Parked</em></a>) &#8211; parked activity</li>
+<li><strong>power_demand</strong> (<em>list</em>) &#8211; power demand from parked activity</li>
+<li><strong>SOC</strong> (<em>list</em>) &#8211; state of charge from the parked activity</li>
+<li><strong>nb_interval</strong> (<em>int</em>) &#8211; number of timestep for the parked activity</li>
 </ul>
 </td>
 </tr>
@@ -168,6 +204,12 @@ time. If date_from and date_to, set a fresh pandas DataFrame at locations.</p>
 </div>
 </dd></dl>
 
+<dl class="function">
+<dt id="v2gsim.result.save_vehicle_state">
+<code class="descclassname">v2gsim.result.</code><code class="descname">save_vehicle_state</code><span class="sig-paren">(</span><em>vehicle</em>, <em>timestep</em>, <em>date_from</em>, <em>date_to</em>, <em>activity=None</em>, <em>power_demand=None</em>, <em>SOC=None</em>, <em>detail=None</em>, <em>nb_interval=None</em>, <em>init=False</em>, <em>run=False</em>, <em>post=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/result.html#save_vehicle_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.result.save_vehicle_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Placeholder function to save individual vehicle&#8217;s state. Do nothing.</p>
+</dd></dl>
+
 </div>
 
 
@@ -176,6 +218,8 @@ time. If date_from and date_to, set a fresh pandas DataFrame at locations.</p>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="post_simulation.html" class="btn btn-neutral float-right" title="Post simulation package" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="driving.html" class="btn btn-neutral" title="driving package" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>

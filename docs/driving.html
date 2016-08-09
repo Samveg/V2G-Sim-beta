@@ -83,15 +83,19 @@
             
                 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="v2gconcept.html">what is vehicle to grid?</a></li>
-<li class="toctree-l1"><a class="reference internal" href="core.html">core module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="model.html">model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="itinerary.html">itinerary</a></li>
 <li class="toctree-l1"><a class="reference internal" href="charging.html">charging package</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">driving package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#module-driving.basic_powertrain">driving.basic_powertrain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-v2gsim.driving.basic_powertrain">driving.basic_powertrain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-v2gsim.driving.drivecycle.generator">driving.drivecycle.generator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-v2gsim.driving.detailed.power_train">driving.detailed.power_train</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-v2gsim.driving.detailed.init_model">driving.detailed.init_model</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="result.html">result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="post_simulation.html">post simulation package</a></li>
 </ul>
 
             
@@ -138,19 +142,19 @@
             
   <div class="section" id="driving-package">
 <h1>driving package<a class="headerlink" href="#driving-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-driving.basic_powertrain">
-<span id="driving-basic-powertrain"></span><h2>driving.basic_powertrain<a class="headerlink" href="#module-driving.basic_powertrain" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-v2gsim.driving.basic_powertrain">
+<span id="driving-basic-powertrain"></span><h2>driving.basic_powertrain<a class="headerlink" href="#module-v2gsim.driving.basic_powertrain" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="driving.basic_powertrain.consumption">
-<code class="descclassname">driving.basic_powertrain.</code><code class="descname">consumption</code><span class="sig-paren">(</span><em>activity</em>, <em>vehicle</em>, <em>nb_interval</em>, <em>timestep</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/driving/basic_powertrain.html#consumption"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#driving.basic_powertrain.consumption" title="Permalink to this definition">¶</a></dt>
+<dt id="v2gsim.driving.basic_powertrain.consumption">
+<code class="descclassname">v2gsim.driving.basic_powertrain.</code><code class="descname">consumption</code><span class="sig-paren">(</span><em>activity</em>, <em>vehicle</em>, <em>nb_interval</em>, <em>timestep</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/driving/basic_powertrain.html#consumption"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.driving.basic_powertrain.consumption" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the consumption when a vehicle is driving</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>activity</strong> (<a class="reference internal" href="model.html#model.Driving" title="model.Driving"><em>Driving</em></a>) &#8211; a driving activity</li>
-<li><strong>vehicle</strong> (<a class="reference internal" href="model.html#model.Vehicle" title="model.Vehicle"><em>Vehicle</em></a>) &#8211; a Vehicle object to update with the driving
+<li><strong>activity</strong> (<a class="reference internal" href="model.html#v2gsim.model.Driving" title="v2gsim.model.Driving"><em>Driving</em></a>) &#8211; a driving activity</li>
+<li><strong>vehicle</strong> (<a class="reference internal" href="model.html#v2gsim.model.Vehicle" title="v2gsim.model.Vehicle"><em>Vehicle</em></a>) &#8211; a Vehicle object to update with the driving
 activity consumption</li>
 <li><strong>nb_interval</strong> (<em>int</em>) &#8211; number of timestep for the driving activity</li>
 <li><strong>timestep</strong> (<em>int</em>) &#8211; calculation timestep</li>
@@ -161,11 +165,83 @@ activity consumption</li>
 state of charge/
 power_demand (list): power demand/
 stranded (boolean): True if the vehicle run out of charge during the
-activity</p>
+activity
+detail (any type): optional data</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
 </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-v2gsim.driving.drivecycle.generator">
+<span id="driving-drivecycle-generator"></span><h2>driving.drivecycle.generator<a class="headerlink" href="#module-v2gsim.driving.drivecycle.generator" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="v2gsim.driving.drivecycle.generator.assign_EPA_cycle">
+<code class="descclassname">v2gsim.driving.drivecycle.generator.</code><code class="descname">assign_EPA_cycle</code><span class="sig-paren">(</span><em>project</em>, <em>const_grade=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/driving/drivecycle/generator.html#assign_EPA_cycle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.driving.drivecycle.generator.assign_EPA_cycle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create speed versus time profile based on UDDS, HWFT and US06 drive cycles.
+One of the cycle is assigned based on the mean speed of the driving activity. In order
+to fully match the distance traveled specified in the activity, the speed is then adjusted.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>project</strong> (<a class="reference internal" href="model.html#v2gsim.model.Project" title="v2gsim.model.Project"><em>Project</em></a>) &#8211; a project</li>
+<li><strong>const_grade</strong> (<em>int</em>) &#8211; default 0, grade of the terrain in radian</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-v2gsim.driving.detailed.power_train">
+<span id="driving-detailed-power-train"></span><h2>driving.detailed.power_train<a class="headerlink" href="#module-v2gsim.driving.detailed.power_train" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="v2gsim.driving.detailed.power_train.consumption">
+<code class="descclassname">v2gsim.driving.detailed.power_train.</code><code class="descname">consumption</code><span class="sig-paren">(</span><em>driving</em>, <em>vehicle</em>, <em>nb_interval</em>, <em>project_timestep</em>, <em>timestep=0.1</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/driving/detailed/power_train.html#consumption"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.driving.detailed.power_train.consumption" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the consumption of a vehicle for a driving activity.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>vehicle</strong> (<a class="reference internal" href="model.html#v2gsim.model.Vehicle" title="v2gsim.model.Vehicle"><em>Vehicle</em></a>) &#8211; a Vehicle object to update with the driving activity consumption</li>
+<li><strong>driving</strong> (<a class="reference internal" href="model.html#v2gsim.model.Driving" title="v2gsim.model.Driving"><em>Driving</em></a>) &#8211; a driving activity</li>
+<li><strong>timestep</strong> (<em>float</em>) &#8211; the timestep used for the calculus (different from the output interval)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">SOC as a list
+powerDemand as a list
+stranded a boolean</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-v2gsim.driving.detailed.init_model">
+<span id="driving-detailed-init-model"></span><h2>driving.detailed.init_model<a class="headerlink" href="#module-v2gsim.driving.detailed.init_model" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="v2gsim.driving.detailed.init_model.load_powertrain">
+<code class="descclassname">v2gsim.driving.detailed.init_model.</code><code class="descname">load_powertrain</code><span class="sig-paren">(</span><em>excelFilename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/driving/detailed/init_model.html#load_powertrain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.driving.detailed.init_model.load_powertrain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a detailed car model with parameters written in an Excel file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>excelFilename</strong> (<em>string</em>) &#8211; filename of the input file</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a detailed car model object</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">carModel</td>
 </tr>
 </tbody>
 </table>

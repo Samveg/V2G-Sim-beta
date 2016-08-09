@@ -14,7 +14,6 @@ def assign_EPA_cycle(project, const_grade=0):
     Args:
         project (Project): a project
         const_grade (int): default 0, grade of the terrain in radian
-
     """
     # Load drive cycle from matlab file !! SPEED MUST BE in SECONDS !!
     data = sio.loadmat(os.path.join(os.path.dirname(__file__), "UDDS.mat"))

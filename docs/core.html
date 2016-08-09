@@ -89,6 +89,7 @@
 <li class="toctree-l1"><a class="reference internal" href="charging.html">charging package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="driving.html">driving package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="result.html">result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="post_simulation.html">Post simulation package</a></li>
 </ul>
 
             
@@ -133,19 +134,19 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-core">
-<span id="core"></span><h1>core<a class="headerlink" href="#module-core" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-v2gsim.core">
+<span id="core"></span><h1>core<a class="headerlink" href="#module-v2gsim.core" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
-<dt id="core.initialize_SOC">
-<code class="descclassname">core.</code><code class="descname">initialize_SOC</code><span class="sig-paren">(</span><em>project</em>, <em>nb_iteration=1</em>, <em>charging_option=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core.html#initialize_SOC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.initialize_SOC" title="Permalink to this definition">¶</a></dt>
+<dt id="v2gsim.core.initialize_SOC">
+<code class="descclassname">v2gsim.core.</code><code class="descname">initialize_SOC</code><span class="sig-paren">(</span><em>project</em>, <em>nb_iteration=1</em>, <em>charging_option=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/core.html#initialize_SOC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.core.initialize_SOC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the state of charge of each vehicle by running a simulation
-on previous days.</p>
+on previous days. Reset any charging infrastructure assigned to None.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>project</strong> (<a class="reference internal" href="model.html#model.Project" title="model.Project"><em>Project</em></a>) &#8211; project to simulate</li>
+<li><strong>project</strong> (<a class="reference internal" href="model.html#v2gsim.model.Project" title="v2gsim.model.Project"><em>Project</em></a>) &#8211; project to simulate</li>
 <li><strong>nb_iteration</strong> (<em>int</em>) &#8211; number of iteration to converge on vehicle&#8217;s
 initial state of charge</li>
 <li><strong>charging_option</strong> (<em>any</em>) &#8211; pass some object to the charging function</li>
@@ -164,8 +165,8 @@ convergence rate per iteration</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="core.run">
-<code class="descclassname">core.</code><code class="descname">run</code><span class="sig-paren">(</span><em>project</em>, <em>save_activity_power_demand=False</em>, <em>charging_option=None</em>, <em>date_from=None</em>, <em>date_to=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core.html#run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.run" title="Permalink to this definition">¶</a></dt>
+<dt id="v2gsim.core.run">
+<code class="descclassname">v2gsim.core.</code><code class="descname">run</code><span class="sig-paren">(</span><em>project</em>, <em>charging_option=None</em>, <em>date_from=None</em>, <em>date_to=None</em>, <em>reset_charging_station=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/core.html#run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.core.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Launch a simulation in a decoupled manner, vehicle don&#8217;t take other
 vehicle&#8217;s actions into consideration. The simulation goes throught each
 activity one by one for each vehicle and number of iteration desired.
@@ -178,12 +179,11 @@ and then compute the corresponding power demand from the grid.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>project</strong> (<a class="reference internal" href="model.html#model.Project" title="model.Project"><em>Project</em></a>) &#8211; project to simulate</li>
+<li><strong>project</strong> (<a class="reference internal" href="model.html#v2gsim.model.Project" title="v2gsim.model.Project"><em>Project</em></a>) &#8211; project to simulate</li>
 <li><strong>date_from</strong> (<em>datetime.datetime</em>) &#8211; date to start recording power demand</li>
 <li><strong>date_to</strong> (<em>datetime.datetime</em>) &#8211; date to end recording power demand</li>
-<li><strong>save_activity_power_demand</strong> (<em>boolean</em>) &#8211; save power demand of each
-activity (possibly memory intensive)</li>
 <li><strong>charging_option</strong> (<em>any</em>) &#8211; pass some object to the charging function</li>
+<li><strong>reset_charging_station</strong> (<em>boolean</em>) &#8211; reset charging stations to None</li>
 </ul>
 </td>
 </tr>

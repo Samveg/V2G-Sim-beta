@@ -1,6 +1,6 @@
 itinerary
 ===========
 
-.. automodule:: itinerary
+.. automodule:: v2gsim.itinerary
     :members:
     :show-inheritance:

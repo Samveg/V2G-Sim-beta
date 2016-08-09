@@ -7,14 +7,14 @@ import v2gsim
 def demand_response(parked, vehicle, nb_interval, timestep, option):
     """EV Demand response function. Determines how much EV charging load can be shed during a demand response event
     without adversely affecting driver mobility needs.
+
     Args:
         vehicle (Vehicle): Vehicle object to get current SOC and physical constraints (maximum SOC, ...)
         parked (Parked): Parked activity to get available charging station and charging strategy
-        option (dict): DR parameters 'startDR', 'endDR', 'post_DR_window_fraction', 'thresholdSOC' and
-            'date_limit'
-    Returns:
-        SOC as a list
-        powerDemand as a list
+        option (dict): DR parameters 'startDR', 'endDR', 'post_DR_window_fraction', 'thresholdSOC' and 'date_limit'
+
+    Return:
+        SOC and powerDemand as a list
     """
 
     # randomly pick the end of the DR event
