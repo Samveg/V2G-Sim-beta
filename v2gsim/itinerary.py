@@ -130,13 +130,13 @@ def reset_charging_infrastructures(project):
         location.available_charging_station = df2.copy()
 
 
-def copy_append(project, nb_copies=2):
+def copy_append(project, nb_of_days_to_add=2):
     """Copy the itinerary of each vehicle in the project.
     The copy is appended and a merge operation is applied to ensure a good blend.
 
     Args:
         project (Project): project
-        nb_copies (int): number of copies to append
+        nb_of_days_to_add (int): number of copies to append
 
     Return:
         project (Project): new project with extended itineraries
@@ -144,7 +144,7 @@ def copy_append(project, nb_copies=2):
     number_of_merged = 0
     for vehicle in project.vehicles:
         new_activities = []
-        for i_copy in range(0, nb_copies):
+        for i_copy in range(0, nb_of_days_to_add):
             # Manually copy all activities
             for activity in vehicle.activities:
                 if isinstance(activity, Driving):
@@ -198,7 +198,7 @@ def copy_append(project, nb_copies=2):
         vehicle.activities = merged_activities
         # Check time gap
         if not vehicle.check_activities(
-                start_date=project.date, end_date=project.date + datetime.timedelta(days=1 + nb_copies)):
+                start_date=project.date, end_date=project.date + datetime.timedelta(days=1 + nb_of_days_to_add)):
             print('Itinerary does not respect the constraints')
             print(vehicle)
 

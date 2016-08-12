@@ -184,11 +184,10 @@ class Vehicle(object):
 
 class Activity(object):
     """ Activity is an abstract class that is implemented in Driving and Parked.
-    Data is indexed with the project timestep.
 
     Args:
-        start (float): start time of the activity in hours [h]
-        end (float): end time of the activity in hours [h]
+        start (datetime): start time of the activity
+        end (datetime): end time of the activity
     """
 
     def __init__(self, start, end):

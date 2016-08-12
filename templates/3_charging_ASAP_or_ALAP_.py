@@ -6,18 +6,22 @@ import v2gsim
 project = v2gsim.model.Project()
 project = v2gsim.itinerary.from_excel(project, '../data/NHTS/Tennessee.xlsx')
 project.vehicles = v2gsim.itinerary.get_cycling_itineraries(project)
-project = v2gsim.itinerary.copy_append(project, nb_copies=2)
+project = v2gsim.itinerary.copy_append(project, nb_of_days_to_add=2)
 
-# Assign a new charging function that only charge Q energy
+# Assign a new charging function to all the charging stations
+# contained in the project. The function assigned is a variation
+# of the default uncontrolled charging.
 for station in project.charging_stations:
     station.charging = v2gsim.charging.controlled.Q_consumption
 
-# Assign new result function to all locations so DR potential can be reccorded
+# Assign new result function to all locations in the project
+# so DR potential can be reccorded in a specific manner. This function
+# leads to a different result structure for each location.
 for location in project.locations:
     location.result_function = v2gsim.result.location_potential_power_demand
 
 # Initiate SOC and charging infra
-conv = v2gsim.core.initialize_SOC(project, nb_iteration=1)
+v2gsim.core.initialize_SOC(project, nb_iteration=2)
 
 # Launch the simulation
 v2gsim.core.run(project, date_from=project.date + datetime.timedelta(hours=12),

@@ -22,15 +22,17 @@ Contents:
 =========
 
 .. toctree::
-	v2gconcept.rst
-	core.rst
-	model.rst
-	itinerary.rst
-	charging.rst
-	driving.rst
-	result.rst
-	post_simulation.rst
-	:maxdepth: 3
+    v2gconcept.rst
+    installv2gsim.rst
+    getting_started.rst
+    core.rst
+    model.rst
+    itinerary.rst
+    charging.rst
+    driving.rst
+    result.rst
+    post_simulation.rst
+    :maxdepth: 3
 
 .. Indices and tables
 .. ==================

@@ -1,0 +1,270 @@
+getting started
+===============
+
+The best way to get started is to jump in and look at the templates folder in the root directory. The template folder contains a suite of examples to walk you through the major functionnalities in V2G-Sim. To run any template simply type:
+
+>>> python template_name.py
+
+The first template "1_basic_template.py" will teach you the very basic usage of V2G-Sim.
+
+.. code-block:: python
+
+    from __future__ import division
+    import matplotlib.pyplot as plt
+    import pdb
+
+    # Give you access to all the V2G-Sim modules
+    import v2gsim
+
+    # Create a project that will hold other objects such as vehicles, locations
+    # car models, charging stations and some results. (see model.Project class)
+    project = v2gsim.model.Project()
+
+    # Use the itinerary module to import itineraries from an Excel file.
+    # Instantiate a project with the necessary information to run a simulation.
+    # Default values are assumed for the vehicle to model
+    # and the charging infrastructures to simulate.
+    project = v2gsim.itinerary.from_excel(project, '../data/NHTS/Tennessee.xlsx')
+
+    # At first every vehicle start with a full battery. In order to start from
+    # a more realistic state of charge (SOC), we run some iterations of a day,
+    # to find a stable SOC for each vehicle at the end of the day.
+    # This value is then used as the initial SOC condition to a realistic state.
+    v2gsim.core.initialize_SOC(project, nb_iteration=3)
+
+    # Launch the simulation and save the results
+    v2gsim.core.run(project)
+
+    # Concatenate the power demand for each location into one frame.
+    # you can access the demand at any location by using "loactionName_demand"
+    # or access the total demand with "total".
+    total_power_demand = v2gsim.post_simulation.result.total_power_demand(project)
+
+    # Plot the result
+    plt.figure()
+    plt.plot(total_power_demand['total'] / (1000 * 1000))
+    plt.plot(total_power_demand['Home_demand'] / (1000 * 1000))
+    plt.ylabel('Power demand (MW)')
+    plt.xlabel('Time')
+    plt.legend()
+    plt.show()
+
+    # Stop the script at the end, and let you explore the project structure.
+    # Perhaps you can checkout "project.vehicles[0]"
+    print('Press c and then enter to quit debugger')
+    pdb.set_trace()
+
+
+The second template "2_basic_template.py" adds some functions to process itineraries.
+It teaches you how to remove vehicles that don't start and end at the same location, but also 
+how to extend their itineraries to a few days. It also introduces a simple approach for someone
+to modify the default charging infrastructures assumptions. 
+
+.. code-block:: python
+
+    from __future__ import division
+    import datetime
+    import matplotlib.pyplot as plt
+    import v2gsim
+
+    # Create a project and initialize it with someitineraries
+    project = v2gsim.model.Project()
+    project = v2gsim.itinerary.from_excel(project, '../data/NHTS/Tennessee.xlsx')
+
+    # This function from the itinerary module return all the vehicles that
+    # start and end their day at the same location (e.g. home)
+    project.vehicles = v2gsim.itinerary.get_cycling_itineraries(project)
+
+    # This function from the itinerary module copy a daily itinerary and
+    # append it at then end of the existing itinerary. In doing so, it makes
+    # sure that activities are merged at the junction.
+    project = v2gsim.itinerary.copy_append(project, nb_of_days_to_add=2)
+
+    # Some default infrastructure have been created for you, namely "no_charger",
+    # "L1" and "L2", you can change the probability of a vehicle to be plugged
+    # to one of those infrastructures at different locations as follow:
+    for location in project.locations:
+        if location.category == 'Home':
+            location.available_charging_station.loc['no_charger', 'probability'] = 0.0
+            location.available_charging_station.loc['L1', 'probability'] = 0.3
+            location.available_charging_station.loc['L2', 'probability'] = 0.7
+        elif location.category == 'Work':
+            location.available_charging_station.loc['no_charger', 'probability'] = 0.0
+            location.available_charging_station.loc['L1', 'probability'] = 0.0
+            location.available_charging_station.loc['L2', 'probability'] = 1.0
+        else:
+            location.available_charging_station.loc['no_charger', 'probability'] = 1.0
+            location.available_charging_station.loc['L1', 'probability'] = 0.0
+            location.available_charging_station.loc['L2', 'probability'] = 0.0
+
+    # Initiate SOC and charging infrastructures
+    v2gsim.core.initialize_SOC(project, nb_iteration=2)
+
+    # Launch the simulation
+    # Note that date_from and date_to have been added since 1_basic_template.py
+    # date_from and date_to allows a user to specify
+    # the window over which results are saved (reduce memory burden).
+    v2gsim.core.run(project, date_from=project.date + datetime.timedelta(days=1),
+                    date_to=project.date + datetime.timedelta(days=2))
+
+
+the temlate "3_charging_ASAP_or_ALAP.py" shows how to change the function use to calculate consumption at the charging station level. Futhermore it also features how to change the function that save results at the location scale.
+
+.. code-block:: python
+
+    # Before running the SOC initialization --> 
+
+    # Assign a new charging function to all the charging stations
+    # contained in the project. The function assigned is a variation
+    # of the default uncontrolled charging.
+    for station in project.charging_stations:
+        station.charging = v2gsim.charging.controlled.Q_consumption
+
+    # Assign new result function to all locations in the project
+    # so DR potential can be reccorded in a specific manner. This function
+    # leads to a different result structure for each location.
+    for location in project.locations:
+        location.result_function = v2gsim.result.location_potential_power_demand
+
+    # Initiate SOC and charging infra
+    v2gsim.core.initialize_SOC(project, nb_iteration=2)
+
+
+In "4_emergency_DR.py" we show how can a user add new charging infrastructure to the default list of "no_charger", "L1" and "L2". Furthermore we show how to pass special instructions to the function in charge of the vehicle grid consumption.
+
+.. code-block:: python
+
+    import datetime
+    import matplotlib.pyplot as plt
+    import pandas
+    import v2gsim
+
+    # Create a project and increase the number of days
+    project = v2gsim.model.Project()
+    project = v2gsim.itinerary.from_excel(project, '../data/NHTS/Tennessee.xlsx')
+    project = v2gsim.itinerary.copy_append(project, nb_copies=2)
+
+    # Create some new charging infrastructures, append those new
+    # infrastructures to the project list of infrastructures
+    charging_stations = []
+    charging_stations.append(
+        v2gsim.model.ChargingStation(name='L1_V1G', maximum_power=1400, minimum_power=0, post_simulation=True))
+    charging_stations.append(
+        v2gsim.model.ChargingStation(name='L2_V2G', maximum_power=7200, minimum_power=-7200, post_simulation=True))
+    project.charging_stations.extend(charging_stations)
+
+    # Create a data frame with the new infrastructures mix and
+    # apply this mix at all the locations
+    df = pandas.DataFrame(index=['L1_V1G', 'L2_V2G'],
+                          data={'charging_station': charging_stations,
+                                'probability': [0.5, 0.5]})
+    for location in project.locations:
+        if location.category in ['Work', 'Home']:
+            location.available_charging_station = df.copy()
+
+    # Initiate SOC and charging infrastructures
+    conv = v2gsim.core.initialize_SOC(project, nb_iteration=1)
+
+    # Change the charging function to use the demand response controller
+    for station in project.charging_stations:
+        station.charging = v2gsim.charging.controlled.demand_response
+
+    # Run V2G-Sim with a charging_option parameter.
+    # this parameter will be passed to the charging function at every charging
+    # events.
+    v2gsim.core.run(project, date_from=project.date + datetime.timedelta(hours=12),
+                    date_to=project.date + datetime.timedelta(days=2, hours=12),
+                    charging_option={'startDR': project.date + datetime.timedelta(days=1, hours=17),
+                                     'endDR': project.date + datetime.timedelta(days=1, hours=19),
+                                     'date_limit': project.date + datetime.timedelta(days=2, hours=12),
+                                     'post_DR_window_fraction': 1.5,
+                                     'thresholdSOC': 0.2})
+
+
+In "5_statistical_itineraries.py" we demonstrate how a user can create statistics about some existing itinerary data, and further use those statistics to generate more vehicles out of a small sample of vehicles.
+
+.. code-block:: python
+
+    from __future__ import division
+    import matplotlib.pyplot as plt
+    import pdb
+    import v2gsim
+
+    # Create a project
+    project = v2gsim.model.Project()
+    project = v2gsim.itinerary.from_excel(project, '../data/NHTS/Tennessee.xlsx')
+    project.vehicles = v2gsim.itinerary.get_cycling_itineraries(project)
+
+    # This function from the itinerary module finds all the different combination
+    # of locations in a project (e.g home-work-restaurant-work-home, ...), and thus different
+    # itineraries.
+    # It returns a data frame with a row per combination, including the combination, but also
+    # the vehicles that have this itinerary and some basics filtering options.
+    project.itinerary_statistics = v2gsim.itinerary.find_all_itinerary_combination(project)
+
+    # This function from the itinerary module reduce the number of itineraries
+    # by merging the location names that are not provided in the input list into 'other_location'
+    # It returns a new frame with less row since some of the combination have been merged.
+    project.itinerary_statistics = v2gsim.itinerary.merge_itinerary_combination(project, ['Home', 'Work'])
+
+    # This function from the itinerary module creates statistics about each itinerary.
+    # For each activity it will create distributions describing duration, etc...
+    # based on the data from individual vehicle with the same itinerary.
+    project.itinerary_statistics = v2gsim.itinerary.get_itinerary_statistic(project)
+
+    # This function from the itinerary module recreates a new project based on the
+    # statistics of all the different itineraries. The new project can have
+    # a chosen number of vehicles.
+    new_project = v2gsim.itinerary.new_project_using_stats(project, 2000)
+
+    # Initiate SOC and charging infrastructures
+    conv = v2gsim.core.initialize_SOC(new_project, nb_iteration=1)
+
+    # Launch the simulation
+    v2gsim.core.run(new_project)
+
+
+The template number 6 "6_SWITCH_model_input.py" is an example of a study realized with V2G-Sim. The V2G-Sim code is encapsulated in functions in order to be run multiple times for each year. At line 14 a specific function called "save_location_state_DR" is created to replace the way results are normally saved at locations. This function allows to save results in accord with the specific definitions taken at the beginning of the study (e.g. What should the maximum power that the aggregate fleet can reach?).
+
+The last template "7_detailed_powertrain" features the usage of a detailed power train model for the on road consumption of vehicles.
+
+.. code-block:: python
+
+    from __future__ import division
+    import matplotlib.pyplot as plt
+    import v2gsim
+
+    # Create a project
+    project = v2gsim.model.Project(timestep=60)
+    project = v2gsim.itinerary.from_excel(project, '../data/NHTS/Tennessee_1.xlsx')
+
+    # Create a detailed power train vehicle model from an excel spread sheet
+    car_model = v2gsim.driving.detailed.init_model.load_powertrain('../v2gsim/driving/detailed/data.xlsx')
+
+    # Assign model to all vehicles and also use a new function to reccord detailed
+    # from the power train model, such as battery temperature.
+    for vehicle in project.vehicles:
+        vehicle.car_model = car_model
+        vehicle.result_function = v2gsim.result.save_detailed_vehicle_state
+
+    # Assign a drivecycle to all the driving activities since the detail power train
+    # model uses speed profile to calculate on road consumption
+    v2gsim.driving.drivecycle.generator.assign_EPA_cycle(project)
+
+    # Run V2G-Sim
+    v2gsim.core.run(project)
+
+    total_power_demand = v2gsim.post_simulation.result.total_power_demand(project)
+
+    # Plot the result
+    plt.figure()
+    plt.plot(total_power_demand['total'])
+    plt.show()
+
+    plt.figure()
+    project.vehicles[0].result.output_current.plot()
+    plt.show()
+
+    plt.figure()
+    project.vehicles[0].result.battery_temp.plot()
+    plt.show()

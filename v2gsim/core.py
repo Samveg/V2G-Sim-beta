@@ -122,7 +122,7 @@ def _post_run(project, date_from, date_to):
     return project
 
 
-def initialize_SOC(project, nb_iteration=1, charging_option=None):
+def initialize_SOC(project, nb_iteration=1, charging_option=None, verbose=True):
     """Initialize the state of charge of each vehicle by running a simulation
     on previous days. Reset any charging infrastructure assigned to None.
 
@@ -197,6 +197,7 @@ def initialize_SOC(project, nb_iteration=1, charging_option=None):
         convergence.loc[indexI + 1, 'std_rate'] = (convergence.loc[indexI, 'std'] -
                                                    convergence.loc[indexI + 1, 'std'])
     progress.finish()
-    print(convergence)
-    print('')
+    if verbose:
+        print(convergence)
+        print('')
     return convergence
