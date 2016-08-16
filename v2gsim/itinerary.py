@@ -555,14 +555,20 @@ def create_vehicles_from_stat(current_id, itinerary, project):
     not_completed = True
     max_iteration = 100
     iteration = 0
+    # Duration shortening is to avoid itineraries to overpass 24h
+    duration_shortening = 0
+    iteration_before_reducing_parked_duration = 25
 
-    while not_completed or iteration < max_iteration:
+    while not_completed and iteration < max_iteration:
         iteration += 1
         vehicle = Vehicle(current_id, project.car_models[0])
 
         is_first_activity = lambda x: True if x == 0 else False
         is_last_activity = lambda x, y=len(itinerary.activity_statistics) - 1: True if x == y else False
         is_duration_enough = lambda x: x if x > 60 else 60
+
+        if iteration % iteration_before_reducing_parked_duration == 0 and iteration != 0:
+            duration_shortening += 0.1
 
         # The activities one by one
         location_index = 0
@@ -574,9 +580,11 @@ def create_vehicles_from_stat(current_id, itinerary, project):
                 start = project.date
                 # duration is int() to avoid milliseconds
                 duration = int(scipy.stats.norm.rvs(activity.duration_loc, activity.duration_scale, 1)[0])
-                # duration is rouded at project.timestep
+                # duration is rounded at project.timestep
                 duration -= duration % project.timestep
                 duration = is_duration_enough(duration)
+                duration -= duration * duration_shortening
+
                 end = start + datetime.timedelta(seconds=duration)
                 location = itinerary.locations[location_index]
                 location_index += 1
@@ -599,6 +607,8 @@ def create_vehicles_from_stat(current_id, itinerary, project):
                 duration = int(scipy.stats.norm.rvs(activity.duration_loc, activity.duration_scale, 1)[0])
                 duration -= duration % project.timestep
                 duration = is_duration_enough(duration)
+                duration -= duration * duration_shortening
+
                 end = start + datetime.timedelta(seconds=duration)
                 location = itinerary.locations[location_index]
                 location_index += 1
@@ -631,7 +641,7 @@ def create_vehicles_from_stat(current_id, itinerary, project):
 
 
 def new_project_using_stats(old_project, new_number_of_vehicle, only_worker=False,
-                            min_vehicles_per_bin=False, remove_old_project=False,
+                            min_vehicles_per_bin=False, remove_old_project=False, verbose=True,
                             advanced_filtering_func=False, creating_vehicle_func=create_vehicles_from_stat):
     """Creates a new project from statistical itineraries of an existing project.
     Note: In the default version, itinerary should be able to cycle day after day, see
@@ -649,6 +659,11 @@ def new_project_using_stats(old_project, new_number_of_vehicle, only_worker=Fals
     Return:
         a new project with similar itineraries as the old project and chosen number of vehicles
     """
+    if verbose:
+        progress = progressbar.ProgressBar(widgets=['Parsing: ',
+                                                    progressbar.Percentage(), progressbar.Bar()],
+                                           maxval=len(old_project.itinerary_statistics)).start()
+
     # Create a new project
     project = Project()
     project.car_models = [BasicCarModel(name='Leaf')]
@@ -691,9 +706,17 @@ def new_project_using_stats(old_project, new_number_of_vehicle, only_worker=Fals
             project.vehicles.append(vehicle)
             current_id += 1
 
+        if verbose:
+            progress.update(index + 1)
+
+    if verbose:
+        progress.finish()
+
     # Initialize charging station at each location
     reset_charging_infrastructures(project)
 
+    if verbose:
+        print('')
     return project
 
 
