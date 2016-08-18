@@ -30,6 +30,91 @@ class Capturing(list):
         sys.stdout = self._stdout
 
 
+def save_vehicle_state_for_decentralized_optimization(
+    vehicle, timestep, date_from, date_to, activity=None, power_demand=None,
+    SOC=None, detail=None, nb_interval=None, init=False, run=False, post=False):
+    """Save results for individual vehicles. Power demand is positive when charging
+    negative when driving. Energy consumption is positive when driving and negative
+    when charging. Charging station that offer after simulation processing should
+    have activity.charging_station.post_simulation True.
+    """
+    if run:
+        if vehicle.result is not None:
+            activity_index1, activity_index2, location_index1, location_index2, save = v2gsim.result._map_index(
+                activity.start, activity.end, date_from, date_to, len(power_demand),
+                len(vehicle.result['power_demand']), timestep)
+            # Time frame are matching
+            if save:
+                # If driving pmin and pmax are equal to 0 since we are not plugged
+                if isinstance(activity, v2gsim.model.Driving):
+                    vehicle.result['p_max'][location_index1:location_index2] -= (
+                        [0.0] * (activity_index2 - activity_index1))
+                    vehicle.result['p_min'][location_index1:location_index2] -= (
+                        [0.0] * (activity_index2 - activity_index1))
+                    # Energy consumed is directly the power demand (sum later)
+                    vehicle.result['energy'][location_index1:location_index2] += (
+                        power_demand[activity_index1:activity_index2])
+                    # Power demand on the grid is 0 since we are driving
+                    vehicle.result['power_demand'][location_index1:location_index2] -= (
+                        [0.0] * (activity_index2 - activity_index1))
+
+                # If parked pmin and pmax are not necessary the same
+                if isinstance(activity, v2gsim.model.Parked):
+                    # Save the positive power demand of this specific vehicle
+                    vehicle.result['power_demand'][location_index1:location_index2] += (
+                        power_demand[activity_index1:activity_index2])
+                    if activity.charging_station.post_simulation:
+                        # Find if vehicle or infra is limiting
+                        pmax = min(activity.charging_station.maximum_power,
+                                   vehicle.car_model.maximum_power)
+                        pmin = max(activity.charging_station.minimum_power,
+                                   vehicle.car_model.minimum_power)
+                        vehicle.result['p_max'][location_index1:location_index2] += (
+                            [pmax] * (activity_index2 - activity_index1))
+                        vehicle.result['p_min'][location_index1:location_index2] += (
+                            [pmin] * (activity_index2 - activity_index1))
+                        # Energy consumed is 0 the optimization will decide
+                        vehicle.result['energy'][location_index1:location_index2] -= (
+                            [0.0] * (activity_index2 - activity_index1))
+                    else:
+                        vehicle.result['p_max'][location_index1:location_index2] += (
+                            power_demand[activity_index1:activity_index2])
+                        vehicle.result['p_min'][location_index1:location_index2] += (
+                            power_demand[activity_index1:activity_index2])
+                        # Energy is 0.0 because it's already accounted in power_demand
+                        vehicle.result['energy'][location_index1:location_index2] -= (
+                            [0.0] * (activity_index2 - activity_index1))
+
+    elif init:
+        # Reset vehicle with no result and only 1 SOC value
+        vehicle.SOC = [vehicle.SOC[0]]
+        vehicle.result = None
+
+        # Initialize result variable in a different manner if vehicle will be part of the optimization
+        for activity in vehicle.activities:
+            if isinstance(activity, v2gsim.model.Parked):
+                if activity.charging_station.post_simulation:
+                    # Initiate a dictionary of numpy array to hold result (faster than DataFrame)
+                    vehicle.result = {'power_demand': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep)),
+                                      'p_max': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep)),
+                                      'p_min': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep)),
+                                      'energy': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep)),
+                                      'not_charging': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep))}
+                    # Leave the init function
+                    return
+                else:
+                    # Just save the power demand
+                    vehicle.result = {'power_demand': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep))}
+    
+    elif post:
+        if vehicle.result is not None:
+            # Convert location result back into pandas DataFrame (faster that way)
+            i = pandas.date_range(start=date_from, end=date_to,
+                                  freq=str(timestep) + 's', closed='left')
+            vehicle.result = pandas.DataFrame(index=i, data=vehicle.result)
+            if 'energy' in vehicle.result.columns:
+                vehicle.result['energy'] = vehicle.result['energy'].cumsum()
+
 class Optimization(object):
     """Optimization object for scheduling vehicle charging
     """
