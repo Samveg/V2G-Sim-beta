@@ -1,3 +1,4 @@
+from __future__ import division
 import sys, os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../battery_degradation"))  # YOUR PATH
@@ -9,12 +10,6 @@ import matplotlib.pyplot as plt
 
 import numpy as np
 
-
-os.system('cls' if os.name == 'nt' else 'clear')
-print('###############')
-print('### V2G-Sim ###')
-print('###############')
-print('')
 
 
 class BatteryModel(object):
@@ -44,22 +39,27 @@ def bd(vehicleList, radH, ambientT, days):
 	"""
 	for vehicle in vehicleList:
 		vehicle.battery_model = BatteryModel()
-		DrivingCurrent = vehicle.result.output_current   #create this variable to store all the current vector,
-		ChargingDemand = vehicle.result.power_demand    #create this variable to store all the current vector
-		ChargingCurrent = [-i/380 for i in ChargingDemand]
-		AllDayCurrent= [x+y for x,y in zip(DrivingCurrent,ChargingCurrent)]
+		DrivingCurrent = vehicle.result.output_current.tolist()   #create this variable to store all the current vector,
+		ChargingDemand = vehicle.result.power_demand.tolist()   #create this variable to store all the current vector
+		ChargingCurrent = [-i / 380 for i in ChargingDemand]
+		AllDayCurrent = [x + y for x,y in zip(DrivingCurrent, ChargingCurrent)]
+		
+		#######
 		soc = vehicle.SOC
-		tempdsoc = [y-x for x,y in zip(([soc[0]]+soc[:]),soc[:]+[soc[-1]])] # calculate delta soc
+		deltasoc = [y - x for x,y in zip(([soc[0]]+soc[:]),soc[:]+[soc[-1]])] # calculate delta soc
 		deltasoc = tempdsoc[:-1]  # delta soc which will be used to calculate cycle life loss
+		######
+
+		# deltasoc = numpy.diff(vehicle.SOC).tolist()
 		DrivingCharge = []
-		flag = vehicle.status # mark if the car is parked or driving
-		R =0.15 # internal resistance
+		flag = vehicle.result.parked.tolist() # mark if the car is parked or driving
+		R = 0.15 # internal resistance
 
 
-		for i in range(len(AllDayCurrent)):
-			DrivingCharge.append(R*AllDayCurrent[i]**2) # heat generate from battery
+		for i in range(0, len(AllDayCurrent)):
+			DrivingCharge.append(R * AllDayCurrent[i] ** 2) # heat generate from battery
 			# Calculate whole day temperature.
-			if flag[i] == 1: # vehicle is driving
+			if not flag[i]: # vehicle is driving
 				# Calculate battery temeprature when the vehicle is driving
 				Fixeddegradation.driving_temperature(vehicle, ambientT[i], radH[i], DrivingCharge[-1],
 				                                     vehicle.battery_model.coefTemp)
@@ -67,7 +67,7 @@ def bd(vehicleList, radH, ambientT, days):
 				# Calculate cycle life loss caused by driving
 				Fixeddegradation.cycle_loss_drive(vehicle, vehicle.battery_model.batteryT[-1], AllDayCurrent[i], deltasoc[i], vehicle.battery_model.coefLoss)
 
-			elif flag[i] == 0: # vehicle is parked
+			elif flag[i]: # vehicle is parked
 				if AllDayCurrent[i] == 0:  # The car is parked but not charging/discharging
 
 					# Calculate battery temperature when the vehicle is parked but not charging/discharging, battery thermal mananage system (BTMS) works but AC does not work
