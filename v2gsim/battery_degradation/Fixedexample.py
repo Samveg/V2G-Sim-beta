@@ -32,7 +32,7 @@ class BatteryModel(object):
 		                 'd': -0.0067, 'e': 2.35, 'f': 8720, 'E': 24500, 'R': 8.314}
 
 
-def bd(vehicleList, radH, ambientT):
+def bd(vehicleList, radH, ambientT, days):
 	""" battery degradation function
 
 	Args:
@@ -85,7 +85,7 @@ def bd(vehicleList, radH, ambientT):
 					Fixeddegradation.cycle_loss_drive(vehicle, vehicle.battery_model.batteryT[-1], AllDayCurrent[i], deltasoc[i], vehicle.battery_model.coefLoss)
 
 		# calculate calendar_loss
-		Fixeddegradation.calendar_loss(vehicle, vehicle.battery_model.coefLoss, days = 1)
+		Fixeddegradation.calendar_loss(vehicle, vehicle.battery_model.coefLoss, days)
 
 		print(vehicle.battery_model.batteryLoss['calendarLoss'][-1])
 		print(sum(vehicle.battery_model.batteryLoss['cycleLoss']))
