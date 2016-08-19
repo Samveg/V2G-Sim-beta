@@ -152,6 +152,8 @@ class Vehicle(object):
         self.stranding_log = []
         self.result_function = result.save_vehicle_state
         self.result = None
+        self.battery_model = None
+        self.status = []
 
     def check_activities(self, start_date, end_date):
         """Verify if every activity start at the end of the previous activity

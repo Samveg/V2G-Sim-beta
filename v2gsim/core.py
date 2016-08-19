@@ -50,6 +50,8 @@ def run(project, charging_option=None, date_from=None, date_to=None,
                                                                                 nb_interval,
                                                                                 project.timestep)
                 vehicle.SOC.extend(SOC)
+                state= [1] * nb_interval
+                vehicle.status.extend(state)
                 # Log stranded vehicles
                 if stranded:
                     vehicle.stranding_log.append(activity.end)
@@ -69,6 +71,8 @@ def run(project, charging_option=None, date_from=None, date_to=None,
                                                                        project.timestep,
                                                                        charging_option)
                 vehicle.SOC.extend(SOC)
+                state = [0] * nb_interval
+                vehicle.status.extend(state)
                 # Save power demand at location
                 if len(power_demand) != 0:
                     activity.location.result_function(activity.location,

@@ -89,10 +89,22 @@ def save_detailed_vehicle_state(vehicle, timestep, date_from,
             vehicle.result['output_current'][location_index1:location_index2] += (
                 detail.ess.i_out[activity_index1:activity_index2])
 
+    elif run:
+        activity_index1, activity_index2, location_index1, location_index2, save = _map_index(
+            activity.start, activity.end, date_from, date_to, len(power_demand),
+            len(vehicle.result['power_demand']), timestep)
+
+        if save:
+            vehicle.result['power_demand'][location_index1:location_index2] += (
+                power_demand[activity_index1:activity_index2])
+
+
+
     elif init:
         vehicle.SOC = [vehicle.SOC[0]]
         vehicle.result = {'battery_temp': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep)),
-                          'output_current': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep))}
+                          'output_current': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep)),
+                          'power_demand': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep))}
 
     elif post:
         # Convert location result back into pandas DataFrame (faster that way)
