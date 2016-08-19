@@ -33,10 +33,6 @@
     <link rel="top" title="V2G-Sim 0.1 documentation" href="index.html"/>
  
 
-    <script type="text/javascript">
-      DOCUMENTATION_OPTIONS.COLLAPSE_INDEX = true;
-    </script>
-
 
 
   
@@ -88,12 +84,15 @@
             
                 <ul>
 <li class="toctree-l1"><a class="reference internal" href="v2gconcept.html">what is vehicle to grid?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installv2gsim.html">how to install V2G-Sim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="core.html">core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="model.html">model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="itinerary.html">itinerary</a></li>
 <li class="toctree-l1"><a class="reference internal" href="charging.html">charging package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="driving.html">driving package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="result.html">result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="post_simulation.html">post simulation package</a></li>
 </ul>
 
             
@@ -140,75 +139,83 @@
    <h1>Python Module Index</h1>
 
    <div class="modindex-jumpbox">
-   <a href="#cap-c"><strong>c</strong></a> | 
-   <a href="#cap-d"><strong>d</strong></a> | 
-   <a href="#cap-i"><strong>i</strong></a> | 
-   <a href="#cap-m"><strong>m</strong></a> | 
-   <a href="#cap-r"><strong>r</strong></a>
+   <a href="#cap-v"><strong>v</strong></a>
    </div>
 
    <table class="indextable modindextable" cellspacing="0" cellpadding="2">
      <tr class="pcap"><td></td><td>&nbsp;</td><td></td></tr>
-     <tr class="cap" id="cap-c"><td></td><td>
-       <strong>c</strong></td><td></td></tr>
+     <tr class="cap" id="cap-v"><td></td><td>
+       <strong>v</strong></td><td></td></tr>
      <tr>
        <td><img src="_static/minus.png" class="toggler"
               id="toggle-1" style="display: none" alt="-" /></td>
        <td>
-       <code class="xref">charging</code></td><td>
+       <code class="xref">v2gsim</code></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&nbsp;&nbsp;&nbsp;
-       <a href="charging.html#module-charging.station"><code class="xref">charging.station</code></a></td><td>
+       <a href="charging.html#module-v2gsim.charging.controlled"><code class="xref">v2gsim.charging.controlled</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&nbsp;&nbsp;&nbsp;
-       <a href="charging.html#module-charging.uncontrolled"><code class="xref">charging.uncontrolled</code></a></td><td>
+       <a href="charging.html#module-v2gsim.charging.station"><code class="xref">v2gsim.charging.station</code></a></td><td>
        <em></em></td></tr>
-     <tr>
-       <td></td>
-       <td>
-       <a href="core.html#module-core"><code class="xref">core</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="pcap"><td></td><td>&nbsp;</td><td></td></tr>
-     <tr class="cap" id="cap-d"><td></td><td>
-       <strong>d</strong></td><td></td></tr>
-     <tr>
-       <td><img src="_static/minus.png" class="toggler"
-              id="toggle-2" style="display: none" alt="-" /></td>
-       <td>
-       <code class="xref">driving</code></td><td>
-       <em></em></td></tr>
-     <tr class="cg-2">
+     <tr class="cg-1">
        <td></td>
        <td>&nbsp;&nbsp;&nbsp;
-       <a href="driving.html#module-driving.basic_powertrain"><code class="xref">driving.basic_powertrain</code></a></td><td>
+       <a href="charging.html#module-v2gsim.charging.uncontrolled"><code class="xref">v2gsim.charging.uncontrolled</code></a></td><td>
        <em></em></td></tr>
-     <tr class="pcap"><td></td><td>&nbsp;</td><td></td></tr>
-     <tr class="cap" id="cap-i"><td></td><td>
-       <strong>i</strong></td><td></td></tr>
-     <tr>
+     <tr class="cg-1">
        <td></td>
-       <td>
-       <a href="itinerary.html#module-itinerary"><code class="xref">itinerary</code></a></td><td>
+       <td>&nbsp;&nbsp;&nbsp;
+       <a href="core.html#module-v2gsim.core"><code class="xref">v2gsim.core</code></a></td><td>
        <em></em></td></tr>
-     <tr class="pcap"><td></td><td>&nbsp;</td><td></td></tr>
-     <tr class="cap" id="cap-m"><td></td><td>
-       <strong>m</strong></td><td></td></tr>
-     <tr>
+     <tr class="cg-1">
        <td></td>
-       <td>
-       <a href="model.html#module-model"><code class="xref">model</code></a></td><td>
+       <td>&nbsp;&nbsp;&nbsp;
+       <a href="driving.html#module-v2gsim.driving.basic_powertrain"><code class="xref">v2gsim.driving.basic_powertrain</code></a></td><td>
        <em></em></td></tr>
-     <tr class="pcap"><td></td><td>&nbsp;</td><td></td></tr>
-     <tr class="cap" id="cap-r"><td></td><td>
-       <strong>r</strong></td><td></td></tr>
-     <tr>
+     <tr class="cg-1">
        <td></td>
-       <td>
-       <a href="result.html#module-result"><code class="xref">result</code></a></td><td>
+       <td>&nbsp;&nbsp;&nbsp;
+       <a href="driving.html#module-v2gsim.driving.detailed.init_model"><code class="xref">v2gsim.driving.detailed.init_model</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&nbsp;&nbsp;&nbsp;
+       <a href="driving.html#module-v2gsim.driving.detailed.power_train"><code class="xref">v2gsim.driving.detailed.power_train</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&nbsp;&nbsp;&nbsp;
+       <a href="driving.html#module-v2gsim.driving.drivecycle.generator"><code class="xref">v2gsim.driving.drivecycle.generator</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&nbsp;&nbsp;&nbsp;
+       <a href="itinerary.html#module-v2gsim.itinerary"><code class="xref">v2gsim.itinerary</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&nbsp;&nbsp;&nbsp;
+       <a href="model.html#module-v2gsim.model"><code class="xref">v2gsim.model</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&nbsp;&nbsp;&nbsp;
+       <a href="post_simulation.html#module-v2gsim.post_simulation.netload_optimization"><code class="xref">v2gsim.post_simulation.netload_optimization</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&nbsp;&nbsp;&nbsp;
+       <a href="post_simulation.html#module-v2gsim.post_simulation.result"><code class="xref">v2gsim.post_simulation.result</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&nbsp;&nbsp;&nbsp;
+       <a href="result.html#module-v2gsim.result"><code class="xref">v2gsim.result</code></a></td><td>
        <em></em></td></tr>
    </table>
 

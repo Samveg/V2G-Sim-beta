@@ -82,12 +82,15 @@
             
                 <ul>
 <li class="toctree-l1"><a class="reference internal" href="v2gconcept.html">what is vehicle to grid?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installv2gsim.html">how to install V2G-Sim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="core.html">core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="model.html">model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="itinerary.html">itinerary</a></li>
 <li class="toctree-l1"><a class="reference internal" href="charging.html">charging package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="driving.html">driving package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="result.html">result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="post_simulation.html">post simulation package</a></li>
 </ul>
 
             
@@ -139,12 +142,16 @@
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
  | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
+ | <a href="#N"><strong>N</strong></a>
  | <a href="#P"><strong>P</strong></a>
+ | <a href="#Q"><strong>Q</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
  
@@ -153,7 +160,13 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="model.html#model.Activity">Activity (class in model)</a>
+  <dt><a href="model.html#v2gsim.model.Activity">Activity (class in v2gsim.model)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="driving.html#v2gsim.driving.drivecycle.generator.assign_EPA_cycle">assign_EPA_cycle() (in module v2gsim.driving.drivecycle.generator)</a>
   </dt>
 
   </dl></td>
@@ -163,7 +176,7 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="model.html#model.BasicCarModel">BasicCarModel (class in model)</a>
+  <dt><a href="model.html#v2gsim.model.BasicCarModel">BasicCarModel (class in v2gsim.model)</a>
   </dt>
 
   </dl></td>
@@ -173,39 +186,51 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="charging.html#module-charging.station">charging.station (module)</a>
+  <dt><a href="post_simulation.html#v2gsim.post_simulation.netload_optimization.CentralOptimization">CentralOptimization (class in v2gsim.post_simulation.netload_optimization)</a>
   </dt>
 
       
-  <dt><a href="charging.html#module-charging.uncontrolled">charging.uncontrolled (module)</a>
+  <dt><a href="model.html#v2gsim.model.ChargingStation">ChargingStation (class in v2gsim.model)</a>
   </dt>
 
       
-  <dt><a href="model.html#model.ChargingStation">ChargingStation (class in model)</a>
+  <dt><a href="model.html#v2gsim.model.Vehicle.check_activities">check_activities() (v2gsim.model.Vehicle method)</a>
   </dt>
 
       
-  <dt><a href="model.html#model.Vehicle.check_activities">check_activities() (model.Vehicle method)</a>
+  <dt><a href="post_simulation.html#v2gsim.post_simulation.netload_optimization.CentralOptimization.check_energy_constraints_feasible">check_energy_constraints_feasible() (v2gsim.post_simulation.netload_optimization.CentralOptimization method)</a>
+  </dt>
+
+      
+  <dt><a href="model.html#v2gsim.model.Project.check_integrity">check_integrity() (v2gsim.model.Project method)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="model.html#model.Project.check_integrity">check_integrity() (model.Project method)</a>
-  </dt>
-
-      
-  <dt><a href="charging.html#charging.uncontrolled.consumption">consumption() (in module charging.uncontrolled)</a>
+  <dt><a href="charging.html#v2gsim.charging.uncontrolled.consumption">consumption() (in module v2gsim.charging.uncontrolled)</a>
   </dt>
 
       <dd><dl>
         
-  <dt><a href="driving.html#driving.basic_powertrain.consumption">(in module driving.basic_powertrain)</a>
+  <dt><a href="driving.html#v2gsim.driving.basic_powertrain.consumption">(in module v2gsim.driving.basic_powertrain)</a>
+  </dt>
+
+        
+  <dt><a href="driving.html#v2gsim.driving.detailed.power_train.consumption">(in module v2gsim.driving.detailed.power_train)</a>
   </dt>
 
       </dl></dd>
       
-  <dt><a href="core.html#module-core">core (module)</a>
+  <dt><a href="model.html#v2gsim.model.Project.copy">copy() (v2gsim.model.Project method)</a>
+  </dt>
+
+      
+  <dt><a href="itinerary.html#v2gsim.itinerary.copy_append">copy_append() (in module v2gsim.itinerary)</a>
+  </dt>
+
+      
+  <dt><a href="itinerary.html#v2gsim.itinerary.create_vehicles_from_stat">create_vehicles_from_stat() (in module v2gsim.itinerary)</a>
   </dt>
 
   </dl></td>
@@ -215,13 +240,13 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="model.html#model.Driving">Driving (class in model)</a>
+  <dt><a href="charging.html#v2gsim.charging.controlled.demand_response">demand_response() (in module v2gsim.charging.controlled)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="driving.html#module-driving.basic_powertrain">driving.basic_powertrain (module)</a>
+  <dt><a href="model.html#v2gsim.model.Driving">Driving (class in v2gsim.model)</a>
   </dt>
 
   </dl></td>
@@ -231,7 +256,45 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="itinerary.html#itinerary.from_excel">from_excel() (in module itinerary)</a>
+  <dt><a href="itinerary.html#v2gsim.itinerary.find_all_itinerary_combination">find_all_itinerary_combination() (in module v2gsim.itinerary)</a>
+  </dt>
+
+      
+  <dt><a href="charging.html#v2gsim.charging.controlled.follow_signal">follow_signal() (in module v2gsim.charging.controlled)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="itinerary.html#v2gsim.itinerary.from_excel">from_excel() (in module v2gsim.itinerary)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="itinerary.html#v2gsim.itinerary.get_cycling_itineraries">get_cycling_itineraries() (in module v2gsim.itinerary)</a>
+  </dt>
+
+      
+  <dt><a href="post_simulation.html#v2gsim.post_simulation.netload_optimization.CentralOptimization.get_final_SOC">get_final_SOC() (v2gsim.post_simulation.netload_optimization.CentralOptimization method)</a>
+  </dt>
+
+      
+  <dt><a href="post_simulation.html#v2gsim.post_simulation.netload_optimization.CentralOptimization.get_initial_SOC">get_initial_SOC() (v2gsim.post_simulation.netload_optimization.CentralOptimization method)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="itinerary.html#v2gsim.itinerary.get_itinerary_statistic">get_itinerary_statistic() (in module v2gsim.itinerary)</a>
+  </dt>
+
+      
+  <dt><a href="itinerary.html#v2gsim.itinerary.get_vehicle_statistics">get_vehicle_statistics() (in module v2gsim.itinerary)</a>
   </dt>
 
   </dl></td>
@@ -241,17 +304,25 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="core.html#core.initialize_SOC">initialize_SOC() (in module core)</a>
+  <dt><a href="post_simulation.html#v2gsim.post_simulation.netload_optimization.CentralOptimization.initialize_model">initialize_model() (v2gsim.post_simulation.netload_optimization.CentralOptimization method)</a>
   </dt>
 
       
-  <dt><a href="itinerary.html#module-itinerary">itinerary (module)</a>
+  <dt><a href="post_simulation.html#v2gsim.post_simulation.netload_optimization.CentralOptimization.initialize_net_load">initialize_net_load() (v2gsim.post_simulation.netload_optimization.CentralOptimization method)</a>
+  </dt>
+
+      
+  <dt><a href="core.html#v2gsim.core.initialize_SOC">initialize_SOC() (in module v2gsim.core)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="model.html#model.ItineraryBin">ItineraryBin (class in model)</a>
+  <dt><a href="post_simulation.html#v2gsim.post_simulation.netload_optimization.CentralOptimization.initialize_time_index">initialize_time_index() (v2gsim.post_simulation.netload_optimization.CentralOptimization method)</a>
+  </dt>
+
+      
+  <dt><a href="model.html#v2gsim.model.ItineraryBin">ItineraryBin (class in v2gsim.model)</a>
   </dt>
 
   </dl></td>
@@ -261,13 +332,21 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="model.html#model.Project.load">load() (model.Project method)</a>
+  <dt><a href="model.html#v2gsim.model.Project.load">load() (v2gsim.model.Project method)</a>
+  </dt>
+
+      
+  <dt><a href="driving.html#v2gsim.driving.detailed.init_model.load_powertrain">load_powertrain() (in module v2gsim.driving.detailed.init_model)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="model.html#model.Location">Location (class in model)</a>
+  <dt><a href="model.html#v2gsim.model.Location">Location (class in v2gsim.model)</a>
+  </dt>
+
+      
+  <dt><a href="result.html#v2gsim.result.location_potential_power_demand">location_potential_power_demand() (in module v2gsim.result)</a>
   </dt>
 
   </dl></td>
@@ -277,7 +356,17 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="model.html#module-model">model (module)</a>
+  <dt><a href="itinerary.html#v2gsim.itinerary.merge_itinerary_combination">merge_itinerary_combination() (in module v2gsim.itinerary)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="itinerary.html#v2gsim.itinerary.new_project_using_stats">new_project_using_stats() (in module v2gsim.itinerary)</a>
   </dt>
 
   </dl></td>
@@ -287,13 +376,39 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="model.html#model.Parked">Parked (class in model)</a>
+  <dt><a href="model.html#v2gsim.model.Parked">Parked (class in v2gsim.model)</a>
+  </dt>
+
+      
+  <dt><a href="post_simulation.html#v2gsim.post_simulation.netload_optimization.CentralOptimization.plot_result">plot_result() (v2gsim.post_simulation.netload_optimization.CentralOptimization method)</a>
+  </dt>
+
+      
+  <dt><a href="itinerary.html#v2gsim.itinerary.plot_vehicle_itinerary">plot_vehicle_itinerary() (in module v2gsim.itinerary)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="model.html#model.Project">Project (class in model)</a>
+  <dt><a href="post_simulation.html#v2gsim.post_simulation.netload_optimization.CentralOptimization.post_process">post_process() (v2gsim.post_simulation.netload_optimization.CentralOptimization method)</a>
+  </dt>
+
+      
+  <dt><a href="post_simulation.html#v2gsim.post_simulation.netload_optimization.CentralOptimization.process">process() (v2gsim.post_simulation.netload_optimization.CentralOptimization method)</a>
+  </dt>
+
+      
+  <dt><a href="model.html#v2gsim.model.Project">Project (class in v2gsim.model)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="Q">Q</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="charging.html#v2gsim.charging.controlled.Q_consumption">Q_consumption() (in module v2gsim.charging.controlled)</a>
   </dt>
 
   </dl></td>
@@ -303,17 +418,17 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="charging.html#charging.station.randomly_assign">randomly_assign() (in module charging.station)</a>
+  <dt><a href="charging.html#v2gsim.charging.station.randomly_assign">randomly_assign() (in module v2gsim.charging.station)</a>
   </dt>
 
       
-  <dt><a href="result.html#module-result">result (module)</a>
+  <dt><a href="itinerary.html#v2gsim.itinerary.reset_charging_infrastructures">reset_charging_infrastructures() (in module v2gsim.itinerary)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="core.html#core.run">run() (in module core)</a>
+  <dt><a href="core.html#v2gsim.core.run">run() (in module v2gsim.core)</a>
   </dt>
 
   </dl></td>
@@ -323,13 +438,43 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="model.html#model.Project.save">save() (model.Project method)</a>
+  <dt><a href="model.html#v2gsim.model.Project.save">save() (v2gsim.model.Project method)</a>
+  </dt>
+
+      
+  <dt><a href="result.html#v2gsim.result.save_detailed_vehicle_state">save_detailed_vehicle_state() (in module v2gsim.result)</a>
+  </dt>
+
+      
+  <dt><a href="result.html#v2gsim.result.save_location_state">save_location_state() (in module v2gsim.result)</a>
+  </dt>
+
+      
+  <dt><a href="result.html#v2gsim.result.save_vehicle_state">save_vehicle_state() (in module v2gsim.result)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="result.html#result.save_power_demand_at_location">save_power_demand_at_location() (in module result)</a>
+  <dt><a href="post_simulation.html#v2gsim.post_simulation.netload_optimization.save_vehicle_state_for_optimization">save_vehicle_state_for_optimization() (in module v2gsim.post_simulation.netload_optimization)</a>
+  </dt>
+
+      
+  <dt><a href="itinerary.html#v2gsim.itinerary.set_fleet_mix">set_fleet_mix() (in module v2gsim.itinerary)</a>
+  </dt>
+
+      
+  <dt><a href="post_simulation.html#v2gsim.post_simulation.netload_optimization.CentralOptimization.solve">solve() (v2gsim.post_simulation.netload_optimization.CentralOptimization method)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="post_simulation.html#v2gsim.post_simulation.result.total_power_demand">total_power_demand() (in module v2gsim.post_simulation.result)</a>
   </dt>
 
   </dl></td>
@@ -339,7 +484,7 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="itinerary.html#itinerary.unique_location_category">unique_location_category() (in module itinerary)</a>
+  <dt><a href="itinerary.html#v2gsim.itinerary.unique_location_category">unique_location_category() (in module v2gsim.itinerary)</a>
   </dt>
 
   </dl></td>
@@ -349,7 +494,61 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="model.html#model.Vehicle">Vehicle (class in model)</a>
+  <dt><a href="charging.html#module-v2gsim.charging.controlled">v2gsim.charging.controlled (module)</a>
+  </dt>
+
+      
+  <dt><a href="charging.html#module-v2gsim.charging.station">v2gsim.charging.station (module)</a>
+  </dt>
+
+      
+  <dt><a href="charging.html#module-v2gsim.charging.uncontrolled">v2gsim.charging.uncontrolled (module)</a>
+  </dt>
+
+      
+  <dt><a href="core.html#module-v2gsim.core">v2gsim.core (module)</a>
+  </dt>
+
+      
+  <dt><a href="driving.html#module-v2gsim.driving.basic_powertrain">v2gsim.driving.basic_powertrain (module)</a>
+  </dt>
+
+      
+  <dt><a href="driving.html#module-v2gsim.driving.detailed.init_model">v2gsim.driving.detailed.init_model (module)</a>
+  </dt>
+
+      
+  <dt><a href="driving.html#module-v2gsim.driving.detailed.power_train">v2gsim.driving.detailed.power_train (module)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="driving.html#module-v2gsim.driving.drivecycle.generator">v2gsim.driving.drivecycle.generator (module)</a>
+  </dt>
+
+      
+  <dt><a href="itinerary.html#module-v2gsim.itinerary">v2gsim.itinerary (module)</a>
+  </dt>
+
+      
+  <dt><a href="model.html#module-v2gsim.model">v2gsim.model (module)</a>
+  </dt>
+
+      
+  <dt><a href="post_simulation.html#module-v2gsim.post_simulation.netload_optimization">v2gsim.post_simulation.netload_optimization (module)</a>
+  </dt>
+
+      
+  <dt><a href="post_simulation.html#module-v2gsim.post_simulation.result">v2gsim.post_simulation.result (module)</a>
+  </dt>
+
+      
+  <dt><a href="result.html#module-v2gsim.result">v2gsim.result (module)</a>
+  </dt>
+
+      
+  <dt><a href="model.html#v2gsim.model.Vehicle">Vehicle (class in v2gsim.model)</a>
   </dt>
 
   </dl></td>

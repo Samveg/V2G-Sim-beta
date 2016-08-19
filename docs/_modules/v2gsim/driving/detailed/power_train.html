@@ -1,0 +1,867 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>v2gsim.driving.detailed.power_train &mdash; V2G-Sim 0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="V2G-Sim 0.1 documentation" href="../../../../index.html"/>
+        <link rel="up" title="Module code" href="../../../index.html"/> 
+
+  
+  <script src="../../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> V2G-Sim
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../v2gconcept.html">what is vehicle to grid?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installv2gsim.html">how to install V2G-Sim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting_started.html">getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../core.html">core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../model.html">model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../itinerary.html">itinerary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../charging.html">charging package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../driving.html">driving package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../result.html">result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../post_simulation.html">post simulation package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../../index.html">V2G-Sim</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      
+    <li>v2gsim.driving.detailed.power_train</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for v2gsim.driving.detailed.power_train</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span class="kn">import</span> <span class="nn">output</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+
+<div class="viewcode-block" id="consumption"><a class="viewcode-back" href="../../../../driving.html#v2gsim.driving.detailed.power_train.consumption">[docs]</a><span class="k">def</span> <span class="nf">consumption</span><span class="p">(</span><span class="n">driving</span><span class="p">,</span> <span class="n">vehicle</span><span class="p">,</span> <span class="n">nb_interval</span><span class="p">,</span> <span class="n">project_timestep</span><span class="p">,</span> <span class="n">timestep</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate the consumption of a vehicle for a driving activity.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        vehicle (Vehicle): a Vehicle object to update with the driving activity consumption</span>
+<span class="sd">        driving (Driving): a driving activity</span>
+<span class="sd">        timestep (float): the timestep used for the calculus (different from the output interval)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        SOC as a list</span>
+<span class="sd">        powerDemand as a list</span>
+<span class="sd">        stranded a boolean</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Create initial conditions</span>
+    <span class="n">V_chas</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">chas_d</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">vpc_heat_integral</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.3</span>
+    <span class="n">ess_SOC</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">ess_T_cell</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">car_model</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">temp_amb</span>
+    <span class="n">ess_Q_loss_case</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">mot_i_out</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># no need</span>
+    <span class="n">pc_i_in</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">ess_i_out_dmd</span> <span class="o">=</span> <span class="n">mot_i_out</span> <span class="o">+</span> <span class="n">pc_i_in</span>
+    <span class="n">mot_spd_in</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">fd_spd_in</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">whl_spd_rdl_in</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">accelec_i_in</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># Initialize output signals</span>
+    <span class="n">outputSignal</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">Result</span><span class="p">()</span>
+
+    <span class="c1"># Interpolate speed and terrain (m/s and grade)</span>
+    <span class="n">speed</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">driving</span><span class="o">.</span><span class="n">speed</span><span class="p">),</span> <span class="n">timestep</span><span class="p">),</span>
+                         <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">driving</span><span class="o">.</span><span class="n">speed</span><span class="p">),</span> <span class="mi">1</span><span class="p">),</span> <span class="n">driving</span><span class="o">.</span><span class="n">speed</span><span class="p">)</span>
+    <span class="n">terrain</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">driving</span><span class="o">.</span><span class="n">speed</span><span class="p">),</span> <span class="n">timestep</span><span class="p">),</span>
+                           <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">driving</span><span class="o">.</span><span class="n">terrain</span><span class="p">),</span> <span class="mi">1</span><span class="p">),</span> <span class="n">driving</span><span class="o">.</span><span class="n">terrain</span><span class="p">)</span>
+
+    <span class="c1"># Begin running model</span>
+    <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">speed</span><span class="p">)):</span>
+
+        <span class="c1"># Driver model</span>
+        <span class="n">drv_key_on</span><span class="p">,</span> <span class="n">drv_cmd_brake</span><span class="p">,</span> <span class="n">drv_cmd_accel</span><span class="p">,</span> <span class="n">drv_V_dmd</span><span class="p">,</span> <span class="n">drv_T_dmd</span> <span class="o">=</span> <span class="n">driver_main_nolookahead</span><span class="p">(</span>
+            <span class="n">V_chas</span><span class="p">,</span> <span class="n">speed</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="n">terrain</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">car_model</span><span class="p">)</span>
+
+        <span class="c1"># Powertrain controller model</span>
+        <span class="n">vpc_T_mot_dmd</span><span class="p">,</span> <span class="n">vpc_T_mechbrake_dmd</span><span class="p">,</span> <span class="n">vpc_heat_integral</span> <span class="o">=</span> <span class="n">powertrain_control_main</span><span class="p">(</span>
+            <span class="n">drv_cmd_brake</span><span class="p">,</span> <span class="n">drv_cmd_accel</span><span class="p">,</span> <span class="n">drv_T_dmd</span><span class="p">,</span> <span class="n">V_chas</span><span class="p">,</span> <span class="n">mot_spd_in</span><span class="p">,</span>
+            <span class="n">ess_SOC</span><span class="p">,</span> <span class="n">vpc_heat_integral</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">car_model</span><span class="p">)</span>
+
+        <span class="c1"># Battery</span>
+        <span class="n">ess_SOC</span><span class="p">,</span> <span class="n">ess_V_pack_out</span><span class="p">,</span> <span class="n">ess_V_pack_OC</span><span class="p">,</span> <span class="n">ess_T_cell</span><span class="p">,</span> <span class="n">ess_Q_loss_case</span> <span class="o">=</span> <span class="n">battery_plant_main</span><span class="p">(</span>
+            <span class="n">ess_i_out_dmd</span><span class="p">,</span> <span class="n">ess_SOC</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">ess_T_cell</span><span class="p">),</span> <span class="n">ess_Q_loss_case</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">car_model</span><span class="p">)</span>
+
+        <span class="c1"># Motor</span>
+        <span class="n">mot_i_out</span><span class="p">,</span> <span class="n">mot_I_out</span> <span class="o">=</span> <span class="n">motor_plant_main</span><span class="p">(</span>
+            <span class="n">ess_V_pack_out</span><span class="p">,</span> <span class="n">mot_spd_in</span><span class="p">,</span> <span class="n">vpc_T_mot_dmd</span><span class="p">,</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">car_model</span><span class="p">)</span>
+
+        <span class="c1"># Torque coupling</span>
+        <span class="n">mot_spd_in</span><span class="p">,</span> <span class="n">tc_T_out</span><span class="p">,</span> <span class="n">tc_I_out</span> <span class="o">=</span> <span class="n">torque_coupling_main</span><span class="p">(</span>
+            <span class="n">fd_spd_in</span><span class="p">,</span> <span class="n">vpc_T_mot_dmd</span><span class="p">,</span> <span class="n">mot_I_out</span><span class="p">,</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">car_model</span><span class="p">)</span>
+
+        <span class="c1"># Final drive</span>
+        <span class="n">fd_spd_in</span><span class="p">,</span> <span class="n">fd_T_out</span><span class="p">,</span> <span class="n">fd_I_out</span> <span class="o">=</span> <span class="n">final_drive_main</span><span class="p">(</span>
+            <span class="n">whl_spd_rdl_in</span><span class="p">,</span> <span class="n">tc_T_out</span><span class="p">,</span> <span class="n">tc_I_out</span><span class="p">,</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">car_model</span><span class="p">)</span>
+
+        <span class="c1"># Wheels</span>
+        <span class="n">whl_spd_rdl_in</span><span class="p">,</span> <span class="n">whl_F_out</span><span class="p">,</span> <span class="n">whl_M_inertia_equiv</span> <span class="o">=</span> <span class="n">wheel_plant_main</span><span class="p">(</span>
+            <span class="n">V_chas</span><span class="p">,</span> <span class="n">fd_T_out</span><span class="p">,</span> <span class="n">fd_I_out</span><span class="p">,</span> <span class="n">drv_cmd_brake</span><span class="p">,</span> <span class="n">vpc_T_mechbrake_dmd</span><span class="p">,</span> <span class="n">terrain</span><span class="p">[</span><span class="n">index</span><span class="p">],</span>
+            <span class="n">vehicle</span><span class="o">.</span><span class="n">car_model</span><span class="p">)</span>
+
+        <span class="c1"># Chassis</span>
+        <span class="n">V_chas</span><span class="p">,</span> <span class="n">chas_d</span> <span class="o">=</span> <span class="n">chassis_main</span><span class="p">(</span>
+            <span class="n">whl_F_out</span><span class="p">,</span> <span class="n">whl_M_inertia_equiv</span><span class="p">,</span> <span class="n">terrain</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="n">V_chas</span><span class="p">,</span> <span class="n">chas_d</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">car_model</span><span class="p">)</span>
+
+        <span class="c1"># Power converter</span>
+        <span class="n">pc_V_out</span><span class="p">,</span> <span class="n">pc_i_in</span> <span class="o">=</span> <span class="n">power_converter_main</span><span class="p">(</span>
+            <span class="n">ess_V_pack_out</span><span class="p">,</span> <span class="n">accelec_i_in</span><span class="p">,</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">car_model</span><span class="p">)</span>
+
+        <span class="c1"># Electrical accessories</span>
+        <span class="n">accelec_i_in</span> <span class="o">=</span> <span class="n">elec_acc_main</span><span class="p">(</span>
+            <span class="n">pc_V_out</span><span class="p">,</span> <span class="n">drv_key_on</span><span class="p">,</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">car_model</span><span class="p">)</span>
+
+        <span class="n">ess_i_out_dmd</span> <span class="o">=</span> <span class="n">mot_i_out</span> <span class="o">+</span> <span class="n">pc_i_in</span>
+
+        <span class="c1"># Save results timestep=0.1 sec</span>
+        <span class="k">if</span> <span class="p">((</span><span class="n">index</span> <span class="o">*</span> <span class="n">timestep</span><span class="p">)</span> <span class="o">%</span> <span class="n">project_timestep</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">drv</span><span class="o">.</span><span class="n">key_on</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">drv_key_on</span><span class="p">)</span>
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">drv</span><span class="o">.</span><span class="n">cmd_brake</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">drv_cmd_brake</span><span class="p">)</span>
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">drv</span><span class="o">.</span><span class="n">cmd_accel</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">drv_cmd_accel</span><span class="p">)</span>
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">drv</span><span class="o">.</span><span class="n">V_dmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">drv_V_dmd</span><span class="p">)</span>
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">drv</span><span class="o">.</span><span class="n">T_dmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">drv_T_dmd</span><span class="p">)</span>
+
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">T_mot_dmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vpc_T_mot_dmd</span><span class="p">)</span>
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">T_mechbrake_dmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vpc_T_mechbrake_dmd</span><span class="p">)</span>
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">heat_integral_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vpc_heat_integral</span><span class="p">)</span>
+
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">SOC</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ess_SOC</span><span class="p">)</span>
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">V_pack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ess_V_pack_out</span><span class="p">)</span>
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">i_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ess_i_out_dmd</span><span class="p">)</span>
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">V_pack_OC</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ess_V_pack_OC</span><span class="p">)</span>
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">T_cell</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ess_T_cell</span><span class="p">)</span>
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">Q_loss_case</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ess_Q_loss_case</span><span class="p">)</span>
+
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">mot</span><span class="o">.</span><span class="n">i_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mot_i_out</span><span class="p">)</span>
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">mot</span><span class="o">.</span><span class="n">I_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mot_I_out</span><span class="p">)</span>
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">mot</span><span class="o">.</span><span class="n">spd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mot_spd_in</span><span class="p">)</span>
+
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">tc</span><span class="o">.</span><span class="n">T_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tc_T_out</span><span class="p">)</span>
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">tc</span><span class="o">.</span><span class="n">I_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tc_I_out</span><span class="p">)</span>
+
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">fd</span><span class="o">.</span><span class="n">spd_in</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fd_spd_in</span><span class="p">)</span>
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">fd</span><span class="o">.</span><span class="n">T_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fd_T_out</span><span class="p">)</span>
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">fd</span><span class="o">.</span><span class="n">I_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fd_I_out</span><span class="p">)</span>
+
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">spd_rdl_in</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">whl_spd_rdl_in</span><span class="p">)</span>
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">F_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">whl_F_out</span><span class="p">)</span>
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">M_inertia_equiv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">whl_M_inertia_equiv</span><span class="p">)</span>
+
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">chas</span><span class="o">.</span><span class="n">V_chas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">V_chas</span><span class="p">)</span>
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">chas</span><span class="o">.</span><span class="n">d</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chas_d</span><span class="p">)</span>
+
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">pc</span><span class="o">.</span><span class="n">V_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pc_V_out</span><span class="p">)</span>
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">pc</span><span class="o">.</span><span class="n">i_in</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pc_i_in</span><span class="p">)</span>
+
+            <span class="n">outputSignal</span><span class="o">.</span><span class="n">accelec</span><span class="o">.</span><span class="n">i_in</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">accelec_i_in</span><span class="p">)</span>
+
+    <span class="c1"># Export powerDemand to the value in each driving activity</span>
+    <span class="n">powerDemand</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">outputSignal</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">V_pack</span><span class="p">,</span> <span class="n">outputSignal</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">i_out</span><span class="p">)</span>
+
+    <span class="c1"># Check if not below stranding threshold</span>
+    <span class="n">stranded</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">outputSignal</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">SOC</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">:</span>
+        <span class="n">stranded</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">return</span> <span class="n">outputSignal</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">SOC</span><span class="p">,</span> <span class="n">powerDemand</span><span class="p">,</span> <span class="n">stranded</span><span class="p">,</span> <span class="n">outputSignal</span>
+
+</div>
+<span class="k">def</span> <span class="nf">driver_main_nolookahead</span><span class="p">(</span><span class="n">V_chas</span><span class="p">,</span> <span class="n">speed</span><span class="p">,</span> <span class="n">terrain</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">carModel</span><span class="p">):</span>
+    <span class="c1"># Calculate</span>
+    <span class="n">r_wheel</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">radius</span>
+    <span class="n">V_dmd</span> <span class="o">=</span> <span class="n">speed</span>
+    <span class="n">A_dmd</span> <span class="o">=</span> <span class="p">(</span><span class="n">V_dmd</span> <span class="o">-</span> <span class="n">V_chas</span><span class="p">)</span> <span class="o">/</span> <span class="n">timestep</span>
+    <span class="n">V_threshold_stopped</span> <span class="o">=</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">drv</span><span class="o">.</span><span class="n">chas_spd_above_chas_started</span> <span class="o">+</span> <span class="n">carModel</span><span class="o">.</span><span class="n">drv</span><span class="o">.</span><span class="n">chas_spd_below_chas_stopped</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="c1"># Rolling and aero resitance</span>
+    <span class="n">B1</span> <span class="o">=</span> <span class="n">drv_calc_rolling_aero_res</span><span class="p">(</span><span class="n">terrain</span><span class="p">,</span> <span class="n">V_dmd</span><span class="p">,</span> <span class="n">carModel</span><span class="p">)</span>
+
+    <span class="c1"># Grade</span>
+    <span class="n">B2</span> <span class="o">=</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">veh</span><span class="o">.</span><span class="n">mass</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">gravity</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">terrain</span><span class="p">))</span> <span class="o">*</span> <span class="n">r_wheel</span>
+
+    <span class="c1"># Dynamic torque demand</span>
+    <span class="n">B3</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">veh</span><span class="o">.</span><span class="n">mass</span> <span class="o">*</span> <span class="n">A_dmd</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">radius</span>
+
+    <span class="c1"># Dynamic horizon torque demand</span>
+    <span class="n">B4</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># Torque demand</span>
+    <span class="n">T_dmd</span> <span class="o">=</span> <span class="n">B1</span> <span class="o">+</span> <span class="n">B2</span> <span class="o">+</span> <span class="n">B3</span> <span class="o">+</span> <span class="n">B4</span>
+
+    <span class="k">if</span> <span class="n">T_dmd</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">V_chas</span> <span class="o">&lt;=</span> <span class="n">V_threshold_stopped</span><span class="p">:</span>
+        <span class="n">cmd_brake</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cmd_brake</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="o">-</span><span class="n">T_dmd</span><span class="p">,</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">whls_trq_brk_total</span><span class="p">[</span><span class="s1">&#39;map_neg&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                                 <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">whls_trq_brk_total</span><span class="p">[</span><span class="s1">&#39;idx1_brake_cmd&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+    <span class="n">cmd_brake</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">cmd_brake</span><span class="p">))</span>  <span class="c1"># Saturation -1&lt;= cmd_brake &lt;=0</span>
+
+    <span class="c1"># Determine accelerator command</span>
+    <span class="n">T_max_wheel</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">V_chas</span><span class="p">,</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">whl_trq_max</span><span class="p">[</span><span class="s1">&#39;idx1_chas_lin_spd&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                               <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">whl_trq_max</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+    <span class="n">cmd_accel</span> <span class="o">=</span> <span class="n">T_dmd</span> <span class="o">/</span> <span class="n">T_max_wheel</span>
+    <span class="n">cmd_accel</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">cmd_accel</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="mi">1</span><span class="p">,</span> <span class="n">cmd_brake</span><span class="p">,</span> <span class="n">cmd_accel</span><span class="p">,</span> <span class="n">V_dmd</span><span class="p">,</span> <span class="n">T_dmd</span>
+
+
+<span class="k">def</span> <span class="nf">drv_calc_rolling_aero_res</span><span class="p">(</span><span class="n">terrain</span><span class="p">,</span> <span class="n">V_dmd</span><span class="p">,</span> <span class="n">carModel</span><span class="p">):</span>
+    <span class="n">r_wheel</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">radius</span>
+
+    <span class="c1"># Rolling resistance</span>
+    <span class="n">C1</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">coeff_roll1</span>
+    <span class="n">C2</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">coeff_roll2</span>
+    <span class="n">C3</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">coeff_roll3</span>
+    <span class="n">C4</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">coeff_roll4</span>
+    <span class="n">m_veh</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">veh</span><span class="o">.</span><span class="n">mass</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">gravity</span>
+
+    <span class="c1"># Aero resistance</span>
+    <span class="n">dens_air</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">dens_air</span>
+    <span class="n">Cd</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">chas</span><span class="o">.</span><span class="n">coeff_drag</span>
+    <span class="n">Af</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">chas</span><span class="o">.</span><span class="n">frontal_area</span>
+
+    <span class="c1"># Calculating rolling losses</span>
+    <span class="n">V_temp</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">V_dmd</span><span class="p">)</span>
+    <span class="n">Crr</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">terrain</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="n">numpy</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">C1</span><span class="p">,</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">C1</span> <span class="o">*</span> <span class="n">V_temp</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">C2</span> <span class="o">*</span> <span class="n">V_temp</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">C3</span> <span class="o">*</span> <span class="p">(</span><span class="n">V_temp</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">+</span> <span class="p">(</span><span class="n">C4</span> <span class="o">*</span> <span class="p">(</span><span class="n">V_temp</span> <span class="o">**</span> <span class="mi">3</span><span class="p">)))</span> <span class="o">*</span> <span class="n">m_veh</span> <span class="o">*</span> <span class="n">g</span>
+
+    <span class="c1"># Calculate aero losses</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">dens_air</span> <span class="o">*</span> <span class="n">Cd</span> <span class="o">*</span> <span class="n">Af</span> <span class="o">*</span> <span class="p">(</span><span class="n">V_temp</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">V_dmd</span><span class="p">)</span>
+
+    <span class="c1"># Total aero and rolling resistance losses</span>
+    <span class="k">return</span> <span class="p">((</span><span class="n">Crr</span> <span class="o">+</span> <span class="n">A</span><span class="p">)</span> <span class="o">*</span> <span class="n">r_wheel</span><span class="p">)</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">V_dmd</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">powertrain_control_main</span><span class="p">(</span><span class="n">cmd_brake</span><span class="p">,</span> <span class="n">cmd_accel</span><span class="p">,</span> <span class="n">T_dmd</span><span class="p">,</span> <span class="n">V_chas</span><span class="p">,</span> <span class="n">spd_mot</span><span class="p">,</span> <span class="n">SOC</span><span class="p">,</span> <span class="n">heat_integral_in</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">carModel</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">T_dmd</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># Propulsion model</span>
+        <span class="c1"># Determine constraints</span>
+        <span class="n">P_ess_max_prop</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">SOC</span><span class="p">,</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">pwr_dis</span><span class="p">[</span><span class="s1">&#39;idx1_soc&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                                      <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">pwr_dis</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">num_cell</span>
+        <span class="n">T_max_mot_prop_peak</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">spd_mot</span><span class="p">,</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">mot</span><span class="o">.</span><span class="n">trq_pos_max</span><span class="p">[</span><span class="s1">&#39;idx1_speed&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                                           <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">mot</span><span class="o">.</span><span class="n">trq_pos_max</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+        <span class="n">T_max_mot_prop_cont</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">spd_mot</span><span class="p">,</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">mot</span><span class="o">.</span><span class="n">trq_pos_cont</span><span class="p">[</span><span class="s1">&#39;idx1_speed&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                                           <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">mot</span><span class="o">.</span><span class="n">trq_pos_cont</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+
+        <span class="c1"># Motor heat index calculation</span>
+        <span class="n">heat_integral_out</span> <span class="o">=</span> <span class="p">(((</span><span class="n">numpy</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span>
+            <span class="n">T_dmd</span> <span class="o">/</span> <span class="n">T_max_mot_prop_cont</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.3</span> <span class="o">/</span> <span class="n">carModel</span><span class="o">.</span><span class="n">mot</span><span class="o">.</span><span class="n">t_max_trq</span><span class="p">)</span> <span class="o">*</span> <span class="n">timestep</span><span class="p">)</span> <span class="o">+</span> <span class="n">heat_integral_in</span>
+        <span class="n">heat_integral_out</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">heat_integral_out</span><span class="p">))</span>
+        <span class="n">heat_index</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">heat_integral_out</span><span class="p">))</span>
+
+        <span class="n">T_max_mot_prop</span> <span class="o">=</span> <span class="p">(</span><span class="n">T_max_mot_prop_cont</span> <span class="o">*</span> <span class="n">heat_index</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">T_max_mot_prop_peak</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">heat_index</span><span class="p">))</span>
+
+        <span class="c1"># Calculate torque demands</span>
+        <span class="n">T_mot_dmd</span> <span class="o">=</span> <span class="n">vpc_propulsion</span><span class="p">(</span><span class="n">cmd_accel</span><span class="p">,</span> <span class="n">cmd_brake</span><span class="p">,</span> <span class="n">V_chas</span><span class="p">,</span> <span class="n">spd_mot</span><span class="p">,</span> <span class="n">P_ess_max_prop</span><span class="p">,</span> <span class="n">T_max_mot_prop</span><span class="p">,</span> <span class="n">carModel</span><span class="p">)</span>
+        <span class="n">T_mechbrake_dmd</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Braking model</span>
+        <span class="c1"># Determine the constraints</span>
+        <span class="n">P_ess_max_regen</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">SOC</span><span class="p">,</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">pwr_chg</span><span class="p">[</span><span class="s1">&#39;idx1_soc&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                                       <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">pwr_chg</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">num_cell</span>
+        <span class="n">T_max_mot_regen_peak</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">spd_mot</span><span class="p">,</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">mot</span><span class="o">.</span><span class="n">trq_neg_max</span><span class="p">[</span><span class="s1">&#39;idx1_speed&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                                            <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">mot</span><span class="o">.</span><span class="n">trq_neg_max</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+        <span class="n">T_max_mot_regen_cont</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">spd_mot</span><span class="p">,</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">mot</span><span class="o">.</span><span class="n">trq_neg_max</span><span class="p">[</span><span class="s1">&#39;idx1_speed&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                                            <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">mot</span><span class="o">.</span><span class="n">trq_neg_max</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+
+        <span class="c1"># Motor heat index calculation</span>
+        <span class="n">heat_integral_out</span> <span class="o">=</span> <span class="p">(((</span><span class="n">numpy</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span>
+            <span class="n">T_dmd</span> <span class="o">/</span> <span class="n">T_max_mot_regen_cont</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.3</span> <span class="o">/</span> <span class="n">carModel</span><span class="o">.</span><span class="n">mot</span><span class="o">.</span><span class="n">t_max_trq</span><span class="p">)</span> <span class="o">*</span> <span class="n">timestep</span><span class="p">)</span> <span class="o">+</span> <span class="n">heat_integral_in</span>
+        <span class="n">heat_integral_out</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">heat_integral_out</span><span class="p">))</span>
+        <span class="n">heat_index</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">heat_integral_out</span><span class="p">))</span>
+
+        <span class="n">T_max_mot_regen</span> <span class="o">=</span> <span class="p">(</span><span class="n">T_max_mot_regen_cont</span> <span class="o">*</span> <span class="n">heat_index</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">T_max_mot_regen_peak</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">heat_index</span><span class="p">))</span>
+
+        <span class="c1"># Calculate torque demands</span>
+        <span class="n">T_mot_dmd</span><span class="p">,</span> <span class="n">T_mechbrake_dmd</span> <span class="o">=</span> <span class="n">vpc_braking</span><span class="p">(</span><span class="n">SOC</span><span class="p">,</span> <span class="n">V_chas</span><span class="p">,</span> <span class="n">P_ess_max_regen</span><span class="p">,</span> <span class="n">spd_mot</span><span class="p">,</span> <span class="n">T_max_mot_regen</span><span class="p">,</span> <span class="n">cmd_brake</span><span class="p">,</span>
+                                                 <span class="n">carModel</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">T_mot_dmd</span><span class="p">,</span> <span class="n">T_mechbrake_dmd</span><span class="p">,</span> <span class="n">heat_integral_out</span>
+
+
+<span class="k">def</span> <span class="nf">vpc_propulsion</span><span class="p">(</span><span class="n">cmd_accel</span><span class="p">,</span> <span class="n">cmd_brake</span><span class="p">,</span> <span class="n">V_chas</span><span class="p">,</span> <span class="n">spd_mot</span><span class="p">,</span> <span class="n">P_ess_max_prop</span><span class="p">,</span> <span class="n">T_max_mot_prop</span><span class="p">,</span> <span class="n">carModel</span><span class="p">):</span>
+    <span class="c1"># Calculate motor torque demand</span>
+    <span class="k">if</span> <span class="n">cmd_accel</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">T_whl_dmd</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">V_chas</span><span class="p">,</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">whl_trq_max</span><span class="p">[</span><span class="s1">&#39;idx1_chas_lin_spd&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                                 <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">whl_trq_max</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span> <span class="o">*</span> <span class="n">cmd_accel</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">T_whl_dmd</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="o">-</span><span class="n">cmd_brake</span><span class="p">,</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">trq_brake_mech</span><span class="p">[</span><span class="s1">&#39;idx1_brk_cmd&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                                 <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">trq_brake_mech</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+
+    <span class="n">T_lim1</span> <span class="o">=</span> <span class="n">T_whl_dmd</span> <span class="o">/</span> <span class="n">carModel</span><span class="o">.</span><span class="n">vpa</span><span class="o">.</span><span class="n">ratio_cum</span>
+    <span class="n">T_lim1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">T_lim1</span><span class="p">)</span>  <span class="c1"># value &gt;= 0</span>
+
+    <span class="n">T_lim2</span> <span class="o">=</span> <span class="n">interp_2d</span><span class="p">(</span><span class="n">spd_mot</span><span class="p">,</span> <span class="p">(</span><span class="n">P_ess_max_prop</span> <span class="o">-</span> <span class="n">carModel</span><span class="o">.</span><span class="n">accelec</span><span class="o">.</span><span class="n">pwr</span><span class="p">),</span>
+                       <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">mot</span><span class="o">.</span><span class="n">trq_pwr_elec</span><span class="p">[</span><span class="s1">&#39;idx1_speed&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                       <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">mot</span><span class="o">.</span><span class="n">trq_pwr_elec</span><span class="p">[</span><span class="s1">&#39;idx2_pwr&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">carModel</span><span class="o">.</span><span class="n">mot</span><span class="o">.</span><span class="n">trq_pwr_elec</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span>
+
+    <span class="n">T_lim3</span> <span class="o">=</span> <span class="n">T_max_mot_prop</span>  <span class="c1"># Not used ?</span>
+
+    <span class="n">fric_tire</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">V_chas</span><span class="p">,</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">friction_coefficient</span><span class="p">[</span><span class="s1">&#39;idx1_chas_lin_spd&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                             <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">friction_coefficient</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+    <span class="n">T_lim4</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">carModel</span><span class="o">.</span><span class="n">veh</span><span class="o">.</span><span class="n">mass</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">gravity</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">chas</span><span class="o">.</span><span class="n">ratio_weight_front</span> <span class="o">*</span> <span class="n">fric_tire</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">radius</span><span class="p">)</span> <span class="o">/</span> <span class="n">carModel</span><span class="o">.</span><span class="n">vpa</span><span class="o">.</span><span class="n">ratio_cum</span>
+
+    <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">amin</span><span class="p">([</span><span class="n">T_lim1</span><span class="p">,</span> <span class="n">T_lim2</span><span class="p">,</span> <span class="n">T_lim4</span><span class="p">])</span>
+
+
+<span class="k">def</span> <span class="nf">vpc_braking</span><span class="p">(</span><span class="n">SOC</span><span class="p">,</span> <span class="n">V_chas</span><span class="p">,</span> <span class="n">P_ess_max_regen</span><span class="p">,</span> <span class="n">spd_mot</span><span class="p">,</span> <span class="n">T_max_mot_regen</span><span class="p">,</span> <span class="n">cmd_brake</span><span class="p">,</span> <span class="n">carModel</span><span class="p">):</span>
+    <span class="c1"># Total braking torque demand at wheels</span>
+    <span class="n">T_brake_dmd_temp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">cmd_brake</span><span class="p">,</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">brk_trq</span><span class="p">[</span><span class="s1">&#39;idx1_brk_cmd&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                                    <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">brk_trq</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+    <span class="n">T_brake_dmd_temp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">T_brake_dmd_temp</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">T_brake_dmd_temp</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">T_brake_total</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">temp_val</span> <span class="o">=</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">T_brake_dmd_temp</span><span class="p">)</span> <span class="o">/</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">radius</span><span class="p">)</span> <span class="o">/</span> <span class="n">carModel</span><span class="o">.</span><span class="n">veh</span><span class="o">.</span><span class="n">mass</span>
+        <span class="n">temp_val2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">temp_val</span><span class="p">,</span> <span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">ratio_ecu_brk_total_brk</span><span class="p">[</span><span class="s1">&#39;idx1_lin_accel&#39;</span><span class="p">],</span>
+                                 <span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">ratio_ecu_brk_total_brk</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span>
+        <span class="n">T_brake_total</span> <span class="o">=</span> <span class="n">T_brake_dmd_temp</span> <span class="o">*</span> <span class="n">temp_val2</span>
+
+    <span class="n">T_brake_total</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">T_brake_total</span><span class="p">)</span>
+
+    <span class="c1"># Determine if regenerative braking is available</span>
+    <span class="n">SOC_regen_thresh</span> <span class="o">=</span> <span class="p">((</span><span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">ess_soc_above_regen_forbidden</span> <span class="o">+</span> <span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">ess_soc_below_regen_allowed</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">V_regen_thresh</span> <span class="o">=</span> <span class="p">((</span><span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">chas_spd_above_full_regen</span> <span class="o">+</span> <span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">chas_spd_below_no_regen</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">T_mot_regen_avail</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">SOC</span> <span class="o">&lt;=</span> <span class="n">SOC_regen_thresh</span> <span class="ow">and</span> <span class="n">V_chas</span> <span class="o">&gt;=</span> <span class="n">V_regen_thresh</span><span class="p">:</span>
+        <span class="n">T_mot_regen_avail</span> <span class="o">=</span> <span class="n">T_brake_total</span>
+
+    <span class="c1"># Power available from battery for regen braking</span>
+    <span class="n">P_elec_regen_avail</span> <span class="o">=</span> <span class="p">(</span><span class="n">P_ess_max_regen</span> <span class="o">/</span> <span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">eff_ess_to_mot</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span>
+        <span class="n">carModel</span><span class="o">.</span><span class="n">accelec</span><span class="o">.</span><span class="n">pwr</span> <span class="o">/</span> <span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">eff_accelec_to_mot</span><span class="p">)</span>
+
+    <span class="c1"># Maximum braking torque from motor</span>
+    <span class="n">temp_val3</span> <span class="o">=</span> <span class="n">interp_2d</span><span class="p">(</span><span class="n">spd_mot</span><span class="p">,</span> <span class="n">P_elec_regen_avail</span><span class="p">,</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">trq_pwr_elec</span><span class="p">[</span><span class="s1">&#39;idx1_speed&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                          <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">trq_pwr_elec</span><span class="p">[</span><span class="s1">&#39;idx2_pwr&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">trq_pwr_elec</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span>
+
+    <span class="n">temp_val3</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">temp_val3</span><span class="p">)</span>
+    <span class="n">temp_val4</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">T_max_mot_regen</span><span class="p">)</span>
+    <span class="n">T_max_mot_brake</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">temp_val3</span><span class="p">,</span> <span class="n">temp_val4</span><span class="p">)</span>
+
+    <span class="c1"># Motor braking torque to wheels</span>
+    <span class="n">temp_val5</span> <span class="o">=</span> <span class="p">(</span><span class="n">T_max_mot_brake</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">ratio_cum</span><span class="p">)</span> <span class="o">/</span> <span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">eff_to_whl</span>
+    <span class="n">T_mot_trq_dmd_wheels</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">temp_val5</span><span class="p">,</span> <span class="n">T_mot_regen_avail</span><span class="p">)</span>
+
+    <span class="n">T_mot_dmd</span> <span class="o">=</span> <span class="p">(</span><span class="n">T_mot_trq_dmd_wheels</span> <span class="o">/</span> <span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">ratio_cum</span><span class="p">)</span> <span class="o">/</span> <span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">eff_to_whl</span>
+    <span class="n">T_mechbrake_dmd</span> <span class="o">=</span> <span class="n">T_brake_total</span> <span class="o">-</span> <span class="n">T_mot_trq_dmd_wheels</span>
+    <span class="n">T_mechbrake_dmd</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">T_mechbrake_dmd</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">T_mot_dmd</span><span class="p">,</span> <span class="n">T_mechbrake_dmd</span>
+
+
+<span class="k">def</span> <span class="nf">battery_plant_main</span><span class="p">(</span><span class="n">I_out_dmd</span><span class="p">,</span> <span class="n">SOC_start</span><span class="p">,</span> <span class="n">T_cell_start</span><span class="p">,</span> <span class="n">Q_loss_case_prev</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">carModel</span><span class="p">):</span>
+    <span class="n">T_amb</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">temp_amb</span>  <span class="c1"># Ambient temperature</span>
+    <span class="n">ess_plant_cell_curr</span> <span class="o">=</span> <span class="n">I_out_dmd</span> <span class="o">/</span> <span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">design_num_module_parallel</span>  <span class="c1"># Convert pack-level parameters to cell-level</span>
+
+    <span class="c1"># SOC calculation</span>
+    <span class="n">SOC_end</span> <span class="o">=</span> <span class="n">SOC_calc</span><span class="p">(</span><span class="n">SOC_start</span><span class="p">,</span> <span class="n">ess_plant_cell_curr</span><span class="p">,</span> <span class="n">T_cell_start</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">carModel</span><span class="p">)</span>
+
+    <span class="c1"># Cell voltage calculation</span>
+    <span class="n">V_cell_out_temp</span><span class="p">,</span> <span class="n">V_cell_OC</span><span class="p">,</span> <span class="n">R_cell_int</span> <span class="o">=</span> <span class="n">V_cell_out_calc</span><span class="p">(</span><span class="n">SOC_end</span><span class="p">,</span> <span class="n">T_cell_start</span><span class="p">,</span> <span class="n">ess_plant_cell_curr</span><span class="p">,</span> <span class="n">carModel</span><span class="p">)</span>
+    <span class="n">V_cell_out</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">V_cell_out_temp</span><span class="p">,</span>
+                               <span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">volt_min</span><span class="p">)</span>  <span class="c1"># Ensure output voltage does not fall below min allowable</span>
+
+    <span class="c1"># Thermal model</span>
+    <span class="n">T_cell_end</span><span class="p">,</span> <span class="n">Q_loss_case</span> <span class="o">=</span> <span class="n">module_therm</span><span class="p">(</span><span class="n">ess_plant_cell_curr</span><span class="p">,</span> <span class="n">R_cell_int</span><span class="p">,</span> <span class="n">V_cell_out</span><span class="p">,</span> <span class="n">T_cell_start</span><span class="p">,</span> <span class="n">T_amb</span><span class="p">,</span>
+                                           <span class="n">Q_loss_case_prev</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">carModel</span><span class="p">)</span>
+
+    <span class="c1"># Convert cell-level to pack-level</span>
+    <span class="n">V_pack_out</span> <span class="o">=</span> <span class="n">V_cell_out</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">num_cell_series</span>
+    <span class="n">V_pack_OC</span> <span class="o">=</span> <span class="n">V_cell_OC</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">num_cell_series</span>
+
+    <span class="k">return</span> <span class="n">SOC_end</span><span class="p">,</span> <span class="n">V_pack_out</span><span class="p">,</span> <span class="n">V_pack_OC</span><span class="p">,</span> <span class="n">T_cell_end</span><span class="p">,</span> <span class="n">Q_loss_case</span>
+
+
+<span class="k">def</span> <span class="nf">SOC_calc</span><span class="p">(</span><span class="n">SOC_start</span><span class="p">,</span> <span class="n">I_cell_out</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">carModel</span><span class="p">):</span>
+    <span class="c1"># Determine energy stored at start of timestep</span>
+    <span class="n">Ah_max</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">cap_max</span><span class="p">[</span><span class="s1">&#39;idx1_temp&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">cap_max</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+    <span class="n">Ah_start</span> <span class="o">=</span> <span class="n">SOC_start</span> <span class="o">*</span> <span class="n">Ah_max</span>
+
+    <span class="c1"># Determine energy stored at end of timestep</span>
+    <span class="n">Ah_cell_out_total</span> <span class="o">=</span> <span class="n">I_cell_out</span> <span class="o">*</span> <span class="n">timestep</span> <span class="o">/</span> <span class="mi">3600</span>  <span class="c1"># Ah output per timestep</span>
+    <span class="n">Ah_end</span> <span class="o">=</span> <span class="n">Ah_start</span> <span class="o">-</span> <span class="n">Ah_cell_out_total</span>  <span class="c1"># Ah at the end of timestep</span>
+
+    <span class="c1"># Calculate SOC at end of timestep</span>
+    <span class="n">SOC_end</span> <span class="o">=</span> <span class="n">Ah_end</span> <span class="o">/</span> <span class="n">Ah_max</span>
+    <span class="k">if</span> <span class="n">SOC_end</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">SOC_end</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">elif</span> <span class="n">SOC_end</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">SOC_end</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">return</span> <span class="n">SOC_end</span>
+
+
+<span class="k">def</span> <span class="nf">V_cell_out_calc</span><span class="p">(</span><span class="n">SOC</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">I_cell_out</span><span class="p">,</span> <span class="n">carModel</span><span class="p">):</span>
+    <span class="c1"># Calculate open-circuit voltage</span>
+    <span class="n">V_OC</span> <span class="o">=</span> <span class="n">interp_2d</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">SOC</span><span class="p">,</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">voc</span><span class="p">[</span><span class="s1">&#39;idx1_temp&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">voc</span><span class="p">[</span><span class="s1">&#39;idx2_soc&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                     <span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">voc</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span>
+
+    <span class="c1"># Calculate internal resistance</span>
+    <span class="k">if</span> <span class="n">I_cell_out</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Discharging</span>
+        <span class="n">R_int</span> <span class="o">=</span> <span class="n">interp_2d</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">SOC</span><span class="p">,</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">rint_dist</span><span class="p">[</span><span class="s1">&#39;idx1_temp&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                          <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">rint_dist</span><span class="p">[</span><span class="s1">&#39;idx2_soc&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">rint_dist</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="n">I_cell_out</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">R_int</span> <span class="o">=</span> <span class="n">interp_2d</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">SOC</span><span class="p">,</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">rint_chg</span><span class="p">[</span><span class="s1">&#39;idx1_temp&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                          <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">rint_chg</span><span class="p">[</span><span class="s1">&#39;idx2_soc&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">rint_chg</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span>
+
+    <span class="c1"># Adjusting current using colombic effiency in charging case</span>
+    <span class="k">if</span> <span class="n">I_cell_out</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">I_int_adj</span> <span class="o">=</span> <span class="n">I_cell_out</span>
+    <span class="k">elif</span> <span class="n">I_cell_out</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">eff_coul</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">eff_coulomb</span><span class="p">[</span><span class="s1">&#39;idx1_temp&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                                <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">eff_coulomb</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+        <span class="n">I_int_adj</span> <span class="o">=</span> <span class="n">I_cell_out</span> <span class="o">*</span> <span class="n">eff_coul</span>
+
+    <span class="c1"># Calculate output voltage</span>
+    <span class="n">V_cell_output</span> <span class="o">=</span> <span class="n">V_OC</span> <span class="o">-</span> <span class="p">(</span><span class="n">R_int</span> <span class="o">*</span> <span class="n">I_int_adj</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">V_cell_output</span><span class="p">,</span> <span class="n">V_OC</span><span class="p">,</span> <span class="n">R_int</span>
+
+
+<span class="k">def</span> <span class="nf">module_therm</span><span class="p">(</span><span class="n">I_cell_out</span><span class="p">,</span> <span class="n">R_cell_int</span><span class="p">,</span> <span class="n">V_cell_out</span><span class="p">,</span> <span class="n">T_cell_start</span><span class="p">,</span> <span class="n">T_amb</span><span class="p">,</span> <span class="n">Q_loss_case_prev</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">carModel</span><span class="p">):</span>
+    <span class="c1"># Calculate heat generation from charging/discharging</span>
+    <span class="k">if</span> <span class="n">I_cell_out</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">Q_gen_cell</span> <span class="o">=</span> <span class="p">(</span><span class="n">I_cell_out</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">R_cell_int</span>
+    <span class="k">elif</span> <span class="n">I_cell_out</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">eff_coul</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">T_cell_start</span><span class="p">,</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">eff_coulomb</span><span class="p">[</span><span class="s1">&#39;idx1_temp&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                                <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">eff_coulomb</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+        <span class="n">Q_gen_cell</span> <span class="o">=</span> <span class="p">((</span><span class="n">I_cell_out</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">R_cell_int</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">I_cell_out</span> <span class="o">*</span> <span class="n">V_cell_out</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">eff_coul</span><span class="p">))</span>
+    <span class="n">Q_gen</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">element_per_module</span> <span class="o">*</span> <span class="n">Q_gen_cell</span>
+
+    <span class="c1"># Determine case/cooling heat loss</span>
+    <span class="k">if</span> <span class="n">T_cell_start</span> <span class="o">&gt;</span> <span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">temp_reg</span><span class="p">:</span>  <span class="c1"># cooling fan is on</span>
+        <span class="n">T_air_ave</span> <span class="o">=</span> <span class="n">T_amb</span> <span class="o">-</span> <span class="p">((</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">Q_loss_case_prev</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">flow_air_mod</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">air_cap</span><span class="p">))</span>
+        <span class="n">Q_loss_case</span> <span class="o">=</span> <span class="p">(</span><span class="n">T_air_ave</span> <span class="o">-</span> <span class="n">T_cell_start</span><span class="p">)</span> <span class="o">/</span> <span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">therm_res_on</span>  <span class="c1"># W</span>
+    <span class="k">elif</span> <span class="n">T_cell_start</span> <span class="o">&lt;=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">temp_reg</span><span class="p">:</span>
+        <span class="n">Q_loss_case</span> <span class="o">=</span> <span class="p">(</span><span class="n">T_amb</span> <span class="o">-</span> <span class="n">T_cell_start</span><span class="p">)</span> <span class="o">/</span> <span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">therm_res_off</span>  <span class="c1"># W</span>
+
+    <span class="c1"># Calculate overall cell temperature</span>
+    <span class="n">T_cell_end</span> <span class="o">=</span> <span class="n">T_cell_start</span> <span class="o">+</span> <span class="p">(</span>
+        <span class="p">((</span><span class="n">Q_gen</span> <span class="o">+</span> <span class="n">Q_loss_case</span><span class="p">)</span> <span class="o">*</span> <span class="n">timestep</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">mass_module</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">ess</span><span class="o">.</span><span class="n">therm_cp_module</span><span class="p">))</span>  <span class="c1"># deg Celsius</span>
+
+    <span class="k">return</span> <span class="n">T_cell_end</span><span class="p">,</span> <span class="n">Q_loss_case</span>
+
+
+<span class="k">def</span> <span class="nf">motor_plant_main</span><span class="p">(</span><span class="n">V_in</span><span class="p">,</span> <span class="n">speed_in</span><span class="p">,</span> <span class="n">T_mot_dmd</span><span class="p">,</span> <span class="n">carModel</span><span class="p">):</span>
+    <span class="c1"># Motor inertia</span>
+    <span class="n">I_out</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">mot</span><span class="o">.</span><span class="n">inertia</span>
+
+    <span class="c1"># Motor current output</span>
+    <span class="n">P_elec</span> <span class="o">=</span> <span class="n">interp_2d</span><span class="p">(</span><span class="n">speed_in</span><span class="p">,</span> <span class="n">T_mot_dmd</span><span class="p">,</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">mot</span><span class="o">.</span><span class="n">pwr_elec</span><span class="p">[</span><span class="s1">&#39;idx1_speed&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                       <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">mot</span><span class="o">.</span><span class="n">pwr_elec</span><span class="p">[</span><span class="s1">&#39;idx2_trq&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">carModel</span><span class="o">.</span><span class="n">mot</span><span class="o">.</span><span class="n">pwr_elec</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span>
+    <span class="n">i_out</span> <span class="o">=</span> <span class="n">P_elec</span> <span class="o">/</span> <span class="n">V_in</span>
+
+    <span class="k">return</span> <span class="n">i_out</span><span class="p">,</span> <span class="n">I_out</span>
+
+
+<span class="k">def</span> <span class="nf">torque_coupling_main</span><span class="p">(</span><span class="n">spd_out</span><span class="p">,</span> <span class="n">T_in</span><span class="p">,</span> <span class="n">I_in</span><span class="p">,</span> <span class="n">carModel</span><span class="p">):</span>
+    <span class="c1"># Speed calculation</span>
+    <span class="n">spd_in</span> <span class="o">=</span> <span class="n">spd_out</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">tc</span><span class="o">.</span><span class="n">ratio</span>
+
+    <span class="c1"># Torque calculation</span>
+    <span class="n">T_loss_temp</span> <span class="o">=</span> <span class="n">interp_2d</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">T_in</span><span class="p">),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">spd_in</span><span class="p">),</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">tc</span><span class="o">.</span><span class="n">trq_loss</span><span class="p">[</span><span class="s1">&#39;idx1_trq&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                            <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">tc</span><span class="o">.</span><span class="n">trq_loss</span><span class="p">[</span><span class="s1">&#39;idx2_speed&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">carModel</span><span class="o">.</span><span class="n">tc</span><span class="o">.</span><span class="n">trq_loss</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span>
+
+    <span class="c1"># Blend function</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">spd_in</span>
+    <span class="n">xl</span> <span class="o">=</span> <span class="o">-</span><span class="n">carModel</span><span class="o">.</span><span class="n">tc</span><span class="o">.</span><span class="n">spd_thresh</span>
+    <span class="n">yl</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">xc</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">yc</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">xr</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">tc</span><span class="o">.</span><span class="n">spd_thresh</span>
+    <span class="n">yr</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">blend</span> <span class="o">=</span> <span class="p">(</span><span class="n">u</span> <span class="o">&lt;</span> <span class="n">xl</span><span class="p">)</span> <span class="o">*</span> <span class="n">yl</span> <span class="o">+</span> <span class="p">(</span><span class="n">xl</span> <span class="o">&lt;=</span> <span class="n">u</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">u</span> <span class="o">&lt;</span> <span class="n">xc</span><span class="p">)</span> <span class="o">*</span> <span class="p">((</span><span class="n">yc</span> <span class="o">-</span> <span class="n">yl</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="n">xl</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">xc</span> <span class="o">-</span> <span class="n">xl</span><span class="p">)</span> <span class="o">+</span> <span class="n">yl</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">xc</span> <span class="o">&lt;=</span> <span class="n">u</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">u</span> <span class="o">&lt;</span> <span class="n">xr</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">yc</span> <span class="o">-</span> <span class="n">yr</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="n">xr</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">xc</span> <span class="o">-</span> <span class="n">xr</span><span class="p">)</span> <span class="o">+</span> <span class="n">yr</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">xr</span> <span class="o">&lt;=</span> <span class="n">u</span><span class="p">)</span> <span class="o">*</span> <span class="n">yr</span>
+
+    <span class="n">T_loss</span> <span class="o">=</span> <span class="n">T_loss_temp</span> <span class="o">*</span> <span class="n">blend</span>
+
+    <span class="c1"># Final torque calculation</span>
+    <span class="n">T_out</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">tc</span><span class="o">.</span><span class="n">ratio</span> <span class="o">*</span> <span class="p">(</span><span class="n">T_in</span> <span class="o">-</span> <span class="n">T_loss</span><span class="p">)</span>
+
+    <span class="c1"># Inertia calculation</span>
+    <span class="n">I_out</span> <span class="o">=</span> <span class="p">(</span><span class="n">I_in</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">tc</span><span class="o">.</span><span class="n">ratio</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">carModel</span><span class="o">.</span><span class="n">tc</span><span class="o">.</span><span class="n">inertia</span>
+
+    <span class="k">return</span> <span class="n">spd_in</span><span class="p">,</span> <span class="n">T_out</span><span class="p">,</span> <span class="n">I_out</span>
+
+
+<span class="k">def</span> <span class="nf">final_drive_main</span><span class="p">(</span><span class="n">spd_out</span><span class="p">,</span> <span class="n">T_in</span><span class="p">,</span> <span class="n">I_in</span><span class="p">,</span> <span class="n">carModel</span><span class="p">):</span>
+    <span class="c1"># Speed calculation</span>
+    <span class="n">spd_in</span> <span class="o">=</span> <span class="n">spd_out</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">fd</span><span class="o">.</span><span class="n">ratio</span>
+
+    <span class="c1"># Torque calculation</span>
+    <span class="n">T_loss_temp</span> <span class="o">=</span> <span class="n">interp_2d</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">T_in</span><span class="p">),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">spd_in</span><span class="p">),</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">fd</span><span class="o">.</span><span class="n">trq_loss</span><span class="p">[</span><span class="s1">&#39;idx1_trq&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                            <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">fd</span><span class="o">.</span><span class="n">trq_loss</span><span class="p">[</span><span class="s1">&#39;idx2_speed&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">carModel</span><span class="o">.</span><span class="n">fd</span><span class="o">.</span><span class="n">trq_loss</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span>
+
+    <span class="c1"># Blend function</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">spd_in</span>
+    <span class="n">xl</span> <span class="o">=</span> <span class="o">-</span><span class="n">carModel</span><span class="o">.</span><span class="n">fd</span><span class="o">.</span><span class="n">spd_thresh</span>
+    <span class="n">yl</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">xc</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">yc</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">xr</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">fd</span><span class="o">.</span><span class="n">spd_thresh</span>
+    <span class="n">yr</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">blend</span> <span class="o">=</span> <span class="p">(</span><span class="n">u</span> <span class="o">&lt;</span> <span class="n">xl</span><span class="p">)</span> <span class="o">*</span> <span class="n">yl</span> <span class="o">+</span> <span class="p">(</span><span class="n">xl</span> <span class="o">&lt;=</span> <span class="n">u</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">u</span> <span class="o">&lt;</span> <span class="n">xc</span><span class="p">)</span> <span class="o">*</span> <span class="p">((</span><span class="n">yc</span> <span class="o">-</span> <span class="n">yl</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="n">xl</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">xc</span> <span class="o">-</span> <span class="n">xl</span><span class="p">)</span> <span class="o">+</span> <span class="n">yl</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">xc</span> <span class="o">&lt;=</span> <span class="n">u</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">u</span> <span class="o">&lt;</span> <span class="n">xr</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">yc</span> <span class="o">-</span> <span class="n">yr</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="n">xr</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">xc</span> <span class="o">-</span> <span class="n">xr</span><span class="p">)</span> <span class="o">+</span> <span class="n">yr</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">xr</span> <span class="o">&lt;=</span> <span class="n">u</span><span class="p">)</span> <span class="o">*</span> <span class="n">yr</span>
+
+    <span class="n">T_loss</span> <span class="o">=</span> <span class="n">T_loss_temp</span> <span class="o">*</span> <span class="n">blend</span>
+
+    <span class="c1"># Final torque calculation</span>
+    <span class="n">T_out</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">fd</span><span class="o">.</span><span class="n">ratio</span> <span class="o">*</span> <span class="p">(</span><span class="n">T_in</span> <span class="o">-</span> <span class="n">T_loss</span><span class="p">)</span>
+
+    <span class="c1"># Inertia calculation</span>
+    <span class="n">I_out</span> <span class="o">=</span> <span class="p">(</span><span class="n">I_in</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">fd</span><span class="o">.</span><span class="n">ratio</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">carModel</span><span class="o">.</span><span class="n">fd</span><span class="o">.</span><span class="n">inertia</span>
+
+    <span class="k">return</span> <span class="n">spd_in</span><span class="p">,</span> <span class="n">T_out</span><span class="p">,</span> <span class="n">I_out</span>
+
+
+<span class="k">def</span> <span class="nf">wheel_plant_main</span><span class="p">(</span><span class="n">V_chas_in</span><span class="p">,</span> <span class="n">T_in</span><span class="p">,</span> <span class="n">I_in</span><span class="p">,</span> <span class="n">drv_cmd_brake</span><span class="p">,</span> <span class="n">vpc_T_mech_brake_dmd</span><span class="p">,</span> <span class="n">terrain</span><span class="p">,</span> <span class="n">carModel</span><span class="p">):</span>
+    <span class="c1"># Wheel brake control model</span>
+    <span class="n">T_brk_temp1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">drv_cmd_brake</span><span class="p">,</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">brk_trq</span><span class="p">[</span><span class="s1">&#39;idx1_brk_cmd&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                               <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">brk_trq</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+    <span class="n">T_brk_temp1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="o">-</span><span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">trq_brake_max</span><span class="p">,</span>
+                                                 <span class="n">T_brk_temp1</span><span class="p">))</span>  <span class="c1"># Saturation -trq_brake_max&lt;=T_brk_temp1&lt;=0</span>
+
+    <span class="n">temp_val1</span> <span class="o">=</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">T_brk_temp1</span><span class="p">)</span> <span class="o">/</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">radius</span><span class="p">)</span> <span class="o">/</span> <span class="n">carModel</span><span class="o">.</span><span class="n">veh</span><span class="o">.</span><span class="n">mass</span>
+    <span class="n">temp_val2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">temp_val1</span><span class="p">,</span> <span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">ratio_ecu_brk_total_brk</span><span class="p">[</span><span class="s1">&#39;idx1_lin_accel&#39;</span><span class="p">],</span>
+                             <span class="n">carModel</span><span class="o">.</span><span class="n">vpc</span><span class="o">.</span><span class="n">ratio_ecu_brk_total_brk</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">T_brk_temp1</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">temp_val3</span> <span class="o">=</span> <span class="n">T_brk_temp1</span> <span class="o">*</span> <span class="n">temp_val2</span>
+    <span class="k">elif</span> <span class="n">T_brk_temp1</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">temp_val3</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">temp_val4</span> <span class="o">=</span> <span class="n">T_brk_temp1</span> <span class="o">-</span> <span class="n">temp_val3</span>
+    <span class="n">temp_val5</span> <span class="o">=</span> <span class="n">vpc_T_mech_brake_dmd</span> <span class="o">+</span> <span class="n">temp_val4</span>
+
+    <span class="n">cmd_whl_ctrl_brk</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">absolute</span><span class="p">((</span><span class="n">temp_val5</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">brake_fraction</span><span class="p">)</span> <span class="o">/</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">trq_brake_max</span><span class="p">)</span>
+
+    <span class="c1"># Angular speed calculation</span>
+    <span class="n">spd_rdl_in</span> <span class="o">=</span> <span class="n">V_chas_in</span> <span class="o">/</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">radius</span>
+
+    <span class="c1"># Braking torque calculation</span>
+    <span class="n">T_brake_temp</span> <span class="o">=</span> <span class="o">-</span><span class="n">cmd_whl_ctrl_brk</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">trq_brake_max</span>
+
+    <span class="n">xl</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.1</span>
+    <span class="n">yl</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">xc</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">yc</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">xr</span> <span class="o">=</span> <span class="mf">0.1</span>
+    <span class="n">yr</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">spd_rdl_in</span>
+    <span class="n">blend</span> <span class="o">=</span> <span class="p">(</span><span class="n">u</span> <span class="o">&lt;</span> <span class="n">xl</span><span class="p">)</span> <span class="o">*</span> <span class="n">yl</span> <span class="o">+</span> <span class="p">(</span><span class="n">xl</span> <span class="o">&lt;=</span> <span class="n">u</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">u</span> <span class="o">&lt;</span> <span class="n">xc</span><span class="p">)</span> <span class="o">*</span> <span class="p">((</span><span class="n">yc</span> <span class="o">-</span> <span class="n">yl</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="n">xl</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">xc</span> <span class="o">-</span> <span class="n">xl</span><span class="p">)</span> <span class="o">+</span> <span class="n">yl</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">xc</span> <span class="o">&lt;=</span> <span class="n">u</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">u</span> <span class="o">&lt;</span> <span class="n">xr</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">yc</span> <span class="o">-</span> <span class="n">yr</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="n">xr</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">xc</span> <span class="o">-</span> <span class="n">xr</span><span class="p">)</span> <span class="o">+</span> <span class="n">yr</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">xr</span> <span class="o">&lt;=</span> <span class="n">u</span><span class="p">)</span> <span class="o">*</span> <span class="n">yr</span>
+
+    <span class="n">T_brake</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">T_brake_temp</span> <span class="o">*</span> <span class="n">blend</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Torque from tire rolling resistance</span>
+    <span class="n">T_tireloss</span> <span class="o">=</span> <span class="n">calc_rolling_resistance</span><span class="p">(</span><span class="n">terrain</span><span class="p">,</span> <span class="n">V_chas_in</span><span class="p">,</span> <span class="n">carModel</span><span class="p">)</span>
+
+    <span class="c1"># Net torque and force output</span>
+    <span class="n">T_out</span> <span class="o">=</span> <span class="n">T_in</span> <span class="o">+</span> <span class="n">T_brake</span> <span class="o">-</span> <span class="n">T_tireloss</span>
+    <span class="n">F_out</span> <span class="o">=</span> <span class="n">T_out</span> <span class="o">/</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">radius</span>
+
+    <span class="c1"># Inertia equivalent mass calculation</span>
+    <span class="n">M_inertia_equiv</span> <span class="o">=</span> <span class="p">(</span><span class="n">I_in</span> <span class="o">+</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">inertia</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">radius</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">spd_rdl_in</span><span class="p">,</span> <span class="n">F_out</span><span class="p">,</span> <span class="n">M_inertia_equiv</span>
+
+
+<span class="k">def</span> <span class="nf">calc_rolling_resistance</span><span class="p">(</span><span class="n">terrain</span><span class="p">,</span> <span class="n">V_chas_in</span><span class="p">,</span> <span class="n">carModel</span><span class="p">):</span>
+    <span class="c1"># Load relevant model parameters</span>
+    <span class="n">C1</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">coeff_roll1</span>
+    <span class="n">C2</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">coeff_roll2</span>
+    <span class="n">C3</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">coeff_roll3</span>
+    <span class="n">C4</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">coeff_roll4</span>
+    <span class="n">m_veh</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">veh</span><span class="o">.</span><span class="n">mass</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">gravity</span>
+    <span class="n">weight_frac</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">weight_fraction_effective</span>
+    <span class="n">V_spd_thresh</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">spd_thresh</span>
+    <span class="n">r_wheel</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">whl</span><span class="o">.</span><span class="n">radius</span>
+
+    <span class="c1"># Calculate torque from rolling resistance</span>
+    <span class="c1"># Speed threshold term</span>
+    <span class="n">f_spd</span> <span class="o">=</span> <span class="p">((</span><span class="n">V_chas_in</span> <span class="o">*</span> <span class="p">(</span><span class="n">V_chas_in</span> <span class="o">&lt;=</span> <span class="n">V_spd_thresh</span><span class="p">))</span> <span class="o">/</span> <span class="n">V_spd_thresh</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">V_chas_in</span> <span class="o">&gt;</span> <span class="n">V_spd_thresh</span><span class="p">)</span>
+
+    <span class="c1"># Torque Calculation</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">terrain</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">C1</span> <span class="o">+</span> <span class="p">(</span><span class="n">C2</span> <span class="o">*</span> <span class="n">V_chas_in</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">C3</span> <span class="o">*</span> <span class="n">V_chas_in</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span>
+        <span class="n">C4</span> <span class="o">*</span> <span class="n">V_chas_in</span> <span class="o">**</span> <span class="mi">3</span><span class="p">))</span> <span class="o">*</span> <span class="n">m_veh</span> <span class="o">*</span> <span class="n">g</span> <span class="o">*</span> <span class="n">weight_frac</span> <span class="o">*</span> <span class="n">f_spd</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">V_chas_in</span><span class="p">))</span> <span class="o">*</span> <span class="n">r_wheel</span>
+
+
+<span class="k">def</span> <span class="nf">chassis_main</span><span class="p">(</span><span class="n">F_in</span><span class="p">,</span> <span class="n">m_inertia_equiv</span><span class="p">,</span> <span class="n">terrain</span><span class="p">,</span> <span class="n">V_in</span><span class="p">,</span> <span class="n">d_in</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">carModel</span><span class="p">):</span>
+    <span class="c1"># Vehicle losses</span>
+    <span class="c1"># Grade force calculation</span>
+    <span class="n">F_grade</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">veh</span><span class="o">.</span><span class="n">mass</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">gravity</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">terrain</span><span class="p">)</span>
+
+    <span class="c1"># Drag force calculation</span>
+    <span class="n">F_drag</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">dens_air</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">chas</span><span class="o">.</span><span class="n">coeff_drag</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">chas</span><span class="o">.</span><span class="n">frontal_area</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="n">V_in</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">V_in</span><span class="p">)</span>
+
+    <span class="c1"># Total vehicle losses</span>
+    <span class="n">F_loss</span> <span class="o">=</span> <span class="n">F_grade</span> <span class="o">+</span> <span class="n">F_drag</span>
+
+    <span class="c1"># Acceleration, velocity and distance calculations</span>
+    <span class="c1"># Net propulsion force</span>
+    <span class="n">F_net</span> <span class="o">=</span> <span class="n">F_in</span> <span class="o">-</span> <span class="n">F_loss</span>
+
+    <span class="c1"># Total effective mass</span>
+    <span class="n">m_total_effective</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">veh</span><span class="o">.</span><span class="n">mass</span> <span class="o">+</span> <span class="n">m_inertia_equiv</span>
+
+    <span class="c1"># Acceleration</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">F_net</span> <span class="o">/</span> <span class="n">m_total_effective</span>
+
+    <span class="c1"># Velocity</span>
+    <span class="n">V_chas</span> <span class="o">=</span> <span class="n">V_in</span> <span class="o">+</span> <span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">timestep</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">V_chas</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">V_chas</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># Distance</span>
+    <span class="n">d_out</span> <span class="o">=</span> <span class="n">d_in</span> <span class="o">+</span> <span class="p">(</span><span class="n">V_chas</span> <span class="o">*</span> <span class="n">timestep</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">V_chas</span><span class="p">,</span> <span class="n">d_out</span>
+
+
+<span class="k">def</span> <span class="nf">power_converter_main</span><span class="p">(</span><span class="n">V_in</span><span class="p">,</span> <span class="n">I_out</span><span class="p">,</span> <span class="n">carModel</span><span class="p">):</span>
+    <span class="c1"># Perform calculation</span>
+    <span class="n">V_out</span> <span class="o">=</span> <span class="n">carModel</span><span class="o">.</span><span class="n">pc</span><span class="o">.</span><span class="n">volt_out</span>
+
+    <span class="k">if</span> <span class="n">I_out</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">I_in</span> <span class="o">=</span> <span class="p">((</span><span class="n">I_out</span> <span class="o">*</span> <span class="n">V_out</span><span class="p">)</span> <span class="o">/</span> <span class="n">carModel</span><span class="o">.</span><span class="n">pc</span><span class="o">.</span><span class="n">eff</span><span class="p">)</span> <span class="o">/</span> <span class="n">V_in</span>
+    <span class="k">elif</span> <span class="n">I_out</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">I_in</span> <span class="o">=</span> <span class="p">(</span><span class="n">I_out</span> <span class="o">*</span> <span class="n">V_out</span> <span class="o">*</span> <span class="n">carModel</span><span class="o">.</span><span class="n">pc</span><span class="o">.</span><span class="n">eff</span><span class="p">)</span> <span class="o">/</span> <span class="n">V_in</span>
+
+    <span class="k">return</span> <span class="n">V_out</span><span class="p">,</span> <span class="n">I_in</span>
+
+
+<span class="k">def</span> <span class="nf">elec_acc_main</span><span class="p">(</span><span class="n">V_in</span><span class="p">,</span> <span class="n">key_on</span><span class="p">,</span> <span class="n">carModel</span><span class="p">):</span>
+    <span class="c1"># Current calculation</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">carModel</span><span class="o">.</span><span class="n">accelec</span><span class="o">.</span><span class="n">pwr</span> <span class="o">*</span> <span class="n">key_on</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">V_in</span> <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">interp_2d</span><span class="p">(</span><span class="n">xq</span><span class="p">,</span> <span class="n">yq</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">grid</span><span class="p">):</span>
+    <span class="c1"># x and y must be sorted !</span>
+
+    <span class="n">x1_pos</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">y1_pos</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="c1"># Determine indices of variables to load</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">xq</span> <span class="o">&gt;=</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">and</span> <span class="n">xq</span> <span class="o">&lt;=</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]:</span>
+            <span class="n">x1_pos</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="n">x2_pos</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">break</span>
+
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">yq</span> <span class="o">&gt;=</span> <span class="n">y</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="ow">and</span> <span class="n">yq</span> <span class="o">&lt;=</span> <span class="n">y</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]:</span>
+            <span class="n">y1_pos</span> <span class="o">=</span> <span class="n">j</span>
+            <span class="n">y2_pos</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">break</span>
+
+    <span class="c1"># In case we are out of bounds</span>
+    <span class="k">if</span> <span class="n">x1_pos</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">xq</span> <span class="o">&lt;</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">x1_pos</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">x2_pos</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x1_pos</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span>
+            <span class="n">x2_pos</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">y1_pos</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">yq</span> <span class="o">&lt;</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">y1_pos</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">y2_pos</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">y1_pos</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span>
+            <span class="n">y2_pos</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="c1"># Select variables</span>
+    <span class="n">x1</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">x1_pos</span><span class="p">]</span>
+    <span class="n">x2</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">x2_pos</span><span class="p">]</span>
+    <span class="n">y1</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">y1_pos</span><span class="p">]</span>
+    <span class="n">y2</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">y2_pos</span><span class="p">]</span>
+    <span class="n">zA</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="n">x1_pos</span><span class="p">,</span> <span class="n">y1_pos</span><span class="p">]</span>
+    <span class="n">zB</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="n">x1_pos</span><span class="p">,</span> <span class="n">y2_pos</span><span class="p">]</span>
+    <span class="n">zC</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="n">x2_pos</span><span class="p">,</span> <span class="n">y2_pos</span><span class="p">]</span>
+    <span class="n">zD</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="n">x2_pos</span><span class="p">,</span> <span class="n">y1_pos</span><span class="p">]</span>
+
+    <span class="c1"># Interpolation accross x</span>
+    <span class="n">zAD</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">xq</span><span class="p">,</span> <span class="p">[</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">],</span> <span class="p">[</span><span class="n">zA</span><span class="p">,</span> <span class="n">zD</span><span class="p">])</span>
+    <span class="n">zBC</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">xq</span><span class="p">,</span> <span class="p">[</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">],</span> <span class="p">[</span><span class="n">zB</span><span class="p">,</span> <span class="n">zC</span><span class="p">])</span>
+
+    <span class="c1"># Interpolation accross y</span>
+    <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">yq</span><span class="p">,</span> <span class="p">[</span><span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">],</span> <span class="p">[</span><span class="n">zAD</span><span class="p">,</span> <span class="n">zBC</span><span class="p">])</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Lawrence Berkeley National Laboratory.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../../',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

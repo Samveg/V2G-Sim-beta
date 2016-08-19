@@ -1,0 +1,421 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>post simulation package &mdash; V2G-Sim 0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="V2G-Sim 0.1 documentation" href="index.html"/>
+        <link rel="prev" title="result" href="result.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> V2G-Sim
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="v2gconcept.html">what is vehicle to grid?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installv2gsim.html">how to install V2G-Sim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model.html">model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="itinerary.html">itinerary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="charging.html">charging package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="driving.html">driving package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">result</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">post simulation package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-v2gsim.post_simulation.result">post_simulation.result</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-v2gsim.post_simulation.netload_optimization">post_simulation.netload_optimization</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">V2G-Sim</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>post simulation package</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/post_simulation.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="post-simulation-package">
+<h1>post simulation package<a class="headerlink" href="#post-simulation-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-v2gsim.post_simulation.result">
+<span id="post-simulation-result"></span><h2>post_simulation.result<a class="headerlink" href="#module-v2gsim.post_simulation.result" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="v2gsim.post_simulation.result.total_power_demand">
+<code class="descclassname">v2gsim.post_simulation.result.</code><code class="descname">total_power_demand</code><span class="sig-paren">(</span><em>project</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/result.html#total_power_demand"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.result.total_power_demand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sum the power demand of each location and return a data frame with the result</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project</strong> (<a class="reference internal" href="model.html#v2gsim.model.Project" title="v2gsim.model.Project"><em>Project</em></a>) &#8211; a project</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a pandas DataFrame with the power demand at each location</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-v2gsim.post_simulation.netload_optimization">
+<span id="post-simulation-netload-optimization"></span><h2>post_simulation.netload_optimization<a class="headerlink" href="#module-v2gsim.post_simulation.netload_optimization" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="v2gsim.post_simulation.netload_optimization.CentralOptimization">
+<em class="property">class </em><code class="descclassname">v2gsim.post_simulation.netload_optimization.</code><code class="descname">CentralOptimization</code><span class="sig-paren">(</span><em>project</em>, <em>optimization_timestep</em>, <em>date_from</em>, <em>date_to</em>, <em>minimum_SOC=0.1</em>, <em>maximum_SOC=0.95</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#CentralOptimization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.CentralOptimization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Creates an object to perform optimization.
+The object contains some general parameters for the optimization</p>
+<dl class="method">
+<dt id="v2gsim.post_simulation.netload_optimization.CentralOptimization.check_energy_constraints_feasible">
+<code class="descname">check_energy_constraints_feasible</code><span class="sig-paren">(</span><em>vehicle</em>, <em>SOC_init</em>, <em>SOC_final</em>, <em>SOC_offset</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#CentralOptimization.check_energy_constraints_feasible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.CentralOptimization.check_energy_constraints_feasible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make sure that SOC final can be reached from SOC init under uncontrolled
+charging (best case scenario). Print details when conditions are not met.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>vehicle</strong> (<a class="reference internal" href="model.html#v2gsim.model.Vehicle" title="v2gsim.model.Vehicle"><em>Vehicle</em></a>) &#8211; vehicle</li>
+<li><strong>SOC_init</strong> (<em>float</em>) &#8211; state of charge at the begining of the optimization [0, 1]</li>
+<li><strong>SOC_final</strong> (<em>float</em>) &#8211; state of charge at the end of the optimization [0, 1]</li>
+<li><strong>SOC_offset</strong> (<em>float</em>) &#8211; energy offset [0, 1]</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(Boolean)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="v2gsim.post_simulation.netload_optimization.CentralOptimization.get_final_SOC">
+<code class="descname">get_final_SOC</code><span class="sig-paren">(</span><em>vehicle</em>, <em>SOC_margin</em>, <em>SOC_offset</em>, <em>SOC_end=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#CentralOptimization.get_final_SOC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.CentralOptimization.get_final_SOC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get final SOC that vehicle must reached at the end of the optimization</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="v2gsim.post_simulation.netload_optimization.CentralOptimization.get_initial_SOC">
+<code class="descname">get_initial_SOC</code><span class="sig-paren">(</span><em>vehicle</em>, <em>SOC_offset</em>, <em>SOC_init=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#CentralOptimization.get_initial_SOC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.CentralOptimization.get_initial_SOC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the initial SOC with which people start the optimization</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="v2gsim.post_simulation.netload_optimization.CentralOptimization.initialize_model">
+<code class="descname">initialize_model</code><span class="sig-paren">(</span><em>project</em>, <em>net_load</em>, <em>SOC_margin</em>, <em>SOC_offset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#CentralOptimization.initialize_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.CentralOptimization.initialize_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select the vehicles that were plugged at controlled chargers and create
+the optimization variables (see inputs of optimization)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project</strong> (<a class="reference internal" href="model.html#v2gsim.model.Project" title="v2gsim.model.Project"><em>Project</em></a>) &#8211; project</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">times, vehicles, d, pmax, pmin, emin, emax, efinal</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="v2gsim.post_simulation.netload_optimization.CentralOptimization.initialize_net_load">
+<code class="descname">initialize_net_load</code><span class="sig-paren">(</span><em>net_load</em>, <em>real_number_of_vehicle</em>, <em>project</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#CentralOptimization.initialize_net_load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.CentralOptimization.initialize_net_load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make sure that the net load has the right size and scale the net
+load for the optimization scale.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>net_load</strong> (<em>pandas.DataFrame</em>) &#8211; data frame with date index and a &#8216;net_load&#8217; column in [W]</li>
+<li><strong>net_load_pmax</strong> (<em>int</em>) &#8211; maximum power on the scaled net load</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="v2gsim.post_simulation.netload_optimization.CentralOptimization.initialize_time_index">
+<code class="descname">initialize_time_index</code><span class="sig-paren">(</span><em>net_load</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#CentralOptimization.initialize_time_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.CentralOptimization.initialize_time_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace date index by time ids</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>net_load</strong> (<em>pandas.DataFrame</em>) &#8211; data frame with date index and a &#8216;net_load&#8217; column in [W]</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Retrun:</dt>
+<dd>net_load as a dictionary with time ids, time ids</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="v2gsim.post_simulation.netload_optimization.CentralOptimization.plot_result">
+<code class="descname">plot_result</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#CentralOptimization.plot_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.CentralOptimization.plot_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a plot showing the power constraints, the energy constraints and the ramp
+constraints as well as the final net load.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="v2gsim.post_simulation.netload_optimization.CentralOptimization.post_process">
+<code class="descname">post_process</code><span class="sig-paren">(</span><em>project</em>, <em>netload</em>, <em>model</em>, <em>result</em>, <em>plot</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#CentralOptimization.post_process"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.CentralOptimization.post_process" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recompute SOC profiles and compute new total power demand</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project</strong> (<a class="reference internal" href="model.html#v2gsim.model.Project" title="v2gsim.model.Project"><em>Project</em></a>) &#8211; project</td>
+</tr>
+</tbody>
+</table>
+<p>Note: Should check that &#8216;vehicle before&#8217; and &#8216;after&#8217; contain the same number of vehicles</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="v2gsim.post_simulation.netload_optimization.CentralOptimization.process">
+<code class="descname">process</code><span class="sig-paren">(</span><em>times</em>, <em>vehicles</em>, <em>d</em>, <em>pmax</em>, <em>pmin</em>, <em>emin</em>, <em>emax</em>, <em>efinal</em>, <em>peak_shaving</em>, <em>penalization</em>, <em>solver='gurobi'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#CentralOptimization.process"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.CentralOptimization.process" title="Permalink to this definition">¶</a></dt>
+<dd><p>The process function creates the pyomo model and solve it.
+Minimize sum( net_load(t) + sum(power_demand(t, v)))**2
+subject to:
+pmin(t, v) &lt;= power_demand(t, v) &lt;= pmax(t, v)
+emin(t, v) &lt;= sum(power_demand(t, v)) &lt;= emax(t, v)
+sum(power_demand(t, v)) &gt;= efinal(v)
+rampmin(t) &lt;= net_load_ramp(t) + power_demand_ramp(t, v) &lt;= rampmax(t)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>times</strong> (<em>list</em>) &#8211; timestep list</li>
+<li><strong>vehicles</strong> (<em>list</em>) &#8211; unique list of vehicle ids</li>
+<li><strong>d</strong> (<em>dict</em>) &#8211; time - net load at t</li>
+<li><strong>pmax</strong> (<em>dict</em>) &#8211; (time, id) - power maximum at t for v</li>
+<li><strong>pmin</strong> (<em>dict</em>) &#8211; (time, id) - power minimum at t for v</li>
+<li><strong>emin</strong> (<em>dict</em>) &#8211; (time, id) - energy minimum at t for v</li>
+<li><strong>emax</strong> (<em>dict</em>) &#8211; (time, id) - energy maximum at t for v</li>
+<li><strong>efinal</strong> (<em>dict</em>) &#8211; id - final SOC</li>
+<li><strong>solver</strong> (<em>string</em>) &#8211; name of the solver to use (default is gurobi)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">model (ConcreteModel), result</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="v2gsim.post_simulation.netload_optimization.CentralOptimization.solve">
+<code class="descname">solve</code><span class="sig-paren">(</span><em>project</em>, <em>net_load</em>, <em>real_number_of_vehicle</em>, <em>SOC_margin=0.02</em>, <em>SOC_offset=0.0</em>, <em>peak_shaving='peak_shaving'</em>, <em>penalization=5</em>, <em>beta=None</em>, <em>plot=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#CentralOptimization.solve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.CentralOptimization.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Launch the optimization and the post_processing fucntion. Results
+and assumptions are appended to a data frame.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>project</strong> (<a class="reference internal" href="model.html#v2gsim.model.Project" title="v2gsim.model.Project"><em>Project</em></a>) &#8211; project</li>
+<li><strong>net_load</strong> (<em>pandas.DataFrame</em>) &#8211; data frame with date index and a &#8216;net_load&#8217; column in [W]</li>
+<li><strong>real_number_of_vehicle</strong> (<em>int</em>) &#8211; number of vehicle expected on the net load,
+False if number is the same as in project</li>
+<li><strong>SOC_margin</strong> (<em>float</em>) &#8211; SOC margin that can be used by the optimization at the end of the day [0, 1]</li>
+<li><strong>SOC_offset</strong> (<em>float</em>) &#8211; energy offset [0, 1]</li>
+<li><strong>peak_shaving</strong> (<em>bolean</em>) &#8211; if True ramping constraints are not taking in account within the objective else it is.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.post_simulation.netload_optimization.save_vehicle_state_for_optimization">
+<code class="descclassname">v2gsim.post_simulation.netload_optimization.</code><code class="descname">save_vehicle_state_for_optimization</code><span class="sig-paren">(</span><em>vehicle</em>, <em>timestep</em>, <em>date_from</em>, <em>date_to</em>, <em>activity=None</em>, <em>power_demand=None</em>, <em>SOC=None</em>, <em>detail=None</em>, <em>nb_interval=None</em>, <em>init=False</em>, <em>run=False</em>, <em>post=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#save_vehicle_state_for_optimization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.save_vehicle_state_for_optimization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save results for individual vehicles. Power demand is positive when charging
+negative when driving. Energy consumption is positive when driving and negative
+when charging. Charging station that offer after simulation processing should
+have activity.charging_station.post_simulation True.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="result.html" class="btn btn-neutral" title="result" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Lawrence Berkeley National Laboratory.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -26,7 +26,7 @@ def run(project, charging_option=None, date_from=None, date_to=None,
     if date_from is None:
         date_from = project.date
     if date_to is None:
-        date_to = project.date + datetime.timedelta(hours=23, minutes=59)
+        date_to = project.date + datetime.timedelta(days=1)
 
     # Itinitialize result placeholders and reset charging stations to None
     project = _pre_run(project, date_from, date_to, reset=reset_charging_station)
@@ -126,9 +126,9 @@ def _post_run(project, date_from, date_to):
     return project
 
 
-def initialize_SOC(project, nb_iteration=1, charging_option=None):
+def initialize_SOC(project, nb_iteration=1, charging_option=None, verbose=True):
     """Initialize the state of charge of each vehicle by running a simulation
-    on previous days.
+    on previous days. Reset any charging infrastructure assigned to None.
 
     Args:
         project (Project): project to simulate
@@ -149,6 +149,12 @@ def initialize_SOC(project, nb_iteration=1, charging_option=None):
                                                 progressbar.Percentage(),
                                                 progressbar.Bar()],
                                        maxval=nb_iteration * len(project.vehicles)).start()
+
+    # Reset assigned charging station
+    for vehicle in project.vehicles:
+        for activity in vehicle.activities:
+            if isinstance(activity, model.Parked):
+                activity.charging_station = None
 
     # For each iteration
     count = 0
@@ -195,6 +201,7 @@ def initialize_SOC(project, nb_iteration=1, charging_option=None):
         convergence.loc[indexI + 1, 'std_rate'] = (convergence.loc[indexI, 'std'] -
                                                    convergence.loc[indexI + 1, 'std'])
     progress.finish()
-    print(convergence)
-    print('')
+    if verbose:
+        print(convergence)
+        print('')
     return convergence

@@ -1,0 +1,920 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>v2gsim.itinerary &mdash; V2G-Sim 0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="V2G-Sim 0.1 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> V2G-Sim
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../v2gconcept.html">what is vehicle to grid?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installv2gsim.html">how to install V2G-Sim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../core.html">core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../model.html">model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../itinerary.html">itinerary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../charging.html">charging package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../driving.html">driving package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../result.html">result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../post_simulation.html">post simulation package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">V2G-Sim</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>v2gsim.itinerary</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for v2gsim.itinerary</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span class="kn">import</span> <span class="nn">pandas</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">progressbar</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">from</span> <span class="nn">model</span> <span class="kn">import</span> <span class="p">(</span><span class="n">Vehicle</span><span class="p">,</span> <span class="n">ChargingStation</span><span class="p">,</span> <span class="n">Location</span><span class="p">,</span> <span class="n">Parked</span><span class="p">,</span> <span class="n">Driving</span><span class="p">,</span>
+                   <span class="n">BasicCarModel</span><span class="p">,</span> <span class="n">Project</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="from_excel"><a class="viewcode-back" href="../../itinerary.html#v2gsim.itinerary.from_excel">[docs]</a><span class="k">def</span> <span class="nf">from_excel</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Read itineraries from an excel file. Excel header: Vehicle ID,</span>
+<span class="sd">    Start time (hour), End time (hour), Distance (mi), P_max (W), Location,</span>
+<span class="sd">    NHTS HH Wt.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        project (Project): empty project</span>
+<span class="sd">        filename (string): relative or absolute path to the excel file</span>
+
+<span class="sd">    Return:</span>
+<span class="sd">        project (Project): project assigned with vehicles</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;itinerary.from_excel(project, &#39;</span> <span class="o">+</span> <span class="n">filename</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Loading ...&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Day of the project</span>
+    <span class="n">date</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">date</span>
+    <span class="n">tot_sec</span> <span class="o">=</span> <span class="p">(</span><span class="n">date</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcfromtimestamp</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">io</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">sheetname</span><span class="o">=</span><span class="s1">&#39;Activity&#39;</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;Nothing&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Vehicle ID&#39;</span><span class="p">:</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;State&#39;</span><span class="p">:</span> <span class="s1">&#39;state&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;Start time (hour)&#39;</span><span class="p">:</span> <span class="s1">&#39;start&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;End time (hour)&#39;</span><span class="p">:</span> <span class="s1">&#39;end&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;Distance (mi)&#39;</span><span class="p">:</span> <span class="s1">&#39;distance&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;P_max (W)&#39;</span><span class="p">:</span> <span class="s1">&#39;maximum_power&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;Location&#39;</span><span class="p">:</span> <span class="s1">&#39;location&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;NHTS HH Wt&#39;</span><span class="p">:</span> <span class="s1">&#39;weight&#39;</span><span class="p">})</span>
+    <span class="n">from_mile_to_km</span> <span class="o">=</span> <span class="mf">1.60934</span>
+
+    <span class="c1"># Initialize a car model for the project</span>
+    <span class="n">project</span><span class="o">.</span><span class="n">car_models</span> <span class="o">=</span> <span class="p">[</span><span class="n">BasicCarModel</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Leaf&#39;</span><span class="p">)]</span>
+
+    <span class="c1"># Initialize itinerary data for each vehicle</span>
+    <span class="c1"># Group the dataframe by vehicle_id, and for each vehicle_id,</span>
+    <span class="k">for</span> <span class="n">vehicle_id</span><span class="p">,</span> <span class="n">vehicle_data</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">):</span>
+        <span class="c1"># Create a vehicle instance</span>
+        <span class="n">vehicle</span> <span class="o">=</span> <span class="n">Vehicle</span><span class="p">(</span><span class="n">vehicle_id</span><span class="p">,</span> <span class="n">project</span><span class="o">.</span><span class="n">car_models</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">vehicle</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">vehicle_data</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Create a list of activities parked and driving</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">vehicle_data</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="c1"># Round the start and end time to correspond with project.timestep</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcfromtimestamp</span><span class="p">(</span><span class="n">tot_sec</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)</span> <span class="o">/</span> <span class="n">project</span><span class="o">.</span><span class="n">timestep</span><span class="p">)</span> <span class="o">*</span> <span class="n">project</span><span class="o">.</span><span class="n">timestep</span><span class="p">)</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcfromtimestamp</span><span class="p">(</span><span class="n">tot_sec</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)</span> <span class="o">/</span> <span class="n">project</span><span class="o">.</span><span class="n">timestep</span><span class="p">)</span> <span class="o">*</span> <span class="n">project</span><span class="o">.</span><span class="n">timestep</span><span class="p">)</span>
+
+            <span class="c1"># Accordingly to the state create a driving or parked activity</span>
+            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;state&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="s1">&#39;Driving&#39;</span><span class="p">:</span>
+                <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Driving</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;distance&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">from_mile_to_km</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;state&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;Parked&#39;</span><span class="p">,</span> <span class="s1">&#39;Charging&#39;</span><span class="p">]:</span>
+                <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">Parked</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">unique_location_category</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">],</span> <span class="n">project</span><span class="p">)))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s1">&#39;State should either be Driving, Parked or Charging&#39;</span><span class="p">)</span>
+                <span class="k">print</span><span class="p">(</span><span class="s1">&#39;State was: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;state&#39;</span><span class="p">]))</span>
+
+        <span class="c1"># Check time gap before appending vehicle to the project</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">check_activities</span><span class="p">(</span><span class="n">start_date</span><span class="o">=</span><span class="n">date</span><span class="p">,</span>
+                                        <span class="n">end_date</span><span class="o">=</span><span class="n">date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)):</span>
+            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Itinerary does not respect the constraints&#39;</span><span class="p">)</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">vehicle</span><span class="p">)</span>
+        <span class="n">project</span><span class="o">.</span><span class="n">vehicles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vehicle</span><span class="p">)</span>
+
+    <span class="c1"># Initialize charging station at each location</span>
+    <span class="n">reset_charging_infrastructures</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">project</span>
+
+</div>
+<div class="viewcode-block" id="unique_location_category"><a class="viewcode-back" href="../../itinerary.html#v2gsim.itinerary.unique_location_category">[docs]</a><span class="k">def</span> <span class="nf">unique_location_category</span><span class="p">(</span><span class="n">location_category</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compare input location category with locations in the project, return a</span>
+<span class="sd">    new location and update the project or just return an existing location.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        location_category (string): location category (Home, Work, ...)</span>
+<span class="sd">        project (Project): current project</span>
+
+<span class="sd">    Return:</span>
+<span class="sd">        location (Location): either a new or an existing location</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check if this location is matching any existing location in the project</span>
+    <span class="k">for</span> <span class="n">existing_location</span> <span class="ow">in</span> <span class="n">project</span><span class="o">.</span><span class="n">locations</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">location_category</span> <span class="ow">in</span> <span class="n">existing_location</span><span class="o">.</span><span class="n">category</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">existing_location</span>
+
+    <span class="c1"># If we reach this part of the code a new location need to be created</span>
+    <span class="n">new_location</span> <span class="o">=</span> <span class="n">Location</span><span class="p">(</span><span class="n">location_category</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">location_category</span> <span class="o">+</span> <span class="s1">&#39;01&#39;</span><span class="p">)</span>
+    <span class="n">project</span><span class="o">.</span><span class="n">locations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_location</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_location</span>
+
+</div>
+<div class="viewcode-block" id="reset_charging_infrastructures"><a class="viewcode-back" href="../../itinerary.html#v2gsim.itinerary.reset_charging_infrastructures">[docs]</a><span class="k">def</span> <span class="nf">reset_charging_infrastructures</span><span class="p">(</span><span class="n">project</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reset the charging infrastructure at every location to be uncontrolled charging,</span>
+<span class="sd">    using either L1 or L2 charger.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        project (Project): a project</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">project</span><span class="o">.</span><span class="n">charging_stations</span> <span class="o">=</span> <span class="p">[</span><span class="n">ChargingStation</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;no_charger&#39;</span><span class="p">,</span>
+                                                 <span class="n">maximum_power</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                                 <span class="n">minimum_power</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                                 <span class="n">ChargingStation</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;L1&#39;</span><span class="p">,</span>
+                                                 <span class="n">maximum_power</span><span class="o">=</span><span class="mi">1440</span><span class="p">,</span>
+                                                 <span class="n">minimum_power</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                                 <span class="n">ChargingStation</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;L2&#39;</span><span class="p">,</span>
+                                                 <span class="n">maximum_power</span><span class="o">=</span><span class="mi">7200</span><span class="p">,</span>
+                                                 <span class="n">minimum_power</span><span class="o">=</span><span class="mi">0</span><span class="p">)]</span>
+    <span class="n">df2</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;no_charger&#39;</span><span class="p">,</span> <span class="s1">&#39;L1&#39;</span><span class="p">,</span> <span class="s1">&#39;L2&#39;</span><span class="p">],</span>
+                           <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;charging_station&#39;</span><span class="p">:</span> <span class="n">project</span><span class="o">.</span><span class="n">charging_stations</span><span class="p">,</span>
+                                 <span class="s1">&#39;probability&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span>
+                                 <span class="s1">&#39;available&#39;</span><span class="p">:</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">),</span>
+                                               <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;total&#39;</span><span class="p">:</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">),</span>
+                                           <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)]})</span>
+    <span class="k">for</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">project</span><span class="o">.</span><span class="n">locations</span><span class="p">:</span>
+        <span class="n">location</span><span class="o">.</span><span class="n">available_charging_station</span> <span class="o">=</span> <span class="n">df2</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="copy_append"><a class="viewcode-back" href="../../itinerary.html#v2gsim.itinerary.copy_append">[docs]</a><span class="k">def</span> <span class="nf">copy_append</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">nb_copies</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Copy the itinerary of each vehicle in the project.</span>
+<span class="sd">    The copy is appended and a merge operation is applied to ensure a good blend.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        project (Project): project</span>
+<span class="sd">        nb_copies (int): number of copies to append</span>
+
+<span class="sd">    Return:</span>
+<span class="sd">        project (Project): new project with extended itineraries</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">number_of_merged</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">vehicle</span> <span class="ow">in</span> <span class="n">project</span><span class="o">.</span><span class="n">vehicles</span><span class="p">:</span>
+        <span class="n">new_activities</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i_copy</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nb_copies</span><span class="p">):</span>
+            <span class="c1"># Manually copy all activities</span>
+            <span class="k">for</span> <span class="n">activity</span> <span class="ow">in</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">Driving</span><span class="p">):</span>
+                    <span class="n">new_activities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Driving</span><span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i_copy</span><span class="p">),</span>
+                                                  <span class="n">activity</span><span class="o">.</span><span class="n">end</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i_copy</span><span class="p">),</span>
+                                                  <span class="n">activity</span><span class="o">.</span><span class="n">distance</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">Parked</span><span class="p">):</span>
+                    <span class="n">new_activities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Parked</span><span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i_copy</span><span class="p">),</span>
+                                                 <span class="n">activity</span><span class="o">.</span><span class="n">end</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i_copy</span><span class="p">),</span>
+                                                 <span class="n">activity</span><span class="o">.</span><span class="n">location</span><span class="p">))</span>
+        <span class="c1"># Add new activities</span>
+        <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">new_activities</span><span class="p">)</span>
+
+        <span class="c1"># Merge itineraries</span>
+        <span class="n">merged_activities</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">skip</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">activity</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">):</span>
+            <span class="c1"># Check if we have reached the last activity, if so exit loop</span>
+            <span class="k">if</span> <span class="n">index</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">merged_activities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">activity</span><span class="p">)</span>
+                <span class="k">break</span>
+
+            <span class="c1"># Check if the activity has been merged during the previous iteration</span>
+            <span class="k">if</span> <span class="n">skip</span><span class="p">:</span>
+                <span class="n">skip</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># Check for two parked activity in a row</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">Parked</span><span class="p">)</span> <span class="ow">and</span>
+                    <span class="nb">isinstance</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">Parked</span><span class="p">)):</span>
+                <span class="c1"># Check for matching names</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">category</span> <span class="ow">and</span>
+                        <span class="n">activity</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+                    <span class="c1"># Double check separately that times are matching</span>
+                    <span class="k">if</span> <span class="n">activity</span><span class="o">.</span><span class="n">end</span> <span class="o">==</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">start</span><span class="p">:</span>
+                        <span class="c1"># Merge both activities</span>
+                        <span class="n">number_of_merged</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="n">skip</span> <span class="o">=</span> <span class="bp">True</span>
+                        <span class="n">activity</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">end</span>
+                        <span class="n">merged_activities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">activity</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">print</span> <span class="n">activity</span>
+                        <span class="k">print</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                        <span class="k">print</span> <span class="s1">&#39;Merging issue&#39;</span>
+                        <span class="n">merged_activities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">activity</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">merged_activities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">activity</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">merged_activities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">activity</span><span class="p">)</span>
+
+        <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span> <span class="o">=</span> <span class="n">merged_activities</span>
+        <span class="c1"># Check time gap</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">check_activities</span><span class="p">(</span>
+                <span class="n">start_date</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">date</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span> <span class="o">+</span> <span class="n">nb_copies</span><span class="p">)):</span>
+            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Itinerary does not respect the constraints&#39;</span><span class="p">)</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">vehicle</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">project</span>
+
+</div>
+<div class="viewcode-block" id="get_vehicle_statistics"><a class="viewcode-back" href="../../itinerary.html#v2gsim.itinerary.get_vehicle_statistics">[docs]</a><span class="k">def</span> <span class="nf">get_vehicle_statistics</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This function return &#39;number_of_trip&#39;, &#39;morning_start&#39;, &#39;total_distance&#39;,</span>
+<span class="sd">    &#39;went_to_work&#39;, &#39;last_trip_time&#39; for each vehicle.</span>
+<span class="sd">    note: the function do not handle vehicles with only 1 driving activity</span>
+<span class="sd">    and no parked activities.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        project (Project): project</span>
+
+<span class="sd">    Return:</span>
+<span class="sd">        stat (DataFrame): data frame with index vehicle ids</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">stat</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">vehicle</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">vehicle</span> <span class="ow">in</span> <span class="n">project</span><span class="o">.</span><span class="n">vehicles</span><span class="p">],</span>
+                            <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;number_of_trip&#39;</span><span class="p">,</span> <span class="s1">&#39;morning_start&#39;</span><span class="p">,</span> <span class="s1">&#39;total_distance&#39;</span><span class="p">,</span>
+                                     <span class="s1">&#39;went_to_work&#39;</span><span class="p">,</span> <span class="s1">&#39;last_trip_time&#39;</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">vehicle</span> <span class="ow">in</span> <span class="n">project</span><span class="o">.</span><span class="n">vehicles</span><span class="p">:</span>
+
+        <span class="c1"># Count the number of trip in a day</span>
+        <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">activity</span> <span class="ow">in</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">Driving</span><span class="p">):</span>
+                <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">stat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">vehicle</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s1">&#39;number_of_trip&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">counter</span>
+
+        <span class="c1"># Find the morning start</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Parked</span><span class="p">):</span>
+            <span class="n">stat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">vehicle</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s1">&#39;morning_start&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">end</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Driving</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Vehicle: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">id</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; started the day driving.&#39;</span><span class="p">)</span>
+            <span class="n">stat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">vehicle</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s1">&#39;morning_start&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">end</span>
+
+        <span class="c1"># Find total distance traveled [km] and average distance</span>
+        <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">activity</span> <span class="ow">in</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">Driving</span><span class="p">):</span>
+                <span class="n">counter</span> <span class="o">+=</span> <span class="n">activity</span><span class="o">.</span><span class="n">distance</span>
+        <span class="n">stat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">vehicle</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s1">&#39;total_distance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">counter</span>
+
+        <span class="c1"># Went to work ?</span>
+        <span class="n">stat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">vehicle</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s1">&#39;went_to_work&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">for</span> <span class="n">activity</span> <span class="ow">in</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">Parked</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">activity</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">category</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;Work&#39;</span><span class="p">]:</span>
+                    <span class="n">stat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">vehicle</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s1">&#39;went_to_work&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+                    <span class="k">break</span>
+
+        <span class="c1"># When did you go back home ?</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">Parked</span><span class="p">):</span>
+            <span class="n">stat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">vehicle</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s1">&#39;last_trip_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">start</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">Driving</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Vehicle: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">id</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; ended the day driving.&#39;</span><span class="p">)</span>
+            <span class="n">stat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">vehicle</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s1">&#39;last_trip_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">start</span>
+
+    <span class="k">return</span> <span class="n">stat</span>
+
+</div>
+<div class="viewcode-block" id="set_fleet_mix"><a class="viewcode-back" href="../../itinerary.html#v2gsim.itinerary.set_fleet_mix">[docs]</a><span class="k">def</span> <span class="nf">set_fleet_mix</span><span class="p">(</span><span class="n">vehicles</span><span class="p">,</span> <span class="n">mix</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Set the fleet mix</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        vehicles (Vehicle): list of vehicle</span>
+<span class="sd">        mix (pandas.DataFrame): a row has a car model</span>
+<span class="sd">            with an associated penetration</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Calculate the number of vehicles for each model</span>
+    <span class="n">fleetMix</span> <span class="o">=</span> <span class="n">mix</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">fleetMix</span><span class="p">[</span><span class="s1">&#39;number_of_vehicle&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fleetMix</span><span class="p">[</span><span class="s1">&#39;percentage&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">vehicles</span><span class="p">)</span>
+    <span class="n">fleetMix</span><span class="p">[</span><span class="s1">&#39;number_of_vehicle&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fleetMix</span><span class="p">[</span><span class="s1">&#39;number_of_vehicle&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">fleetMix</span><span class="p">[</span><span class="s1">&#39;vehicle_using_it&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">fleetMix</span><span class="p">)</span>
+
+    <span class="c1"># The total number of vehicles is higher than the sum of what was given for each model</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vehicles</span><span class="p">)</span> <span class="o">-</span> <span class="n">fleetMix</span><span class="p">[</span><span class="s1">&#39;number_of_vehicle&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">diff</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># randomly pick a model to increase the number of vehicle associated to it</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">diff</span><span class="p">):</span>
+            <span class="n">fleetMix</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">fleetMix</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span> <span class="s1">&#39;number_of_vehicle&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">for</span> <span class="n">vehicle</span> <span class="ow">in</span> <span class="n">vehicles</span><span class="p">:</span>
+        <span class="c1"># Update the list of available models</span>
+        <span class="n">available_model_category</span> <span class="o">=</span> <span class="n">fleetMix</span><span class="p">[</span><span class="n">fleetMix</span><span class="p">[</span><span class="s1">&#39;vehicle_using_it&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">fleetMix</span><span class="p">[</span><span class="s1">&#39;number_of_vehicle&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+        <span class="c1"># Pick the model index</span>
+        <span class="n">model_index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">available_model_category</span><span class="p">))</span>
+
+        <span class="c1"># Set the right model</span>
+        <span class="n">vehicle</span><span class="o">.</span><span class="n">carModel</span> <span class="o">=</span> <span class="n">fleetMix</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">model_index</span><span class="p">][</span><span class="s1">&#39;car_model&#39;</span><span class="p">]</span>
+        <span class="n">fleetMix</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">model_index</span><span class="p">,</span> <span class="s1">&#39;vehicle_using_it&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+</div>
+<div class="viewcode-block" id="get_cycling_itineraries"><a class="viewcode-back" href="../../itinerary.html#v2gsim.itinerary.get_cycling_itineraries">[docs]</a><span class="k">def</span> <span class="nf">get_cycling_itineraries</span><span class="p">(</span><span class="n">project</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Put aside vehicles that does not come back</span>
+<span class="sd">    at the same location as they started their day from.</span>
+<span class="sd">    Also putting aside vehicle that ends or starts with a</span>
+<span class="sd">    driving activity.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        project (Project): a project with vehicles</span>
+
+<span class="sd">    Return:</span>
+<span class="sd">        a list of vehicle (list)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">good_vehicles</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">vehicle</span> <span class="ow">in</span> <span class="n">project</span><span class="o">.</span><span class="n">vehicles</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Parked</span><span class="p">)</span> <span class="ow">and</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">Parked</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span>
+                <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">category</span><span class="p">):</span>
+                <span class="n">good_vehicles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vehicle</span><span class="p">)</span>
+
+    <span class="n">previous_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">vehicles</span><span class="p">)</span>
+    <span class="n">new_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">good_vehicles</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">previous_count</span> <span class="o">-</span> <span class="n">new_count</span><span class="p">)</span> <span class="o">+</span>
+          <span class="s1">&#39; vehicles did not finished at the same location as they have started the day&#39;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">good_vehicles</span>
+
+</div>
+<div class="viewcode-block" id="find_all_itinerary_combination"><a class="viewcode-back" href="../../itinerary.html#v2gsim.itinerary.find_all_itinerary_combination">[docs]</a><span class="k">def</span> <span class="nf">find_all_itinerary_combination</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Find all combination of locations in the vehicle itinerary data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        project (Project): a project</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        a pandas DataFrame with combination, vehicles and some high level statistics.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">progressbar</span><span class="o">.</span><span class="n">ProgressBar</span><span class="p">(</span><span class="n">widgets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Parsing: &#39;</span><span class="p">,</span>
+                                                    <span class="n">progressbar</span><span class="o">.</span><span class="n">Percentage</span><span class="p">(),</span> <span class="n">progressbar</span><span class="o">.</span><span class="n">Bar</span><span class="p">()],</span>
+                                           <span class="n">maxval</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">vehicles</span><span class="p">))</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="c1"># Create the dataframe holding the results</span>
+    <span class="n">frame</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;locations&#39;</span><span class="p">,</span> <span class="s1">&#39;vehicles&#39;</span><span class="p">})</span>
+
+    <span class="c1"># Iterate through all the vehicles</span>
+    <span class="k">for</span> <span class="n">vehicle_index</span><span class="p">,</span> <span class="n">vehicle</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">vehicles</span><span class="p">):</span>
+        <span class="n">itinerary</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">existing</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="c1"># Get the list of locations</span>
+        <span class="k">for</span> <span class="n">activity</span> <span class="ow">in</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">Parked</span><span class="p">):</span>
+                <span class="n">itinerary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">category</span><span class="p">)</span>
+
+        <span class="c1"># Is the temporary itinerary already existing?</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">row</span><span class="o">.</span><span class="n">locations</span> <span class="o">==</span> <span class="n">itinerary</span><span class="p">:</span>
+                <span class="n">existing</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">frame</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;vehicles&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vehicle</span><span class="p">)</span>
+                <span class="k">break</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">existing</span><span class="p">:</span>
+            <span class="c1"># Create a new row in the dataframe</span>
+            <span class="n">frame</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span>
+                <span class="n">frame</span><span class="p">,</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                    <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;locations&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">itinerary</span><span class="p">],</span> <span class="s1">&#39;vehicles&#39;</span><span class="p">:</span> <span class="p">[[</span><span class="n">vehicle</span><span class="p">]]})],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">ignore_index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">progress</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">vehicle_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="n">progress</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span>
+
+    <span class="c1"># Get some basic filtering value</span>
+    <span class="n">frame</span><span class="p">[</span><span class="s1">&#39;nb_of_parked_activity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">frame</span><span class="o">.</span><span class="n">locations</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+
+    <span class="n">frame</span><span class="p">[</span><span class="s1">&#39;nb_of_vehicles&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">frame</span><span class="o">.</span><span class="n">vehicles</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+
+    <span class="n">frame</span><span class="p">[</span><span class="s1">&#39;worker&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">frame</span><span class="o">.</span><span class="n">locations</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">True</span> <span class="k">if</span> <span class="s1">&#39;Work&#39;</span> <span class="ow">in</span> <span class="n">x</span> <span class="k">else</span> <span class="bp">False</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">frame</span>
+
+</div>
+<div class="viewcode-block" id="merge_itinerary_combination"><a class="viewcode-back" href="../../itinerary.html#v2gsim.itinerary.merge_itinerary_combination">[docs]</a><span class="k">def</span> <span class="nf">merge_itinerary_combination</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">locations_to_save</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Merge location combination, do not remove any vehicle.</span>
+<span class="sd">    itinerary_statistics will only keep the locations in *locations_to_save* or</span>
+<span class="sd">    *&quot;someWhere&quot;*. Regroup ItineraryBin that are now similar and</span>
+<span class="sd">    merge their assigned vehicles.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        project (Project): a project</span>
+<span class="sd">        locations_to_save (list): collection of location name to preserve</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        a pandas DataFrame with combination, vehicles and some high level statistics.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_remove_other_location</span><span class="p">(</span><span class="n">locations</span><span class="p">,</span> <span class="n">locations_to_save</span><span class="p">):</span>
+        <span class="n">new_locations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">location_category</span> <span class="ow">in</span> <span class="n">locations</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">location_category</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">locations_to_save</span><span class="p">:</span>
+                <span class="n">new_locations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;other_location&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_locations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">location_category</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_locations</span>
+
+    <span class="k">def</span> <span class="nf">_remove_vehicle_with_missing_driving</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
+        <span class="n">nb_of_activity</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">values</span><span class="p">[</span><span class="s1">&#39;nb_of_parked_activity&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">new_vehicles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">vehicle</span> <span class="ow">in</span> <span class="n">values</span><span class="p">[</span><span class="s1">&#39;vehicles&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">)</span> <span class="o">==</span> <span class="n">nb_of_activity</span><span class="p">:</span>
+                <span class="n">new_vehicles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vehicle</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_vehicles</span>
+
+    <span class="c1"># Copy the frame</span>
+    <span class="n">frame</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">itinerary_statistics</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># Simplify the name of locations</span>
+    <span class="n">frame</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">locations</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="n">locations</span><span class="p">:</span> <span class="n">_remove_other_location</span><span class="p">(</span><span class="n">locations</span><span class="p">,</span> <span class="n">locations_to_save</span><span class="p">))</span>
+
+    <span class="c1"># Get all unique combination of locations</span>
+    <span class="n">frame</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">locations</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">tuple</span><span class="p">)</span>
+    <span class="n">unique_locations</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">locations</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="c1"># Create the dataframe with unique locations</span>
+    <span class="n">frame2</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_locations</span><span class="p">)),</span>
+                              <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;locations&#39;</span><span class="p">:</span> <span class="n">unique_locations</span><span class="p">,</span>
+                                    <span class="s1">&#39;vehicles&#39;</span><span class="p">:</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_locations</span><span class="p">))]})</span>
+
+    <span class="c1"># For each of the unique itinerary merge the vehicles from the duplicate itineraries</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="c1"># Get the corresponding row in frame 2 and append vehicles</span>
+        <span class="n">temp_index</span> <span class="o">=</span> <span class="n">frame2</span><span class="p">[</span><span class="n">frame2</span><span class="o">.</span><span class="n">locations</span> <span class="o">==</span> <span class="n">row</span><span class="o">.</span><span class="n">locations</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">temp_index</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Error one the itinerary is not unique&#39;</span><span class="p">)</span>
+        <span class="n">frame2</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">temp_index</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;vehicles&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">vehicles</span><span class="p">)</span>
+
+    <span class="c1"># Get some basic filtering value</span>
+    <span class="n">frame2</span><span class="p">[</span><span class="s1">&#39;nb_of_parked_activity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">frame2</span><span class="o">.</span><span class="n">locations</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+
+    <span class="c1"># Check that all vehicles have the same number of activities (perhaps one is missing a driving)</span>
+    <span class="n">frame2</span><span class="o">.</span><span class="n">vehicles</span> <span class="o">=</span> <span class="n">frame2</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">_remove_vehicle_with_missing_driving</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">frame2</span><span class="p">[</span><span class="s1">&#39;nb_of_vehicles&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">frame2</span><span class="o">.</span><span class="n">vehicles</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">vehicles</span><span class="p">)</span> <span class="o">-</span> <span class="n">frame2</span><span class="o">.</span><span class="n">nb_of_vehicles</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">+</span>
+              <span class="s1">&#39;removed vehicles, because of missing driving cycle&#39;</span><span class="p">)</span>
+
+    <span class="n">frame2</span><span class="p">[</span><span class="s1">&#39;worker&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">frame2</span><span class="o">.</span><span class="n">locations</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">True</span> <span class="k">if</span> <span class="s1">&#39;Work&#39;</span> <span class="ow">in</span> <span class="n">x</span> <span class="k">else</span> <span class="bp">False</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">frame2</span>
+
+</div>
+<div class="viewcode-block" id="get_itinerary_statistic"><a class="viewcode-back" href="../../itinerary.html#v2gsim.itinerary.get_itinerary_statistic">[docs]</a><span class="k">def</span> <span class="nf">get_itinerary_statistic</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;For each itinerary creates a specific dataframe containing</span>
+<span class="sd">    primary statistical metrics on each activity using data from all the</span>
+<span class="sd">    vehicles in the itinerary&#39;s category. Note date are assumed to be UTC.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        project (Project): a project</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        a pandas DataFrame with locations, vehicles, high level statistics and detailed</span>
+<span class="sd">        activity statistics.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Copy the data</span>
+    <span class="n">frame</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">itinerary_statistics</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># Get the total number of vehicles</span>
+    <span class="n">total_vehicle</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">nb_of_vehicles</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">total_vehicle</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">vehicles</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Warning vehicles are missing: &#39;</span> <span class="o">+</span>
+              <span class="nb">str</span><span class="p">(</span><span class="n">total_vehicle</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">vehicles</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39; vehicles&#39;</span><span class="p">)</span>
+
+    <span class="c1"># For each combination</span>
+    <span class="n">epoch</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcfromtimestamp</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># Needed to change dates into floats (assume dates are UTC)</span>
+    <span class="n">temp_frame_holding_stat</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>  <span class="c1"># Needed because coulc not update dataframe with another frame</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="c1"># Create the structure holding the results for the whole day</span>
+        <span class="n">total_number_of_activities</span> <span class="o">=</span> <span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">nb_of_parked_activity</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">activity_stat</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">total_number_of_activities</span><span class="p">),</span>
+                                         <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;start_loc&#39;</span><span class="p">,</span> <span class="s1">&#39;start_scale&#39;</span><span class="p">,</span>
+                                                  <span class="s1">&#39;duration_loc&#39;</span><span class="p">,</span> <span class="s1">&#39;duration_scale&#39;</span><span class="p">,</span>
+                                                  <span class="s1">&#39;end_loc&#39;</span><span class="p">,</span> <span class="s1">&#39;end_scale&#39;</span><span class="p">,</span>
+                                                  <span class="s1">&#39;distance_loc&#39;</span><span class="p">,</span> <span class="s1">&#39;distance_scale&#39;</span><span class="p">,</span>
+                                                  <span class="s1">&#39;mean_speed_loc&#39;</span><span class="p">,</span> <span class="s1">&#39;mean_speed_scale&#39;</span><span class="p">])</span>
+
+        <span class="c1"># Iterate through all the activities for each vehicle to gather the data (could skip this)</span>
+        <span class="n">vehicle_schedules</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">vehicle</span> <span class="ow">in</span> <span class="n">row</span><span class="o">.</span><span class="n">vehicles</span><span class="p">:</span>
+            <span class="n">vehicle_stat</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">)),</span>
+                                            <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="s1">&#39;duration&#39;</span><span class="p">,</span> <span class="s1">&#39;end&#39;</span><span class="p">,</span> <span class="s1">&#39;distance&#39;</span><span class="p">,</span> <span class="s1">&#39;mean_speed&#39;</span><span class="p">])</span>
+            <span class="n">vehicle_stat</span> <span class="o">=</span> <span class="n">vehicle_stat</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">activity</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">Parked</span><span class="p">):</span>
+                    <span class="n">vehicle_stat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;start&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">start</span> <span class="o">-</span> <span class="n">epoch</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+                    <span class="n">vehicle_stat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;duration&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">end</span> <span class="o">-</span> <span class="n">activity</span><span class="o">.</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+                    <span class="n">vehicle_stat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;end&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">end</span> <span class="o">-</span> <span class="n">epoch</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">Driving</span><span class="p">):</span>
+                    <span class="n">vehicle_stat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;start&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">start</span> <span class="o">-</span> <span class="n">epoch</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+                    <span class="n">vehicle_stat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;duration&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">end</span> <span class="o">-</span> <span class="n">activity</span><span class="o">.</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+                    <span class="n">vehicle_stat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;distance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">activity</span><span class="o">.</span><span class="n">distance</span>
+                    <span class="k">if</span> <span class="n">vehicle_stat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;duration&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">vehicle_stat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;mean_speed&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">vehicle_stat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;mean_speed&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">activity</span><span class="o">.</span><span class="n">distance</span> <span class="o">/</span> <span class="p">((</span><span class="n">activity</span><span class="o">.</span><span class="n">end</span> <span class="o">-</span> <span class="n">activity</span><span class="o">.</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">)</span>
+                    <span class="n">vehicle_stat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;end&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">end</span> <span class="o">-</span> <span class="n">epoch</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+            <span class="n">vehicle_schedules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vehicle_stat</span><span class="p">)</span>
+
+        <span class="c1"># Get the best fit for each of the category per activity</span>
+        <span class="k">for</span> <span class="n">activity_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">total_number_of_activities</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="s1">&#39;duration&#39;</span><span class="p">,</span> <span class="s1">&#39;end&#39;</span><span class="p">,</span> <span class="s1">&#39;distance&#39;</span><span class="p">,</span> <span class="s1">&#39;mean_speed&#39;</span><span class="p">]:</span>
+                <span class="n">temporary_vector</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">schedule</span> <span class="ow">in</span> <span class="n">vehicle_schedules</span><span class="p">:</span>
+                    <span class="n">temporary_vector</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">schedule</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">activity_index</span><span class="p">,</span> <span class="n">column</span><span class="p">])</span>
+                <span class="c1"># Find the best fit for the data</span>
+                <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">temporary_vector</span><span class="p">)</span>
+                <span class="n">activity_stat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">activity_index</span><span class="p">,</span> <span class="n">column</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="s1">&#39;_loc&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">loc</span>
+                <span class="n">activity_stat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">activity_index</span><span class="p">,</span> <span class="n">column</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="s1">&#39;_scale&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">scale</span>
+
+        <span class="n">temp_frame_holding_stat</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">temp_frame_holding_stat</span><span class="p">,</span>
+                                                 <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">index</span><span class="p">],</span>
+                                                                  <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;activity_statistics&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">activity_stat</span><span class="p">]})],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">frame</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">frame</span><span class="p">,</span> <span class="n">temp_frame_holding_stat</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">frame</span>
+
+</div>
+<div class="viewcode-block" id="create_vehicles_from_stat"><a class="viewcode-back" href="../../itinerary.html#v2gsim.itinerary.create_vehicles_from_stat">[docs]</a><span class="k">def</span> <span class="nf">create_vehicles_from_stat</span><span class="p">(</span><span class="n">current_id</span><span class="p">,</span> <span class="n">itinerary</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a new vehicle from a statistical itinerary</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        current_id (Integer): id assigned to the new vehicle</span>
+<span class="sd">        itinerary (DataFrame): a row of project.itinerary_statistics</span>
+<span class="sd">        project (Project): a project to append new locations if necessary</span>
+
+<span class="sd">    Return:</span>
+<span class="sd">        a vehicle object with a full day of activities</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">not_completed</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">max_iteration</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">iteration</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">while</span> <span class="n">not_completed</span> <span class="ow">or</span> <span class="n">iteration</span> <span class="o">&lt;</span> <span class="n">max_iteration</span><span class="p">:</span>
+        <span class="n">iteration</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">vehicle</span> <span class="o">=</span> <span class="n">Vehicle</span><span class="p">(</span><span class="n">current_id</span><span class="p">,</span> <span class="n">project</span><span class="o">.</span><span class="n">car_models</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="n">is_first_activity</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">True</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="bp">False</span>
+        <span class="n">is_last_activity</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">itinerary</span><span class="o">.</span><span class="n">activity_statistics</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span> <span class="bp">True</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="n">y</span> <span class="k">else</span> <span class="bp">False</span>
+        <span class="n">is_duration_enough</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">60</span> <span class="k">else</span> <span class="mi">60</span>
+
+        <span class="c1"># The activities one by one</span>
+        <span class="n">location_index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">parked</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">try_again</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">activity</span> <span class="ow">in</span> <span class="n">itinerary</span><span class="o">.</span><span class="n">activity_statistics</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">is_first_activity</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+                <span class="c1"># This activity is assumed to be parked</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">date</span>
+                <span class="c1"># duration is int() to avoid milliseconds</span>
+                <span class="n">duration</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">duration_loc</span><span class="p">,</span> <span class="n">activity</span><span class="o">.</span><span class="n">duration_scale</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="c1"># duration is rouded at project.timestep</span>
+                <span class="n">duration</span> <span class="o">-=</span> <span class="n">duration</span> <span class="o">%</span> <span class="n">project</span><span class="o">.</span><span class="n">timestep</span>
+                <span class="n">duration</span> <span class="o">=</span> <span class="n">is_duration_enough</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">duration</span><span class="p">)</span>
+                <span class="n">location</span> <span class="o">=</span> <span class="n">itinerary</span><span class="o">.</span><span class="n">locations</span><span class="p">[</span><span class="n">location_index</span><span class="p">]</span>
+                <span class="n">location_index</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">parked</span> <span class="o">=</span> <span class="bp">False</span>
+
+                <span class="c1"># Append the activity</span>
+                <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Parked</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">unique_location_category</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">project</span><span class="p">)))</span>
+
+            <span class="k">elif</span> <span class="n">is_last_activity</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+                <span class="c1"># This activity is assumed to be parked</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">end</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">location</span> <span class="o">=</span> <span class="n">itinerary</span><span class="o">.</span><span class="n">locations</span><span class="p">[</span><span class="n">location_index</span><span class="p">]</span>
+
+                <span class="c1"># Append the activity</span>
+                <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Parked</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">unique_location_category</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">project</span><span class="p">)))</span>
+
+            <span class="k">elif</span> <span class="n">parked</span><span class="p">:</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">end</span>
+                <span class="n">duration</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">duration_loc</span><span class="p">,</span> <span class="n">activity</span><span class="o">.</span><span class="n">duration_scale</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">duration</span> <span class="o">-=</span> <span class="n">duration</span> <span class="o">%</span> <span class="n">project</span><span class="o">.</span><span class="n">timestep</span>
+                <span class="n">duration</span> <span class="o">=</span> <span class="n">is_duration_enough</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">duration</span><span class="p">)</span>
+                <span class="n">location</span> <span class="o">=</span> <span class="n">itinerary</span><span class="o">.</span><span class="n">locations</span><span class="p">[</span><span class="n">location_index</span><span class="p">]</span>
+                <span class="n">location_index</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">parked</span> <span class="o">=</span> <span class="bp">False</span>
+
+                <span class="c1"># Append the activity</span>
+                <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Parked</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">unique_location_category</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">project</span><span class="p">)))</span>
+
+            <span class="k">elif</span> <span class="ow">not</span> <span class="n">parked</span><span class="p">:</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">end</span>
+                <span class="n">duration</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">duration_loc</span><span class="p">,</span> <span class="n">activity</span><span class="o">.</span><span class="n">duration_scale</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">duration</span> <span class="o">-=</span> <span class="n">duration</span> <span class="o">%</span> <span class="n">project</span><span class="o">.</span><span class="n">timestep</span>
+                <span class="n">duration</span> <span class="o">=</span> <span class="n">is_duration_enough</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span>
+                <span class="n">mean_speed</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">mean_speed_loc</span><span class="p">,</span> <span class="n">activity</span><span class="o">.</span><span class="n">mean_speed_scale</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">duration</span><span class="p">)</span>
+                <span class="n">distance</span> <span class="o">=</span> <span class="p">(</span><span class="n">duration</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">)</span> <span class="o">*</span> <span class="n">mean_speed</span>  <span class="c1"># duration in seconds and mean_speed in km/h</span>
+                <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Driving</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">distance</span><span class="p">))</span>
+                <span class="n">parked</span> <span class="o">=</span> <span class="bp">True</span>
+
+            <span class="c1"># Post activity check</span>
+            <span class="k">if</span> <span class="n">end</span> <span class="o">&gt;</span> <span class="n">project</span><span class="o">.</span><span class="n">date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+                <span class="c1"># Some activity took too much time</span>
+                <span class="n">try_again</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="k">break</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">try_again</span><span class="p">:</span>
+            <span class="n">not_completed</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="k">return</span> <span class="n">vehicle</span>
+
+</div>
+<div class="viewcode-block" id="new_project_using_stats"><a class="viewcode-back" href="../../itinerary.html#v2gsim.itinerary.new_project_using_stats">[docs]</a><span class="k">def</span> <span class="nf">new_project_using_stats</span><span class="p">(</span><span class="n">old_project</span><span class="p">,</span> <span class="n">new_number_of_vehicle</span><span class="p">,</span> <span class="n">only_worker</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                            <span class="n">min_vehicles_per_bin</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">remove_old_project</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                            <span class="n">advanced_filtering_func</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">creating_vehicle_func</span><span class="o">=</span><span class="n">create_vehicles_from_stat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates a new project from statistical itineraries of an existing project.</span>
+<span class="sd">    Note: In the default version, itinerary should be able to cycle day after day, see</span>
+<span class="sd">    get_cycling_itineraries.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        old_project (Project): project which contains the statistical itineraries</span>
+<span class="sd">        new_number_of_vehicle (Integer): number of vehicles to create from the statistics</span>
+<span class="sd">        only_worker (Boolean): remove non worker from the pool</span>
+<span class="sd">        min_vehicles_per_bin (Integer): remove itineraries with too few vehicle representing it</span>
+<span class="sd">        remove_old_project (Boolean): remove the old project to free the memory before creating</span>
+<span class="sd">            the new project.</span>
+<span class="sd">        advanced_filtering_func (Function): customizable filtering function</span>
+
+<span class="sd">    Return:</span>
+<span class="sd">        a new project with similar itineraries as the old project and chosen number of vehicles</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Create a new project</span>
+    <span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
+    <span class="n">project</span><span class="o">.</span><span class="n">car_models</span> <span class="o">=</span> <span class="p">[</span><span class="n">BasicCarModel</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Leaf&#39;</span><span class="p">)]</span>
+
+    <span class="c1"># Copy the data</span>
+    <span class="n">frame</span> <span class="o">=</span> <span class="n">old_project</span><span class="o">.</span><span class="n">itinerary_statistics</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># Remove the old project ?</span>
+    <span class="k">if</span> <span class="n">remove_old_project</span><span class="p">:</span>
+        <span class="k">del</span> <span class="n">old_project</span>  <span class="c1"># Deep del?</span>
+
+    <span class="c1"># Filtering the statistical data</span>
+    <span class="k">if</span> <span class="n">only_worker</span><span class="p">:</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span><span class="p">[</span><span class="n">frame</span><span class="o">.</span><span class="n">worker</span> <span class="o">==</span> <span class="bp">True</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">min_vehicles_per_bin</span><span class="p">:</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span><span class="p">[</span><span class="n">frame</span><span class="o">.</span><span class="n">nb_of_vehicles</span> <span class="o">&gt;=</span> <span class="n">min_vehicles_per_bin</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">advanced_filtering_func</span><span class="p">:</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">advanced_filtering_func</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+
+    <span class="c1"># For each itinerary of the frame recreate</span>
+    <span class="n">current_id</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">total_number_of_vehicle</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">nb_of_vehicles</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">itinerary</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="c1"># How many vehicles should be created</span>
+        <span class="n">number_of_vehicle_per_bin</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">itinerary</span><span class="o">.</span><span class="n">nb_of_vehicles</span> <span class="o">/</span> <span class="n">total_number_of_vehicle</span><span class="p">)</span> <span class="o">*</span> <span class="n">new_number_of_vehicle</span><span class="p">)</span>
+
+        <span class="c1"># Recreate the vehicles activities</span>
+        <span class="k">for</span> <span class="n">vehicle_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">number_of_vehicle_per_bin</span><span class="p">):</span>
+            <span class="n">vehicle</span> <span class="o">=</span> <span class="n">creating_vehicle_func</span><span class="p">(</span><span class="n">current_id</span><span class="p">,</span> <span class="n">itinerary</span><span class="p">,</span> <span class="n">project</span><span class="p">)</span>
+
+            <span class="c1"># Check time gap before appending vehicle to the project</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">check_activities</span><span class="p">(</span>
+                <span class="n">start_date</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">date</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)):</span>
+                <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Itinerary does not respect the constraints&#39;</span><span class="p">)</span>
+                <span class="k">print</span><span class="p">(</span><span class="n">vehicle</span><span class="p">)</span>
+                <span class="kn">import</span> <span class="nn">pdb</span>
+                <span class="n">pdb</span><span class="o">.</span><span class="n">set_trace</span><span class="p">()</span>
+            <span class="n">project</span><span class="o">.</span><span class="n">vehicles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vehicle</span><span class="p">)</span>
+            <span class="n">current_id</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="c1"># Initialize charging station at each location</span>
+    <span class="n">reset_charging_infrastructures</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">project</span>
+
+</div>
+<div class="viewcode-block" id="plot_vehicle_itinerary"><a class="viewcode-back" href="../../itinerary.html#v2gsim.itinerary.plot_vehicle_itinerary">[docs]</a><span class="k">def</span> <span class="nf">plot_vehicle_itinerary</span><span class="p">(</span><span class="n">vehicles</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot the itinerary of a vehicle through out the day</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        vehicles (List): list of vehicles</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">vehicle</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vehicles</span><span class="p">):</span>
+        <span class="c1"># Create the vector to plot</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">activity</span> <span class="ow">in</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">:</span>
+            <span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+            <span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">Parked</span><span class="p">):</span>
+                <span class="n">y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span> <span class="o">+</span> <span class="n">index</span><span class="p">)</span>
+                <span class="n">y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span> <span class="o">+</span> <span class="n">index</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">Driving</span><span class="p">):</span>
+                <span class="n">y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">index</span><span class="p">)</span>
+                <span class="n">y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">index</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;vehicle id &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">id</span><span class="p">),</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Lawrence Berkeley National Laboratory.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

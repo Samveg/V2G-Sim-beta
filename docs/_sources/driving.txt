@@ -2,8 +2,32 @@ driving package
 ===============
 
 driving.basic_powertrain
------------------------------
+------------------------
 
-.. automodule:: driving.basic_powertrain
+.. automodule:: v2gsim.driving.basic_powertrain
+    :members:
+    :show-inheritance:
+
+
+driving.drivecycle.generator
+----------------------------
+
+.. automodule:: v2gsim.driving.drivecycle.generator
+    :members:
+    :show-inheritance:
+
+
+driving.detailed.power_train
+----------------------------
+
+.. automodule:: v2gsim.driving.detailed.power_train
+    :members:
+    :show-inheritance:
+
+
+driving.detailed.init_model
+---------------------------
+
+.. automodule:: v2gsim.driving.detailed.init_model
     :members:
     :show-inheritance:

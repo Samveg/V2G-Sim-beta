@@ -3,7 +3,6 @@ from __future__ import division
 from pyomo.opt import SolverFactory
 from pyomo.environ import *
 import time
-import traceback
 import pandas
 import numpy
 import matplotlib.pyplot as plt
@@ -14,8 +13,7 @@ import v2gsim.result
 
 class CentralOptimization(object):
     """Creates an object to perform optimization.
-    The object contains the results from the optimization and also the model
-    to solve the problem.
+    The object contains some general parameters for the optimization
     """
     def __init__(self, project, optimization_timestep, date_from,
                  date_to, minimum_SOC=0.1, maximum_SOC=0.95):
@@ -30,17 +28,6 @@ class CentralOptimization(object):
         self.date_to = date_to
         self.SOC_index_from = int((date_from - project.date).total_seconds() / project.timestep)
         self.SOC_index_to = int((date_to - project.date).total_seconds() / project.timestep)
-
-        # # Simulation result with expected number of vehicle at project timestep
-        # self.result = []
-        # self.simulation_description = pandas.DataFrame(
-        #     columns=['offset_SOC', 'margin_SOC', 'rampu_decrease', 'rampd_increase', 'feasible'])
-        #     columns=['initial_SOC', 'initial_energy', 'final_SOC', 'final_energy',
-        #              'net_load_rampu', 'rampu_decrease', 'rampu_constraint', 'rampu_power_demand',
-        #              'net_load_rampd', 'rampd_increase', 'rampd_constraint', 'rampd_power_demand',
-        #              'maximum_power_demand', 'maximum_net_load_power',
-        #              'minimum_power_demand', 'minimum_net_load_power',
-        #              'feasible'])
 
     def solve(self, project, net_load, real_number_of_vehicle, SOC_margin=0.02,
               SOC_offset=0.0, peak_shaving='peak_shaving', penalization=5, beta=None, plot=False):
@@ -60,36 +47,24 @@ class CentralOptimization(object):
         self.times = []
         self.vehicles = []
         self.d = {}
-        self.r = {}
         self.pmax = {}
         self.pmin = {}
         self.emin = {}
         self.emax = {}
-        self.rampu = {}
-        self.rampd = {}
         self.efinal = {}
 
         # Set the variables for the optimization
         new_net_load = self.initialize_net_load(net_load, real_number_of_vehicle, project)
         self.initialize_model(project, new_net_load, SOC_margin, SOC_offset)
 
-        # try:
         # Run the optimization
         timer = time.time()
-        opti_model, result = self.process(self.times, self.vehicles, self.d, self.r, self.pmax,
-                                          self.pmin, self.emin, self.emax, self.rampu,
-                                          self.rampd, self.efinal, peak_shaving, penalization)
+        opti_model, result = self.process(self.times, self.vehicles, self.d, self.pmax,
+                                          self.pmin, self.emin, self.emax,
+                                          self.efinal, peak_shaving, penalization)
         timer2 = time.time()
-        print('')
         print('The optimization duration was ' + str((timer2 - timer) / 60) + ' minutes')
         print('')
-
-        # except:
-        #     print('The optimization encountered an error when being solved, optimization parameters have been returned')
-        #     print(traceback.format_exc())
-        #     return {'times': self.times, 'vehicles': self.vehicles, 'd': self.d, 'r': self.r,
-        #             'pmax': self.pmax, 'pmin': self.pmin, 'emin': self.emin, 'emax': self.emax,
-        #             'rampu': self.rampu, 'rampd': self.rampd, 'efinal': self.efinal}
 
         # Post process results
         return self.post_process(project, net_load, opti_model, result, plot)
@@ -217,7 +192,7 @@ class CentralOptimization(object):
             project (Project): project
 
         Return:
-            times, vehicles, d, pmax, pmin, emin, emax, rampu, rampd, efinal
+            times, vehicles, d, pmax, pmin, emin, emax, efinal
         """
         # Create a dict with the net load and get time index in a data frame
         self.d, self.times = self.initialize_time_index(net_load)
@@ -276,7 +251,7 @@ class CentralOptimization(object):
         print('There is ' + str(unfeasible_vehicle) + ' unfeasible vehicle.')
         print('')
 
-    def process(self, times, vehicles, d, r, pmax, pmin, emin, emax, rampu, rampd,
+    def process(self, times, vehicles, d, pmax, pmin, emin, emax,
                 efinal, peak_shaving, penalization, solver="gurobi"):
         """The process function creates the pyomo model and solve it.
         Minimize sum( net_load(t) + sum(power_demand(t, v)))**2
@@ -294,8 +269,6 @@ class CentralOptimization(object):
             pmin (dict): (time, id) - power minimum at t for v
             emin (dict): (time, id) - energy minimum at t for v
             emax (dict): (time, id) - energy maximum at t for v
-            rampu (dict): time - maximum ramping up at t
-            rampd (dict): time - maximum ramping down at t
             efinal (dict): id - final SOC
             solver (string): name of the solver to use (default is gurobi)
 
@@ -538,9 +511,6 @@ def save_vehicle_state_for_optimization(vehicle, timestep, date_from,
                             power_demand[activity_index1:activity_index2])
                         vehicle.result['p_min'][location_index1:location_index2] += (
                             power_demand[activity_index1:activity_index2])
-                        # Energy consumed is directly the power demand but negative this time
-                        # vehicle.result['energy'][location_index1:location_index2] -= (
-                        #     power_demand[activity_index1:activity_index2])
                         # Energy is 0.0 because it's already accounted in power_demand
                         vehicle.result['energy'][location_index1:location_index2] -= (
                             [0.0] * (activity_index2 - activity_index1))

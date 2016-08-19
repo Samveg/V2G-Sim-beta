@@ -12,6 +12,9 @@ def randomly_assign(activity_index, activity, vehicle):
         activity (Parked): activity to be assigned with a charging station
         vehicle (Vehicle): needed to lookup charging station used previously at
             the same location
+
+    Return:
+        a charging station object to be assign to the parked activity
     """
 
     # If we have already visited this place then let's keep the same charger
