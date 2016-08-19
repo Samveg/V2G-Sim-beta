@@ -57,6 +57,9 @@ def save_vehicle_state_for_decentralized_optimization(
                     # Power demand on the grid is 0 since we are driving
                     vehicle.result['power_demand'][location_index1:location_index2] -= (
                         [0.0] * (activity_index2 - activity_index1))
+                    # Boolean to set charging or not
+                    vehicle.result['not_charging'][location_index1:location_index2] += (
+                        [1.0] * (activity_index2 - activity_index1))
 
                 # If parked pmin and pmax are not necessary the same
                 if isinstance(activity, v2gsim.model.Parked):
@@ -84,6 +87,9 @@ def save_vehicle_state_for_decentralized_optimization(
                         # Energy is 0.0 because it's already accounted in power_demand
                         vehicle.result['energy'][location_index1:location_index2] -= (
                             [0.0] * (activity_index2 - activity_index1))
+                        # Boolean to set not charging -- NOT used to force the power demand
+                        # vehicle.result['not_charging'][location_index1:location_index2] += (
+                        #     [1.0] * (activity_index2 - activity_index1))
 
     elif init:
         # Reset vehicle with no result and only 1 SOC value
@@ -115,6 +121,65 @@ def save_vehicle_state_for_decentralized_optimization(
             if 'energy' in vehicle.result.columns:
                 vehicle.result['energy'] = vehicle.result['energy'].cumsum()
 
+class DecentralizedOptimization(object):
+    """Creates an object to perform optimization.
+    The object contains some general parameters for the optimization
+    """
+    def __init__(self, project, optimization_timestep, date_from,
+                 date_to, minimum_SOC=0.1, maximum_SOC=0.95):
+        # All the variables are at the project timestep except for the model variables
+        # optimization_timestep is in minutes
+        self.optimization_timestep = optimization_timestep
+        # Set minimum_SOC
+        self.minimum_SOC = minimum_SOC
+        self.maximum_SOC = maximum_SOC
+        # Set date boundaries, should be same as the one used during the simulation
+        self.date_from = date_from
+        self.date_to = date_to
+        self.SOC_index_from = int((date_from - project.date).total_seconds() / project.timestep)
+        self.SOC_index_to = int((date_to - project.date).total_seconds() / project.timestep)
+    
+    def initialize_model(project):
+        """
+        """
+        for vehicle in project.vehicles:
+            if 'not_charging' in vehicle.result.columns:
+                # Resample result at the right time step
+                temp_vehicle_result = vehicle.result.resample(str(self.optimization_timestep) + 'T',
+                                                              how='first')
+                # Format arrays for optimization <-- give a description of their expected format
+                # Initiate to be able to use numpy.vstack, remove later
+                Aeq = numpy.array([0] * len(chargingOrNot)).reshape((1, len(chargingOrNot)))
+                tempAeq = numpy.diag(chargingOrNot)
+                deleteFirst = False
+                for index, value in enumerate(chargingOrNot):
+                    if value == 1:
+                        Aeq = numpy.vstack((Aeq, tempAeq[index, :]))
+                        deleteFirst = True
+                if deleteFirst:
+                    Aeq = numpy.delete(Aeq, (0), axis=0)  # Remove the fake first row
+                beq = [0] * Aeq.shape[0]
+
+                bineq1 = ([vehicle.carModel.batteryCap * (vehicle.carModel.SOCMax - vehicle.SOC[0]) / (timeInterval / 3600)] *
+                          len(powerCons))  # time interval must be in hour since battery cap is in Wh
+                for index, power in enumerate(powerCons):
+                    bineq1[index] = bineq1[index - 1] + power
+
+                bineq2 = ([-vehicle.carModel.batteryCap * (minimumSOC - vehicle.SOC[0]) / (timeInterval / 3600)] *
+                          len(powerCons))  # time interval must be in hour since battery cap is in Wh
+                for index, power in enumerate(powerCons):
+                    bineq2[index] = bineq2[index - 1] - power
+                bineq2[-1] = -(vehicle.carModel.batteryCap * (finalSOC - vehicle.SOC[0]) / (timeInterval / 3600) + sum(powerCons))
+
+                bineq = bineq1 + bineq2
+
+                # Append to optimization object
+                vehicle.extra.Aeq = Aeq
+                vehicle.extra.beq = beq
+                vehicle.extra.bineq = bineq
+                vehicle.extra.lb = minimumPower
+                vehicle.extra.ub = maximumPower
+
 class Optimization(object):
     """Optimization object for scheduling vehicle charging
     """
@@ -128,6 +193,120 @@ class Optimization(object):
         self.lb = []  # vector fill with Pmin at all time
         self.ub = []  # vector fill with Pmax at all time
         self.powerDemand = []  # vector fill with the result from the optimization
+
+
+def initialize_optimization(vehicleList, timeInterval=0.25, minimumSOC=0.1, finalSOC=0.4):
+    """This function initialize an optimization object for each vehicle with the result of a previous simulation
+    (note: we might have to add the timeHorizon as a parameter of the function)
+
+    Args:
+        vehicleList: list of vehicles
+        timeInterval: time interval (in hour) to use in the optimization problem
+        minimumSOC: minimum SOC at any time
+        finalSOC: final SOC at the end of the time horizon
+
+    Returns:
+        vehicleList_forOptimization: list of vehicle ready for the optimization process
+
+    """
+    horizonTime = 24 * 3600
+    timeInterval *= 3600
+    minPowerRateNull = False
+
+    for vehicle in vehicleList:
+        length = int(horizonTime / vehicle.outputInterval)
+        vehicle.extra = Optimization()
+        energyCons = [0]
+        chargingOrNot = []
+        minimumPower = []
+        maximumPower = []
+
+        for activity in vehicle.itinerary[0].activity:
+            if isinstance(activity, model.Driving):
+                energyActivity = integrate.cumtrapz(y=activity.powerDemand, dx=vehicle.outputInterval, initial=0.0)
+                energyActivity = [energyActivity[i] + energyCons[-1] for i in range(0, len(activity.powerDemand))]
+                energyCons.extend(energyActivity)
+                chargingOrNot.extend([1] * len(activity.powerDemand))
+
+                if minPowerRateNull:
+                    minimumPower.extend([0] * len(activity.powerDemand))
+                else:
+                    minimumPower.extend([-1440] * len(activity.powerDemand))
+                maximumPower.extend([1440] * len(activity.powerDemand))
+
+            elif isinstance(activity, model.Parked):
+                energyActivity = [energyCons[-1] for i in range(0, len(activity.powerDemand))]
+                energyCons.extend(energyActivity)
+                if activity.pluggedIn:
+                    chargingOrNot.extend([0] * len(activity.powerDemand))
+                else:
+                    chargingOrNot.extend([1] * len(activity.powerDemand))
+
+                # <-- Replace by maximum of
+                maxRate = vehicle.carModel.powerRateMax
+                minRate = vehicle.carModel.powerRateMin
+                if maxRate > activity.location.chargingInfra.powerRateMax:
+                    maxRate = activity.location.chargingInfra.powerRateMax
+                if minRate < -activity.location.chargingInfra.powerRateMax:
+                    minRate = -activity.location.chargingInfra.powerRateMax
+
+                if minPowerRateNull:
+                    minRate = 0
+
+                minimumPower.extend([minRate] * len(activity.powerDemand))
+                maximumPower.extend([maxRate] * len(activity.powerDemand))
+        del energyCons[0]
+
+        # Interpolate arrays for the time interval of the optimization
+        timeOfOpti = [index * timeInterval for index in range(0, int(horizonTime / timeInterval))]
+        timeOfOutput = [index * vehicle.outputInterval for index in range(0, length)]
+
+        energyCons = numpy.interp(timeOfOpti, timeOfOutput, energyCons[0:length])
+        powerCons = [(energyCons[index] - energyCons[index - 1]) / timeInterval for index in range(1, len(energyCons))]
+        powerCons.append(powerCons[-1])
+
+        chargingOrNot = numpy.interp(timeOfOpti, timeOfOutput, chargingOrNot[0:length])
+        chargingOrNot = [math.ceil(chargingOrNot[index]) for index in range(0, len(chargingOrNot))]  # Keep only 1 and 0
+        minimumPower = numpy.interp(timeOfOpti, timeOfOutput, minimumPower[0:length])
+        maximumPower = numpy.interp(timeOfOpti, timeOfOutput, maximumPower[0:length])
+
+        if len(chargingOrNot) != int(horizonTime / timeInterval):
+            raise TypeError("Not enough data for time horizon")
+
+        # Format arrays for optimization <-- give a description of their expected format
+        # Initiate to be able to use numpy.vstack, remove later
+        Aeq = numpy.array([0] * len(chargingOrNot)).reshape((1, len(chargingOrNot)))
+        tempAeq = numpy.diag(chargingOrNot)
+        deleteFirst = False
+        for index, value in enumerate(chargingOrNot):
+            if value == 1:
+                Aeq = numpy.vstack((Aeq, tempAeq[index, :]))
+                deleteFirst = True
+        if deleteFirst:
+            Aeq = numpy.delete(Aeq, (0), axis=0)  # Remove the fake first row
+        beq = [0] * Aeq.shape[0]
+
+        bineq1 = ([vehicle.carModel.batteryCap * (vehicle.carModel.SOCMax - vehicle.SOC[0]) / (timeInterval / 3600)] *
+                  len(powerCons))  # time interval must be in hour since battery cap is in Wh
+        for index, power in enumerate(powerCons):
+            bineq1[index] = bineq1[index - 1] + power
+
+        bineq2 = ([-vehicle.carModel.batteryCap * (minimumSOC - vehicle.SOC[0]) / (timeInterval / 3600)] *
+                  len(powerCons))  # time interval must be in hour since battery cap is in Wh
+        for index, power in enumerate(powerCons):
+            bineq2[index] = bineq2[index - 1] - power
+        bineq2[-1] = -(vehicle.carModel.batteryCap * (finalSOC - vehicle.SOC[0]) / (timeInterval / 3600) + sum(powerCons))
+
+        bineq = bineq1 + bineq2
+
+        # Append to optimization object
+        vehicle.extra.Aeq = Aeq
+        vehicle.extra.beq = beq
+        vehicle.extra.bineq = bineq
+        vehicle.extra.lb = minimumPower
+        vehicle.extra.ub = maximumPower
+
+    return vehicleList
 
 
 def select_participant(vehicleList, timeInterval, netLoadInput, netLoadSamplingRate=3600):
