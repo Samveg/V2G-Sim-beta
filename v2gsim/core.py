@@ -26,7 +26,7 @@ def run(project, charging_option=None, date_from=None, date_to=None,
     if date_from is None:
         date_from = project.date
     if date_to is None:
-        date_to = project.date + datetime.timedelta(hours=23, minutes=59)
+        date_to = project.date + datetime.timedelta(days=1)
 
     # Itinitialize result placeholders and reset charging stations to None
     project = _pre_run(project, date_from, date_to, reset=reset_charging_station)
