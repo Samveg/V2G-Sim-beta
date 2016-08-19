@@ -83,12 +83,15 @@
             
                 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="v2gconcept.html">what is vehicle to grid?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installv2gsim.html">how to install V2G-Sim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="core.html">core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="model.html">model</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">itinerary</a></li>
 <li class="toctree-l1"><a class="reference internal" href="charging.html">charging package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="driving.html">driving package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="result.html">result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="post_simulation.html">post simulation package</a></li>
 </ul>
 
             
@@ -133,11 +136,75 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-itinerary">
-<span id="itinerary"></span><h1>itinerary<a class="headerlink" href="#module-itinerary" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-v2gsim.itinerary">
+<span id="itinerary"></span><h1>itinerary<a class="headerlink" href="#module-v2gsim.itinerary" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
-<dt id="itinerary.from_excel">
-<code class="descclassname">itinerary.</code><code class="descname">from_excel</code><span class="sig-paren">(</span><em>project</em>, <em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/itinerary.html#from_excel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#itinerary.from_excel" title="Permalink to this definition">¶</a></dt>
+<dt id="v2gsim.itinerary.copy_append">
+<code class="descclassname">v2gsim.itinerary.</code><code class="descname">copy_append</code><span class="sig-paren">(</span><em>project</em>, <em>nb_copies=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/itinerary.html#copy_append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.itinerary.copy_append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy the itinerary of each vehicle in the project.
+The copy is appended and a merge operation is applied to ensure a good blend.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project</strong> (<a class="reference internal" href="model.html#v2gsim.model.Project" title="v2gsim.model.Project"><em>Project</em></a>) &#8211; project</li>
+<li><strong>nb_copies</strong> (<em>int</em>) &#8211; number of copies to append</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>project</strong> &#8211;
+new project with extended itineraries</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="model.html#v2gsim.model.Project" title="v2gsim.model.Project">Project</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.itinerary.create_vehicles_from_stat">
+<code class="descclassname">v2gsim.itinerary.</code><code class="descname">create_vehicles_from_stat</code><span class="sig-paren">(</span><em>current_id</em>, <em>itinerary</em>, <em>project</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/itinerary.html#create_vehicles_from_stat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.itinerary.create_vehicles_from_stat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new vehicle from a statistical itinerary</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>current_id</strong> (<em>Integer</em>) &#8211; id assigned to the new vehicle</li>
+<li><strong>itinerary</strong> (<em>DataFrame</em>) &#8211; a row of project.itinerary_statistics</li>
+<li><strong>project</strong> (<a class="reference internal" href="model.html#v2gsim.model.Project" title="v2gsim.model.Project"><em>Project</em></a>) &#8211; a project to append new locations if necessary</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a vehicle object with a full day of activities</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.itinerary.find_all_itinerary_combination">
+<code class="descclassname">v2gsim.itinerary.</code><code class="descname">find_all_itinerary_combination</code><span class="sig-paren">(</span><em>project</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/itinerary.html#find_all_itinerary_combination"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.itinerary.find_all_itinerary_combination" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all combination of locations in the vehicle itinerary data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project</strong> (<a class="reference internal" href="model.html#v2gsim.model.Project" title="v2gsim.model.Project"><em>Project</em></a>) &#8211; a project</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a pandas DataFrame with combination, vehicles and some high level statistics.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.itinerary.from_excel">
+<code class="descclassname">v2gsim.itinerary.</code><code class="descname">from_excel</code><span class="sig-paren">(</span><em>project</em>, <em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/itinerary.html#from_excel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.itinerary.from_excel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read itineraries from an excel file. Excel header: Vehicle ID,
 Start time (hour), End time (hour), Distance (mi), P_max (W), Location,
 NHTS HH Wt.</p>
@@ -146,7 +213,7 @@ NHTS HH Wt.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>project</strong> (<a class="reference internal" href="model.html#model.Project" title="model.Project"><em>Project</em></a>) &#8211; empty project</li>
+<li><strong>project</strong> (<a class="reference internal" href="model.html#v2gsim.model.Project" title="v2gsim.model.Project"><em>Project</em></a>) &#8211; empty project</li>
 <li><strong>filename</strong> (<em>string</em>) &#8211; relative or absolute path to the excel file</li>
 </ul>
 </td>
@@ -155,7 +222,7 @@ NHTS HH Wt.</p>
 project assigned with vehicles</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="model.html#model.Project" title="model.Project">Project</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="model.html#v2gsim.model.Project" title="v2gsim.model.Project">Project</a></p>
 </td>
 </tr>
 </tbody>
@@ -163,8 +230,168 @@ project assigned with vehicles</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="itinerary.unique_location_category">
-<code class="descclassname">itinerary.</code><code class="descname">unique_location_category</code><span class="sig-paren">(</span><em>location_category</em>, <em>project</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/itinerary.html#unique_location_category"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#itinerary.unique_location_category" title="Permalink to this definition">¶</a></dt>
+<dt id="v2gsim.itinerary.get_cycling_itineraries">
+<code class="descclassname">v2gsim.itinerary.</code><code class="descname">get_cycling_itineraries</code><span class="sig-paren">(</span><em>project</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/itinerary.html#get_cycling_itineraries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.itinerary.get_cycling_itineraries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Put aside vehicles that does not come back
+at the same location as they started their day from.
+Also putting aside vehicle that ends or starts with a
+driving activity.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project</strong> (<a class="reference internal" href="model.html#v2gsim.model.Project" title="v2gsim.model.Project"><em>Project</em></a>) &#8211; a project with vehicles</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a list of vehicle (list)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.itinerary.get_itinerary_statistic">
+<code class="descclassname">v2gsim.itinerary.</code><code class="descname">get_itinerary_statistic</code><span class="sig-paren">(</span><em>project</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/itinerary.html#get_itinerary_statistic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.itinerary.get_itinerary_statistic" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each itinerary creates a specific dataframe containing
+primary statistical metrics on each activity using data from all the
+vehicles in the itinerary&#8217;s category. Note date are assumed to be UTC.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project</strong> (<a class="reference internal" href="model.html#v2gsim.model.Project" title="v2gsim.model.Project"><em>Project</em></a>) &#8211; a project</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a pandas DataFrame with locations, vehicles, high level statistics and detailed
+activity statistics.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.itinerary.get_vehicle_statistics">
+<code class="descclassname">v2gsim.itinerary.</code><code class="descname">get_vehicle_statistics</code><span class="sig-paren">(</span><em>project</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/itinerary.html#get_vehicle_statistics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.itinerary.get_vehicle_statistics" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function return &#8216;number_of_trip&#8217;, &#8216;morning_start&#8217;, &#8216;total_distance&#8217;,
+&#8216;went_to_work&#8217;, &#8216;last_trip_time&#8217; for each vehicle.
+note: the function do not handle vehicles with only 1 driving activity
+and no parked activities.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project</strong> (<a class="reference internal" href="model.html#v2gsim.model.Project" title="v2gsim.model.Project"><em>Project</em></a>) &#8211; project</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>stat</strong> &#8211;
+data frame with index vehicle ids</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">DataFrame</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.itinerary.merge_itinerary_combination">
+<code class="descclassname">v2gsim.itinerary.</code><code class="descname">merge_itinerary_combination</code><span class="sig-paren">(</span><em>project</em>, <em>locations_to_save</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/itinerary.html#merge_itinerary_combination"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.itinerary.merge_itinerary_combination" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merge location combination, do not remove any vehicle.
+itinerary_statistics will only keep the locations in <em>locations_to_save</em> or
+<em>&#8220;someWhere&#8221;</em>. Regroup ItineraryBin that are now similar and
+merge their assigned vehicles.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project</strong> (<a class="reference internal" href="model.html#v2gsim.model.Project" title="v2gsim.model.Project"><em>Project</em></a>) &#8211; a project</li>
+<li><strong>locations_to_save</strong> (<em>list</em>) &#8211; collection of location name to preserve</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a pandas DataFrame with combination, vehicles and some high level statistics.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.itinerary.new_project_using_stats">
+<code class="descclassname">v2gsim.itinerary.</code><code class="descname">new_project_using_stats</code><span class="sig-paren">(</span><em>old_project</em>, <em>new_number_of_vehicle</em>, <em>only_worker=False</em>, <em>min_vehicles_per_bin=False</em>, <em>remove_old_project=False</em>, <em>advanced_filtering_func=False</em>, <em>creating_vehicle_func=&lt;function create_vehicles_from_stat&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/itinerary.html#new_project_using_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.itinerary.new_project_using_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new project from statistical itineraries of an existing project.
+Note: In the default version, itinerary should be able to cycle day after day, see
+get_cycling_itineraries.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>old_project</strong> (<a class="reference internal" href="model.html#v2gsim.model.Project" title="v2gsim.model.Project"><em>Project</em></a>) &#8211; project which contains the statistical itineraries</li>
+<li><strong>new_number_of_vehicle</strong> (<em>Integer</em>) &#8211; number of vehicles to create from the statistics</li>
+<li><strong>only_worker</strong> (<em>Boolean</em>) &#8211; remove non worker from the pool</li>
+<li><strong>min_vehicles_per_bin</strong> (<em>Integer</em>) &#8211; remove itineraries with too few vehicle representing it</li>
+<li><strong>remove_old_project</strong> (<em>Boolean</em>) &#8211; remove the old project to free the memory before creating
+the new project.</li>
+<li><strong>advanced_filtering_func</strong> (<em>Function</em>) &#8211; customizable filtering function</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a new project with similar itineraries as the old project and chosen number of vehicles</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.itinerary.plot_vehicle_itinerary">
+<code class="descclassname">v2gsim.itinerary.</code><code class="descname">plot_vehicle_itinerary</code><span class="sig-paren">(</span><em>vehicles</em>, <em>title=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/itinerary.html#plot_vehicle_itinerary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.itinerary.plot_vehicle_itinerary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the itinerary of a vehicle through out the day</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vehicles</strong> (<em>List</em>) &#8211; list of vehicles</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.itinerary.reset_charging_infrastructures">
+<code class="descclassname">v2gsim.itinerary.</code><code class="descname">reset_charging_infrastructures</code><span class="sig-paren">(</span><em>project</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/itinerary.html#reset_charging_infrastructures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.itinerary.reset_charging_infrastructures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the charging infrastructure at every location to be uncontrolled charging,
+using either L1 or L2 charger.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project</strong> (<a class="reference internal" href="model.html#v2gsim.model.Project" title="v2gsim.model.Project"><em>Project</em></a>) &#8211; a project</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.itinerary.set_fleet_mix">
+<code class="descclassname">v2gsim.itinerary.</code><code class="descname">set_fleet_mix</code><span class="sig-paren">(</span><em>vehicles</em>, <em>mix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/itinerary.html#set_fleet_mix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.itinerary.set_fleet_mix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the fleet mix</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>vehicles</strong> (<a class="reference internal" href="model.html#v2gsim.model.Vehicle" title="v2gsim.model.Vehicle"><em>Vehicle</em></a>) &#8211; list of vehicle</li>
+<li><strong>mix</strong> (<em>pandas.DataFrame</em>) &#8211; a row has a car model
+with an associated penetration</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.itinerary.unique_location_category">
+<code class="descclassname">v2gsim.itinerary.</code><code class="descname">unique_location_category</code><span class="sig-paren">(</span><em>location_category</em>, <em>project</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/itinerary.html#unique_location_category"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.itinerary.unique_location_category" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compare input location category with locations in the project, return a
 new location and update the project or just return an existing location.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -173,7 +400,7 @@ new location and update the project or just return an existing location.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>location_category</strong> (<em>string</em>) &#8211; location category (Home, Work, ...)</li>
-<li><strong>project</strong> (<a class="reference internal" href="model.html#model.Project" title="model.Project"><em>Project</em></a>) &#8211; current project</li>
+<li><strong>project</strong> (<a class="reference internal" href="model.html#v2gsim.model.Project" title="v2gsim.model.Project"><em>Project</em></a>) &#8211; current project</li>
 </ul>
 </td>
 </tr>
@@ -181,7 +408,7 @@ new location and update the project or just return an existing location.</p>
 either a new or an existing location</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="model.html#model.Location" title="model.Location">Location</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="model.html#v2gsim.model.Location" title="v2gsim.model.Location">Location</a></p>
 </td>
 </tr>
 </tbody>

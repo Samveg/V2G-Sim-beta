@@ -60,6 +60,117 @@ def save_location_state(location, timestep, date_from, date_to,
         location.result = pandas.DataFrame(index=i, data=location.result)
 
 
+def location_potential_power_demand(location, timestep, date_from, date_to,
+                                    vehicle=None, activity=None,
+                                    power_demand=None, SOC=None, nb_interval=None,
+                                    init=False, run=False, post=False):
+    """Save local power demand for ASAP, 50percent ASAP, nominal,
+    50percent ALAP, ALAP.
+
+    Args:
+        location (Location): location
+        timestep (int): calculation timestep
+        date_from (datetime.datetime): date to start recording power demand
+        date_to (datetime.datetime): date to end recording power demand
+        vehicle (Vehicle): vehicle
+        activity (Parked): parked activity
+        power_demand (list): power demand from parked activity
+        SOC (list): state of charge from the parked activity
+        nb_interval (int): number of timestep for the parked activity
+    """
+    if run:
+        activity_index1, activity_index2, location_index1, location_index2, save = _map_index(
+            activity.start, activity.end, date_from, date_to, len(power_demand),
+            len(location.result['nominal']), timestep)
+
+        # Save a lot of interesting result
+        if save:
+            # Get duration in [seconds] of activity
+            duration = nb_interval * timestep
+            if duration <= 0:
+                return
+
+            # Get Q the energy in [Wh] to furnish under the L1 charger assumption
+            Q = 1440 * duration / 3600
+
+            # Take the minimum of Q or remaining energy to charge [Wh]
+            if (Q + SOC[0] * vehicle.car_model.battery_capacity > 
+                vehicle.car_model.battery_capacity * vehicle.car_model.maximum_SOC):
+                Q = (vehicle.car_model.battery_capacity * vehicle.car_model.maximum_SOC -
+                    SOC[0] * vehicle.car_model.battery_capacity)
+
+            # Get maximum achievable power
+            maximum_power = min(activity.charging_station.maximum_power,
+                                vehicle.car_model.maximum_power)
+            # If the vehicle is not plugged then just leave the function
+            if maximum_power <= 0:
+                return
+
+            # Get nominal power
+            nominal_power = Q * 3600 / duration  # Q from Wh to Joule
+            if nominal_power > maximum_power:
+                print('Error in potential power demand: nominal power too large ' +
+                      str(nominal_power) + ' > ' + str(maximum_power))
+
+            # Get the power at 50% of maximum power - nominal
+            mid_power = 0.5 * (maximum_power - nominal_power) + nominal_power
+
+            # Get the power vector associated with how long one can charge at a certain power
+            time_at_maximum = [maximum_power] * int(Q * 3600 / (maximum_power * timestep))
+            time_at_mid = [mid_power] * int(Q * 3600 / (mid_power * timestep))
+
+            # Create the lists of potential power consumption
+            ASAP = list(time_at_maximum)
+            ASAP.extend([0] * int(nb_interval - len(time_at_maximum)))
+
+            ALAP = [0] * int(nb_interval - len(time_at_maximum))
+            ALAP.extend(time_at_maximum)
+
+            nominal = [nominal_power] * int(nb_interval)
+
+            ASAP_nominal = list(time_at_mid)
+            ASAP_nominal.extend([0] * int(nb_interval - len(time_at_mid)))
+
+            ALAP_nominal = [0] * int(nb_interval - len(time_at_mid))
+            ALAP_nominal.extend(time_at_mid)
+
+            # Double check that the potential consumption have the same lenght as the actual one
+            for potential_consumption in [ASAP, ALAP, nominal, ASAP_nominal, ALAP_nominal]:
+                if len(potential_consumption) != nb_interval:
+                    print('Error in potential power demand: lenght does not match nb_interval=' +
+                        str(nb_interval) + ' != ' + str(len(potential_consumption)))
+
+            # Save the final result into the location
+            location.result['ASAP'][location_index1:location_index2] += (
+                ASAP[activity_index1:activity_index2])
+
+            location.result['ASAP_nominal'][location_index1:location_index2] += (
+                ASAP_nominal[activity_index1:activity_index2])
+
+            location.result['nominal'][location_index1:location_index2] += (
+                nominal[activity_index1:activity_index2])
+
+            location.result['ALAP_nominal'][location_index1:location_index2] += (
+                ALAP_nominal[activity_index1:activity_index2])
+
+            location.result['ALAP'][location_index1:location_index2] += (
+                ALAP[activity_index1:activity_index2])
+
+    elif init:
+        # Initiate a dictionary of numpy array to hold result (faster than DataFrame)
+        location.result = {'ASAP': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep)),
+                           'ASAP_nominal': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep)),
+                           'nominal': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep)),
+                           'ALAP_nominal': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep)),
+                           'ALAP': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep))}
+
+    elif post:
+        # Convert location result back into pandas DataFrame (faster that way)
+        i = pandas.date_range(start=date_from, end=date_to,
+                              freq=str(timestep) + 's', closed='left')
+        location.result = pandas.DataFrame(index=i, data=location.result)
+
+
 def save_vehicle_state(vehicle, timestep, date_from,
                        date_to, activity=None, power_demand=None, SOC=None,
                        detail=None, nb_interval=None, init=False, run=False, post=False):
@@ -76,27 +187,28 @@ def save_detailed_vehicle_state(vehicle, timestep, date_from,
     """Save vehicle detailed powertrain output. Only use with the detailed
     detailed power train model.
     """
-    if run and detail:
+    if run:
         activity_index1, activity_index2, location_index1, location_index2, save = _map_index(
             activity.start, activity.end, date_from, date_to, len(power_demand),
             len(vehicle.result['battery_temp']), timestep)
 
         # Save a lot of interesting result
         if save:
-            vehicle.result['battery_temp'][location_index1:location_index2] += (
-                detail.ess.T_cell[activity_index1:activity_index2])
+            # detail means some data is passed from the detailed power-train model
+            if detail:
+                # vehicle.result['battery_temp'][location_index1:location_index2] += (
+                #     detail.ess.T_cell[activity_index1:activity_index2])
 
-            vehicle.result['output_current'][location_index1:location_index2] += (
-                detail.ess.i_out[activity_index1:activity_index2])
+                vehicle.result['output_current'][location_index1:location_index2] += (
+                    detail.ess.i_out[activity_index1:activity_index2])
 
-    elif run:
-        activity_index1, activity_index2, location_index1, location_index2, save = _map_index(
-            activity.start, activity.end, date_from, date_to, len(power_demand),
-            len(vehicle.result['power_demand']), timestep)
-
-        if save:
-            vehicle.result['power_demand'][location_index1:location_index2] += (
-                power_demand[activity_index1:activity_index2])
+            # if detail is false then it was a parked activity
+            else:
+                vehicle.result['power_demand'][location_index1:location_index2] += (
+                    power_demand[activity_index1:activity_index2])
+                
+                vehicle.result['parked'][location_index1:location_index2] = (
+                    [True] * (activity_index2 - activity_index1))
 
 
 
@@ -104,7 +216,8 @@ def save_detailed_vehicle_state(vehicle, timestep, date_from,
         vehicle.SOC = [vehicle.SOC[0]]
         vehicle.result = {'battery_temp': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep)),
                           'output_current': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep)),
-                          'power_demand': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep))}
+                          'power_demand': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep)),
+                          'parked': numpy.array([False] * int((date_to - date_from).total_seconds() / timestep))}
 
     elif post:
         # Convert location result back into pandas DataFrame (faster that way)

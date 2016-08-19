@@ -1,0 +1,290 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>v2gsim.driving.basic_powertrain &mdash; V2G-Sim 0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="V2G-Sim 0.1 documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> V2G-Sim
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../v2gconcept.html">what is vehicle to grid?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installv2gsim.html">how to install V2G-Sim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../core.html">core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../model.html">model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../itinerary.html">itinerary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../charging.html">charging package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../driving.html">driving package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../result.html">result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../post_simulation.html">post simulation package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../index.html">V2G-Sim</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      
+    <li>v2gsim.driving.basic_powertrain</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for v2gsim.driving.basic_powertrain</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+
+<div class="viewcode-block" id="consumption"><a class="viewcode-back" href="../../../driving.html#v2gsim.driving.basic_powertrain.consumption">[docs]</a><span class="k">def</span> <span class="nf">consumption</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">vehicle</span><span class="p">,</span> <span class="n">nb_interval</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate the consumption when a vehicle is driving</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        activity (Driving): a driving activity</span>
+<span class="sd">        vehicle (Vehicle): a Vehicle object to update with the driving</span>
+<span class="sd">            activity consumption</span>
+<span class="sd">        nb_interval (int): number of timestep for the driving activity</span>
+<span class="sd">        timestep (int): calculation timestep</span>
+
+<span class="sd">    Return:</span>
+<span class="sd">        SOC (list): state of charge/</span>
+<span class="sd">        power_demand (list): power demand/</span>
+<span class="sd">        stranded (boolean): True if the vehicle run out of charge during the</span>
+<span class="sd">        activity</span>
+<span class="sd">        detail (any type): optional data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Calculate the duration</span>
+    <span class="n">duration</span> <span class="o">=</span> <span class="n">nb_interval</span> <span class="o">*</span> <span class="n">timestep</span> <span class="o">/</span> <span class="mi">3600</span>
+
+    <span class="c1"># Get the mean speed</span>
+    <span class="k">if</span> <span class="n">duration</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">mean_speed</span> <span class="o">=</span> <span class="n">activity</span><span class="o">.</span><span class="n">distance</span> <span class="o">/</span> <span class="n">duration</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Activity duration is shorter than timestep&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[],</span> <span class="p">[],</span> <span class="bp">False</span><span class="p">,</span> <span class="bp">False</span>
+
+    <span class="c1"># Get the energy Wh consumption per km</span>
+    <span class="n">energyConsumption</span> <span class="o">=</span> <span class="n">_drivecycle_energy_per_distance</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">car_model</span><span class="p">,</span> <span class="n">mean_speed</span><span class="p">)</span>
+
+    <span class="c1"># Set the total energy needed for the trip (Wh)</span>
+    <span class="n">energy</span> <span class="o">=</span> <span class="n">activity</span><span class="o">.</span><span class="n">distance</span> <span class="o">*</span> <span class="n">energyConsumption</span>
+
+    <span class="c1"># Get last SOC value ((SOCinit*batteryCap)-energyForTheTrip)/batteryCap</span>
+    <span class="n">endSOC</span> <span class="o">=</span> <span class="p">(((</span><span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">car_model</span><span class="o">.</span><span class="n">battery_capacity</span><span class="p">)</span> <span class="o">-</span> <span class="n">energy</span><span class="p">)</span> <span class="o">/</span>
+              <span class="n">vehicle</span><span class="o">.</span><span class="n">car_model</span><span class="o">.</span><span class="n">battery_capacity</span><span class="p">)</span>
+
+    <span class="c1"># Check if not below stranding threshold</span>
+    <span class="n">stranded</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">endSOC</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">:</span>
+        <span class="n">stranded</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">if</span> <span class="n">endSOC</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">endSOC</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># Get SOC list with last SOC-intervalSOC, SOC-2*intervalSOC ...endSOC</span>
+    <span class="n">SOC</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">endSOC</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">nb_interval</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+
+    <span class="c1"># Set the power demand for this driving activity [J] /</span>
+    <span class="n">constant_power_demand</span> <span class="o">=</span> <span class="n">energy</span> <span class="o">*</span> <span class="mi">3600</span> <span class="o">/</span> <span class="p">(</span><span class="n">nb_interval</span> <span class="o">*</span> <span class="n">timestep</span><span class="p">)</span>
+    <span class="n">power_demand</span> <span class="o">=</span> <span class="p">[</span><span class="n">constant_power_demand</span><span class="p">]</span> <span class="o">*</span> <span class="n">nb_interval</span>
+
+    <span class="k">return</span> <span class="n">SOC</span><span class="p">,</span> <span class="n">power_demand</span><span class="p">,</span> <span class="n">stranded</span><span class="p">,</span> <span class="bp">False</span>
+
+</div>
+<span class="k">def</span> <span class="nf">_drivecycle_energy_per_distance</span><span class="p">(</span><span class="n">car_model</span><span class="p">,</span> <span class="n">mean_speed</span><span class="p">):</span>
+    <span class="c1"># Get the energy consumption per km</span>
+
+    <span class="c1"># UDDS (Urban Dynamometer Driving Schedule) 12.07km</span>
+    <span class="c1"># with maximum speed 91.25km/h and average speed</span>
+    <span class="c1"># of 31.5km/h (19.6mph)</span>
+    <span class="n">UDDS</span> <span class="o">=</span> <span class="mf">31.5</span>  <span class="c1"># (km/h)</span>
+
+    <span class="c1"># HWFET (Highway Fuel Economy Test) 16.45km</span>
+    <span class="c1"># with average speed 77.7km/h (48.3mph)</span>
+    <span class="n">HWFET</span> <span class="o">=</span> <span class="mf">77.7</span>  <span class="c1"># (km/h)</span>
+
+    <span class="c1"># US06 12.8km average speed 77.9km/h (48.4mph)with</span>
+    <span class="c1"># a maximum speed at 129.2km/h</span>
+    <span class="c1"># --&gt; above HWFET</span>
+
+    <span class="c1"># Delhi (no information) congested city drive cycle</span>
+    <span class="c1"># --&gt; below UDDS</span>
+
+    <span class="c1"># Determine the right consumption (!) Need more linearity</span>
+    <span class="k">if</span> <span class="n">mean_speed</span> <span class="o">&lt;</span> <span class="n">UDDS</span><span class="p">:</span>
+        <span class="c1"># Consumption for a slow driving cycle</span>
+        <span class="n">energy_consumption</span> <span class="o">=</span> <span class="n">car_model</span><span class="o">.</span><span class="n">UDDS</span>
+    <span class="k">elif</span> <span class="n">mean_speed</span> <span class="o">&gt;=</span> <span class="n">UDDS</span> <span class="ow">and</span> <span class="n">mean_speed</span> <span class="o">&lt;=</span> <span class="n">HWFET</span><span class="p">:</span>
+        <span class="c1"># Mix between a UDDS and a HWFET drice cycle consumption</span>
+        <span class="n">energy_consumption</span> <span class="o">=</span> <span class="n">car_model</span><span class="o">.</span><span class="n">HWFET</span>
+    <span class="k">elif</span> <span class="n">mean_speed</span> <span class="o">&gt;</span> <span class="n">HWFET</span><span class="p">:</span>
+        <span class="c1"># Consumption for a fast driving cycle</span>
+        <span class="n">energy_consumption</span> <span class="o">=</span> <span class="n">car_model</span><span class="o">.</span><span class="n">US06</span>
+
+    <span class="k">return</span> <span class="n">energy_consumption</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Lawrence Berkeley National Laboratory.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

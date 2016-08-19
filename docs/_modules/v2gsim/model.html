@@ -1,0 +1,531 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>v2gsim.model &mdash; V2G-Sim 0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="V2G-Sim 0.1 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> V2G-Sim
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../v2gconcept.html">what is vehicle to grid?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installv2gsim.html">how to install V2G-Sim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../core.html">core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../model.html">model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../itinerary.html">itinerary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../charging.html">charging package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../driving.html">driving package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../result.html">result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../post_simulation.html">post simulation package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">V2G-Sim</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>v2gsim.model</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for v2gsim.model</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">driving.basic_powertrain</span>
+<span class="kn">import</span> <span class="nn">charging.uncontrolled</span>
+<span class="kn">import</span> <span class="nn">charging.station</span>
+<span class="kn">import</span> <span class="nn">result</span>
+<span class="kn">import</span> <span class="nn">cPickle</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+
+
+<div class="viewcode-block" id="Project"><a class="viewcode-back" href="../../model.html#v2gsim.model.Project">[docs]</a><span class="k">class</span> <span class="nc">Project</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;V2G-Sim project holder. It contains all the vehicles, locations,</span>
+<span class="sd">    car models and charging stations used in the project. It also includes</span>
+<span class="sd">    statistics on input activities for the vehicles.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        vehicles (list): vehicle objects</span>
+<span class="sd">        car_models (list): car model objects</span>
+<span class="sd">        locations (list): location objects</span>
+<span class="sd">        charging_stations (list): charging_station objects</span>
+<span class="sd">        description (string): description of the project</span>
+<span class="sd">        vehicle_statistics (pandas.DataFrame): statistics for individual</span>
+<span class="sd">            vehicles (distance traveled, ...)</span>
+<span class="sd">        itinerary_statistics (pandas.DataFrame): statistics for specific</span>
+<span class="sd">            itinerary combinaisons (number of vehicles, ...)</span>
+<span class="sd">        timestep (int): simulation interval in [seconds]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;no description&#39;</span><span class="p">,</span> <span class="n">timestep</span><span class="o">=</span><span class="mi">60</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vehicles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">car_models</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">charging_stations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vehicle_statistics</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">itinerary_statistics</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timestep</span> <span class="o">=</span> <span class="n">timestep</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">hour</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">minute</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                                    <span class="n">second</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">microsecond</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Project.check_integrity"><a class="viewcode-back" href="../../model.html#v2gsim.model.Project.check_integrity">[docs]</a>    <span class="k">def</span> <span class="nf">check_integrity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Launch tests on the project</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="Project.copy"><a class="viewcode-back" href="../../model.html#v2gsim.model.Project.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Deep copy the project and return the copy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Project.save"><a class="viewcode-back" href="../../model.html#v2gsim.model.Project.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Save the project</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename (string): path to save the project (/../my_project.v2gsim)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output</span><span class="p">:</span>
+            <span class="n">cPickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">cPickle</span><span class="o">.</span><span class="n">HIGHEST_PROTOCOL</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Project.load"><a class="viewcode-back" href="../../model.html#v2gsim.model.Project.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load a project</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename (string): path to a project (/../my_project.v2gsim)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="nb">input</span><span class="p">:</span>
+            <span class="n">project</span> <span class="o">=</span> <span class="n">cPickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">project</span>
+
+</div></div>
+<div class="viewcode-block" id="BasicCarModel"><a class="viewcode-back" href="../../model.html#v2gsim.model.BasicCarModel">[docs]</a><span class="k">class</span> <span class="nc">BasicCarModel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; BasicCarModel describes a very basic car model using deterministic</span>
+<span class="sd">    consumption for typical drivecycles. Equivalent to assigning consumption</span>
+<span class="sd">    with average speed.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name (string): (required) name of the model</span>
+<span class="sd">        driving (func): (required) algorithm to compute</span>
+<span class="sd">            vehicle consumptionwhile driving</span>
+<span class="sd">        maker (string): name of the maker</span>
+<span class="sd">        year (string): year of the car model</span>
+<span class="sd">        UDDS (float):  Consumption on the UDDS drivecycle [wh/km]</span>
+<span class="sd">        HWFET (float): Consumption on the HWFET drivecycle [wh/km]</span>
+<span class="sd">        US06 (float): consumption on the US06 drivecycle[wh/km]</span>
+<span class="sd">        Delhi (float): consumption on the Delhi drivecycle [wh/km]</span>
+<span class="sd">        battery_capacity (float): battery capacity in [Wh]</span>
+<span class="sd">        battery_efficiency_charging (float): efficiency while charging</span>
+<span class="sd">        battery_efficiency_discharging (float): efficiency while discharging</span>
+<span class="sd">        maximum_SOC (float): maximum state of charge that the battery can reach</span>
+<span class="sd">        decay (float): state of charge from which the battery charging</span>
+<span class="sd">               profile is not linear</span>
+<span class="sd">        minimum_power (float): maximum power rate for the battery [W]</span>
+<span class="sd">        maximum_power (float): minumin power rate for the battery [W]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span>
+                 <span class="n">driving</span><span class="o">=</span><span class="n">driving</span><span class="o">.</span><span class="n">basic_powertrain</span><span class="o">.</span><span class="n">consumption</span><span class="p">,</span>
+                 <span class="n">maker</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">UDDS</span><span class="o">=</span><span class="mf">145.83</span><span class="p">,</span> <span class="n">HWFET</span><span class="o">=</span><span class="mf">163.69</span><span class="p">,</span> <span class="n">US06</span><span class="o">=</span><span class="mf">223.62</span><span class="p">,</span>
+                 <span class="n">Delhi</span><span class="o">=</span><span class="mf">138.3</span><span class="p">,</span> <span class="n">maximum_SOC</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">decay</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span>
+                 <span class="n">battery_capacity</span><span class="o">=</span><span class="mi">23832</span><span class="p">,</span> <span class="n">battery_efficiency_charging</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                 <span class="n">battery_efficiency_discharging</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">maximum_power</span><span class="o">=</span><span class="mi">6600</span><span class="p">,</span>
+                 <span class="n">minimum_power</span><span class="o">=-</span><span class="mi">6600</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maker</span> <span class="o">=</span> <span class="n">maker</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">year</span> <span class="o">=</span> <span class="n">year</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">UDDS</span> <span class="o">=</span> <span class="n">UDDS</span>  <span class="c1"># [wh/km]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">HWFET</span> <span class="o">=</span> <span class="n">HWFET</span>  <span class="c1"># [wh/km]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">US06</span> <span class="o">=</span> <span class="n">US06</span>  <span class="c1"># [wh/km]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Delhi</span> <span class="o">=</span> <span class="n">Delhi</span>  <span class="c1"># [wh/km]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">battery_capacity</span> <span class="o">=</span> <span class="n">battery_capacity</span>  <span class="c1"># [Wh]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">battery_efficiency_charging</span> <span class="o">=</span> <span class="n">battery_efficiency_charging</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">battery_efficiency_discharging</span> <span class="o">=</span> <span class="n">battery_efficiency_discharging</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maximum_SOC</span> <span class="o">=</span> <span class="n">maximum_SOC</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="n">decay</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minimum_power</span> <span class="o">=</span> <span class="n">minimum_power</span>  <span class="c1"># [W]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maximum_power</span> <span class="o">=</span> <span class="n">maximum_power</span>  <span class="c1"># [W]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driving</span> <span class="o">=</span> <span class="n">driving</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;Basic car model: name({}) batteryCap({}Wh)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">battery_capacity</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="Vehicle"><a class="viewcode-back" href="../../model.html#v2gsim.model.Vehicle">[docs]</a><span class="k">class</span> <span class="nc">Vehicle</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Vehicle represents a single car with a specific model and set of</span>
+<span class="sd">    activities throughout the day. Vehicles keep track of their SOC as well</span>
+<span class="sd">    as their stranding log.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        id (int): unique id</span>
+<span class="sd">        initial_SOC (float): initial state of charge [0, 1]</span>
+<span class="sd">        SOC (list): state of charge of the battery along the time</span>
+<span class="sd">        activities (list): activities throughout the day</span>
+<span class="sd">            (parked, driving, parked, ...)</span>
+<span class="sd">        weight (float): how representative is a vehicle [0, 1]</span>
+<span class="sd">        valid_activities (boolean): True if activities don&#39;t leave any</span>
+<span class="sd">            gap of time, the end of an activity must correspond with the start</span>
+<span class="sd">            of the next one</span>
+<span class="sd">        stranding_log (list): time at which the vehicle has stranded [hour]</span>
+<span class="sd">        car_model (BasicCarModel): car model associated to the vehicle</span>
+<span class="sd">        result_function (func): function describing the way results are saved</span>
+<span class="sd">        result (any): result structure returned by the result function</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">car_model</span><span class="p">,</span> <span class="n">initial_SOC</span><span class="o">=</span><span class="mf">0.95</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">car_model</span> <span class="o">=</span> <span class="n">car_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SOC</span> <span class="o">=</span> <span class="p">[</span><span class="n">initial_SOC</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">activities</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">valid_activities</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stranding_log</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result_function</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">save_vehicle_state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="bp">None</span>
+
+<div class="viewcode-block" id="Vehicle.check_activities"><a class="viewcode-back" href="../../model.html#v2gsim.model.Vehicle.check_activities">[docs]</a>    <span class="k">def</span> <span class="nf">check_activities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Verify if every activity start at the end of the previous activity</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">valid_activities</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">start</span> <span class="o">!=</span> <span class="n">start_date</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">valid_activities</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">activities</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">end</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">start</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">valid_activities</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">activities</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">end</span> <span class="o">!=</span> <span class="n">end_date</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">valid_activities</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Vehicle: id({}) car_model.name({}) &quot;</span> <span class="o">+</span>
+                  <span class="s2">&quot;initial_SOC({})&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">car_model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">SOC</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">activity</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">activities</span><span class="p">:</span>
+            <span class="n">string</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">activity</span><span class="o">.</span><span class="n">__repr__</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">string</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+</div>
+<div class="viewcode-block" id="Activity"><a class="viewcode-back" href="../../model.html#v2gsim.model.Activity">[docs]</a><span class="k">class</span> <span class="nc">Activity</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Activity is an abstract class that is implemented in Driving and Parked.</span>
+<span class="sd">    Data is indexed with the project timestep.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        start (float): start time of the activity in hours [h]</span>
+<span class="sd">        end (float): end time of the activity in hours [h]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">start</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">end</span>
+
+</div>
+<div class="viewcode-block" id="Parked"><a class="viewcode-back" href="../../model.html#v2gsim.model.Parked">[docs]</a><span class="k">class</span> <span class="nc">Parked</span><span class="p">(</span><span class="n">Activity</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Parked activity inherits from Activity. It represents a car parked at</span>
+<span class="sd">    a location.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        location (Location): (required) location object at which the vehicle</span>
+<span class="sd">            is parked</span>
+<span class="sd">        charging_station (ChargingStation): charging station at which a</span>
+<span class="sd">            vehicle is plugged</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span>
+                 <span class="n">charging_station</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">Activity</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">location</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">charging_station</span> <span class="o">=</span> <span class="n">charging_station</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Parked Activity: start({}) end({}) &quot;</span> <span class="o">+</span>
+                  <span class="s2">&quot;location({})&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                      <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
+                      <span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">category</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">charging_station</span><span class="p">:</span>
+            <span class="n">string</span> <span class="o">+=</span> <span class="s2">&quot; charging_station({}W)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">charging_station</span><span class="o">.</span><span class="n">maximum_power</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">string</span>
+
+</div>
+<div class="viewcode-block" id="Driving"><a class="viewcode-back" href="../../model.html#v2gsim.model.Driving">[docs]</a><span class="k">class</span> <span class="nc">Driving</span><span class="p">(</span><span class="n">Activity</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Driving represents a drivecycle, it inherits from Activity.</span>
+<span class="sd">    Note that units differ from the SI units since distance is in [km]</span>
+<span class="sd">    and speed in [km/h]. Data is indexed with at project timestep rate.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        distance (float): distance traveled in [km]</span>
+<span class="sd">        speed (list): drive cycle speed in [km/h]</span>
+<span class="sd">        terrain (list): grade along the drive cycle in [rad]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">distance</span><span class="p">):</span>
+        <span class="n">Activity</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance</span> <span class="o">=</span> <span class="n">distance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">speed</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">terrain</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;Driving: start({}) end({}) distance({}km)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="Location"><a class="viewcode-back" href="../../model.html#v2gsim.model.Location">[docs]</a><span class="k">class</span> <span class="nc">Location</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Location physical place or a category of place.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name (string): (required) name of the location</span>
+<span class="sd">        category (string): (required) type of location (Home, Work, ...)</span>
+<span class="sd">        position (tuple): GPS position</span>
+<span class="sd">        result (pandas.DataFrame): results</span>
+<span class="sd">        result_function (func): function to create and update the result</span>
+<span class="sd">            data frame</span>
+<span class="sd">        available_charging_station (pandas.DataFrame): describe the</span>
+<span class="sd">            availability of charging stations (charging_station,</span>
+<span class="sd">            probability, available, total)</span>
+<span class="sd">        assign_charging_station_function (func): function to assign a</span>
+<span class="sd">            charging station to an incoming vehicle</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                 <span class="n">assign_charging_station</span><span class="o">=</span><span class="n">charging</span><span class="o">.</span><span class="n">station</span><span class="o">.</span><span class="n">randomly_assign</span><span class="p">,</span>
+                 <span class="n">result_function</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">save_location_state</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">category</span> <span class="o">=</span> <span class="n">category</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result_function</span> <span class="o">=</span> <span class="n">result_function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">available_charging_station</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assign_charging_station</span> <span class="o">=</span> <span class="n">assign_charging_station</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;Location: type({})&quot;</span> <span class="o">+</span>
+                <span class="s2">&quot; name({}) GPS({}))</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">category</span><span class="p">,</span>
+                                               <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="ChargingStation"><a class="viewcode-back" href="../../model.html#v2gsim.model.ChargingStation">[docs]</a><span class="k">class</span> <span class="nc">ChargingStation</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Charging station represents a type of infrastructure</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name (string): name associated with the infrastructure</span>
+<span class="sd">        charging (func): function to control</span>
+<span class="sd">            the charging behavior</span>
+<span class="sd">        post_simulation (boolean): True station can be subject to post processing</span>
+<span class="sd">        maximum_power (float): maximum rate at which a vehicle can charge</span>
+<span class="sd">        minimum_power (float): minimum rate at which a vehicle can charge</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">charging</span><span class="o">=</span><span class="n">charging</span><span class="o">.</span><span class="n">uncontrolled</span><span class="o">.</span><span class="n">consumption</span><span class="p">,</span>
+                 <span class="n">maximum_power</span><span class="o">=</span><span class="mi">1440</span><span class="p">,</span> <span class="n">minimum_power</span><span class="o">=-</span><span class="mi">1440</span><span class="p">,</span> <span class="n">post_simulation</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">name</span><span class="o">=</span><span class="s1">&#39;charger&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post_simulation</span> <span class="o">=</span> <span class="n">post_simulation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maximum_power</span> <span class="o">=</span> <span class="n">maximum_power</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minimum_power</span> <span class="o">=</span> <span class="n">minimum_power</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">charging</span> <span class="o">=</span> <span class="n">charging</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;Charging infrastructure: powerRateMax({})&quot;</span> <span class="o">+</span>
+                <span class="s2">&quot;powerRateMin({}) charging({})</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">maximum_power</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">minimum_power</span><span class="p">,</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">charging</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="ItineraryBin"><a class="viewcode-back" href="../../model.html#v2gsim.model.ItineraryBin">[docs]</a><span class="k">class</span> <span class="nc">ItineraryBin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Hold statistics for specific itineraries</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        vehicles (list): vehicles having this itinerary combinaison</span>
+<span class="sd">        statistics (pandas.DataFrame): statistics for individual activities (</span>
+<span class="sd">            duration, distance, ...)</span>
+<span class="sd">        weight (float): weight associated to this itinerary combinaison</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vehicles</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vehicles</span> <span class="o">=</span> <span class="n">vehicles</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="c1"># self.parameters = {&#39;startTime&#39;: [], &#39;meanSpeed&#39;: [],</span>
+        <span class="c1">#                    &#39;duration&#39;: [], &#39;durationParked&#39;: []}</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;This ItineraryBin is composed of {} vehicles with {} &quot;</span> <span class="o">+</span>
+                <span class="s2">&quot;locations along the day </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vehicle</span><span class="p">),</span>
+                                                     <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">locationName</span><span class="p">))</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Lawrence Berkeley National Laboratory.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

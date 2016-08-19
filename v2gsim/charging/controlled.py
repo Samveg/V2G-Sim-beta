@@ -7,13 +7,14 @@ import v2gsim
 def demand_response(parked, vehicle, nb_interval, timestep, option):
     """EV Demand response function. Determines how much EV charging load can be shed during a demand response event
     without adversely affecting driver mobility needs.
+
     Args:
         vehicle (Vehicle): Vehicle object to get current SOC and physical constraints (maximum SOC, ...)
         parked (Parked): Parked activity to get available charging station and charging strategy
-        option (dict): DR parameters 'startDR', 'endDR', 'post_DR_window_fraction', 'thresholdSOC'
-    Returns:
-        SOC as a list
-        powerDemand as a list
+        option (dict): DR parameters 'startDR', 'endDR', 'post_DR_window_fraction', 'thresholdSOC' and 'date_limit'
+
+    Return:
+        SOC and powerDemand as a list
     """
 
     # randomly pick the end of the DR event
@@ -61,10 +62,10 @@ def demand_response(parked, vehicle, nb_interval, timestep, option):
                 temp_nb_interval = int((activity.end - activity.start).total_seconds() / timestep)
                 # Compute consumption for driving and parked activities
                 if isinstance(activity, v2gsim.model.Driving):
-                    SOC, powerDemandTemp, stranded = vehicle.car_model.driving(activity,
-                                                                               vehicle,
-                                                                               temp_nb_interval,
-                                                                               timestep)
+                    SOC, powerDemandTemp, stranded, detail = vehicle.car_model.driving(activity,
+                                                                                       vehicle,
+                                                                                       temp_nb_interval,
+                                                                                       timestep)
                     if len(SOC) > 0:
                         vehicle.SOC.append(SOC[-1])
                         tempSOCList.append(SOC[-1])
@@ -143,3 +144,109 @@ def _SOC_DR(vehicle, powerDemand, timestep):
 def _SOC_increase(lastSOC, powerRate, duration, batteryCap):
     # lastSOC (1<x<0), powerRate (Watt), duration (seconds), batteryCap (wh)
     return lastSOC + (powerRate * duration / (batteryCap * 3600))  # batteryCap from Wh to Joules
+
+
+def Q_consumption(activity, vehicle, nb_interval, timestep, charging_option):
+    """Calculate the consumption of a plugged in vehicle which charge Q or
+    the remaining energy it needs if it's inferior than Q.
+
+    Args:
+        activity (Parked): Parked activity to get charging station capabilities
+        vehicle (Vehicle): Vehicle object to get current SOC and physical
+            constraints (maximum SOC, ...)
+        nb_interval (int): number of timestep for the parked activity
+        timestep (int): calculation timestep
+        charging_option (any): not used
+
+    Returns:
+        SOC (list): state of charge
+        power_demand (list): power demand
+    """
+    # Get duration in [seconds] of activity
+    duration = nb_interval * timestep
+    if duration <= 0:
+        return [], []
+
+    # Get Q the energy in [Wh] to furnish under the L1 charger assumption
+    Q = 1440 * duration / 3600
+
+    # Take the minimum of Q or remaining energy to charge [Wh]
+    if (Q + vehicle.SOC[-1] * vehicle.car_model.battery_capacity > 
+        vehicle.car_model.battery_capacity * vehicle.car_model.maximum_SOC):
+        Q = (vehicle.car_model.battery_capacity * vehicle.car_model.maximum_SOC -
+            vehicle.SOC[-1] * vehicle.car_model.battery_capacity)
+
+    # Get maximum achievable power
+    maximum_power = min(activity.charging_station.maximum_power,
+                        vehicle.car_model.maximum_power)
+
+    # Get nominal power
+    nominal_power = Q * 3600 / duration  # Q from Wh to Joule
+    if nominal_power > maximum_power:
+        print('Error nominal power too large ' +
+              str(nominal_power) + ' > ' + str(maximum_power))
+
+    power_at_battery = nominal_power * vehicle.car_model.battery_efficiency_charging
+    battery_capacity = vehicle.car_model.battery_capacity * 3600  # from Wh to J
+
+    SOC = [vehicle.SOC[-1]]
+    power_demand = []
+
+    # For the duration of the activity
+    for i in range(0, nb_interval):
+        # If the car still needs to charge
+        if SOC[-1] < vehicle.car_model.maximum_SOC:
+            # Set the power demand to be the charger station power
+            power_demand.append(nominal_power)
+            # SOC [0,1] + (power_demand [W] * timestep [s] / totalCap [J])
+            SOC.append(SOC[-1] + (power_at_battery * timestep / battery_capacity))
+        # Vehicle is not charging
+        else:
+            power_demand.append(0)
+            SOC.append(SOC[-1])
+
+    del SOC[0]  # removed initial value added 17 line above
+    return SOC, power_demand
+
+
+def follow_signal(activity, vehicle, nb_interval, timestep, charging_option):
+    """Calculate the consumption of a plugged in vehicle if no control is
+    apply (charge ASAP until full battery).
+
+    Args:
+        activity (Parked): Parked activity to get charging station capabilities
+        vehicle (Vehicle): Vehicle object to get current SOC and physical
+            constraints (maximum SOC, ...)
+        nb_interval (int): number of timestep for the parked activity
+        timestep (int): calculation timestep
+        charging_option (any): not used
+
+    Returns:
+        SOC (list): state of charge
+        power_demand (list): power demand
+    """
+
+    maximum_power = min(activity.charging_station.maximum_power,
+                        vehicle.car_model.maximum_power)
+    power_at_battery = maximum_power * vehicle.car_model.battery_efficiency_charging
+    battery_capacity = vehicle.car_model.battery_capacity * 3600  # from Wh to J
+    signal = charging_option[activity.start:activity:end].signal.tolist()
+
+    SOC = [vehicle.SOC[-1]]
+    power_demand = []
+
+    # For the duration of the activity
+    for i in range(0, nb_interval):
+        # If the car still needs to charge
+        if SOC[-1] < vehicle.car_model.maximum_SOC:
+            # Set the power demand to be the charger station power
+            power_demand.append(maximum_power * signal[i])
+            # SOC [0,1] + (power_demand [W] * timestep [s] / totalCap [J])
+            SOC.append(SOC[-1] + (power_at_battery * signal[i] * timestep / battery_capacity))
+        # Vehicle is not charging
+        else:
+            power_demand.append(0)
+            SOC.append(SOC[-1])
+
+    del SOC[0]  # removed initial value added 17 line above
+    return SOC, power_demand

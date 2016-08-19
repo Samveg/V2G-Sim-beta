@@ -1,0 +1,461 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>getting started &mdash; V2G-Sim 0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="V2G-Sim 0.1 documentation" href="index.html"/>
+        <link rel="next" title="core" href="core.html"/>
+        <link rel="prev" title="how to install V2G-Sim" href="installv2gsim.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> V2G-Sim
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="v2gconcept.html">what is vehicle to grid?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installv2gsim.html">how to install V2G-Sim</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model.html">model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="itinerary.html">itinerary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="charging.html">charging package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="driving.html">driving package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="post_simulation.html">post simulation package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">V2G-Sim</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>getting started</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/getting_started.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="getting-started">
+<h1>getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<p>The best way to get started is to jump in and look at the templates folder in the root directory. The template folder contains a suite of examples to walk you through the major functionnalities in V2G-Sim. To run any template simply type:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">python</span> <span class="n">template_name</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>The first template &#8220;1_basic_template.py&#8221; will teach you the very basic usage of V2G-Sim.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">pdb</span>
+
+<span class="c1"># Give you access to all the V2G-Sim modules</span>
+<span class="kn">import</span> <span class="nn">v2gsim</span>
+
+<span class="c1"># Create a project that will hold other objects such as vehicles, locations</span>
+<span class="c1"># car models, charging stations and some results. (see model.Project class)</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Project</span><span class="p">()</span>
+
+<span class="c1"># Use the itinerary module to import itineraries from an Excel file.</span>
+<span class="c1"># Instantiate a project with the necessary information to run a simulation.</span>
+<span class="c1"># Default values are assumed for the vehicle to model</span>
+<span class="c1"># and the charging infrastructures to simulate.</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">itinerary</span><span class="o">.</span><span class="n">from_excel</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="s1">&#39;../data/NHTS/Tennessee.xlsx&#39;</span><span class="p">)</span>
+
+<span class="c1"># At first every vehicle start with a full battery. In order to start from</span>
+<span class="c1"># a more realistic state of charge (SOC), we run some iterations of a day,</span>
+<span class="c1"># to find a stable SOC for each vehicle at the end of the day.</span>
+<span class="c1"># This value is then used as the initial SOC condition to a realistic state.</span>
+<span class="n">v2gsim</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">initialize_SOC</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">nb_iteration</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="c1"># Launch the simulation and save the results</span>
+<span class="n">v2gsim</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+
+<span class="c1"># Concatenate the power demand for each location into one frame.</span>
+<span class="c1"># you can access the demand at any location by using &quot;loactionName_demand&quot;</span>
+<span class="c1"># or access the total demand with &quot;total&quot;.</span>
+<span class="n">total_power_demand</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">post_simulation</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">total_power_demand</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+
+<span class="c1"># Plot the result</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">total_power_demand</span><span class="p">[</span><span class="s1">&#39;total&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1000</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">total_power_demand</span><span class="p">[</span><span class="s1">&#39;Home_demand&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1000</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Power demand (MW)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Time&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="c1"># Stop the script at the end, and let you explore the project structure.</span>
+<span class="c1"># Perhaps you can checkout &quot;project.vehicles[0]&quot;</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Press c and then enter to quit debugger&#39;</span><span class="p">)</span>
+<span class="n">pdb</span><span class="o">.</span><span class="n">set_trace</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The second template &#8220;2_basic_template.py&#8221; adds some functions to process itineraries.
+It teaches you how to remove vehicles that don&#8217;t start and end at the same location, but also
+how to extend their itineraries to a few days. It also introduces a simple approach for someone
+to modify the default charging infrastructures assumptions.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">v2gsim</span>
+
+<span class="c1"># Create a project and initialize it with someitineraries</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Project</span><span class="p">()</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">itinerary</span><span class="o">.</span><span class="n">from_excel</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="s1">&#39;../data/NHTS/Tennessee.xlsx&#39;</span><span class="p">)</span>
+
+<span class="c1"># This function from the itinerary module return all the vehicles that</span>
+<span class="c1"># start and end their day at the same location (e.g. home)</span>
+<span class="n">project</span><span class="o">.</span><span class="n">vehicles</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">itinerary</span><span class="o">.</span><span class="n">get_cycling_itineraries</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+
+<span class="c1"># This function from the itinerary module copy a daily itinerary and</span>
+<span class="c1"># append it at then end of the existing itinerary. In doing so, it makes</span>
+<span class="c1"># sure that activities are merged at the junction.</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">itinerary</span><span class="o">.</span><span class="n">copy_append</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">nb_of_days_to_add</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># Some default infrastructure have been created for you, namely &quot;no_charger&quot;,</span>
+<span class="c1"># &quot;L1&quot; and &quot;L2&quot;, you can change the probability of a vehicle to be plugged</span>
+<span class="c1"># to one of those infrastructures at different locations as follow:</span>
+<span class="k">for</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">project</span><span class="o">.</span><span class="n">locations</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">location</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="s1">&#39;Home&#39;</span><span class="p">:</span>
+        <span class="n">location</span><span class="o">.</span><span class="n">available_charging_station</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;no_charger&#39;</span><span class="p">,</span> <span class="s1">&#39;probability&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">location</span><span class="o">.</span><span class="n">available_charging_station</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;L1&#39;</span><span class="p">,</span> <span class="s1">&#39;probability&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.3</span>
+        <span class="n">location</span><span class="o">.</span><span class="n">available_charging_station</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;L2&#39;</span><span class="p">,</span> <span class="s1">&#39;probability&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.7</span>
+    <span class="k">elif</span> <span class="n">location</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="s1">&#39;Work&#39;</span><span class="p">:</span>
+        <span class="n">location</span><span class="o">.</span><span class="n">available_charging_station</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;no_charger&#39;</span><span class="p">,</span> <span class="s1">&#39;probability&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">location</span><span class="o">.</span><span class="n">available_charging_station</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;L1&#39;</span><span class="p">,</span> <span class="s1">&#39;probability&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">location</span><span class="o">.</span><span class="n">available_charging_station</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;L2&#39;</span><span class="p">,</span> <span class="s1">&#39;probability&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">location</span><span class="o">.</span><span class="n">available_charging_station</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;no_charger&#39;</span><span class="p">,</span> <span class="s1">&#39;probability&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">location</span><span class="o">.</span><span class="n">available_charging_station</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;L1&#39;</span><span class="p">,</span> <span class="s1">&#39;probability&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">location</span><span class="o">.</span><span class="n">available_charging_station</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;L2&#39;</span><span class="p">,</span> <span class="s1">&#39;probability&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+<span class="c1"># Initiate SOC and charging infrastructures</span>
+<span class="n">v2gsim</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">initialize_SOC</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">nb_iteration</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># Launch the simulation</span>
+<span class="c1"># Note that date_from and date_to have been added since 1_basic_template.py</span>
+<span class="c1"># date_from and date_to allows a user to specify</span>
+<span class="c1"># the window over which results are saved (reduce memory burden).</span>
+<span class="n">v2gsim</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">date_from</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">date_to</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>the temlate &#8220;3_charging_ASAP_or_ALAP.py&#8221; shows how to change the function use to calculate consumption at the charging station level. Futhermore it also features how to change the function that save results at the location scale.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Before running the SOC initialization --&gt;</span>
+
+<span class="c1"># Assign a new charging function to all the charging stations</span>
+<span class="c1"># contained in the project. The function assigned is a variation</span>
+<span class="c1"># of the default uncontrolled charging.</span>
+<span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">project</span><span class="o">.</span><span class="n">charging_stations</span><span class="p">:</span>
+    <span class="n">station</span><span class="o">.</span><span class="n">charging</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">charging</span><span class="o">.</span><span class="n">controlled</span><span class="o">.</span><span class="n">Q_consumption</span>
+
+<span class="c1"># Assign new result function to all locations in the project</span>
+<span class="c1"># so DR potential can be reccorded in a specific manner. This function</span>
+<span class="c1"># leads to a different result structure for each location.</span>
+<span class="k">for</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">project</span><span class="o">.</span><span class="n">locations</span><span class="p">:</span>
+    <span class="n">location</span><span class="o">.</span><span class="n">result_function</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">location_potential_power_demand</span>
+
+<span class="c1"># Initiate SOC and charging infra</span>
+<span class="n">v2gsim</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">initialize_SOC</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">nb_iteration</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In &#8220;4_emergency_DR.py&#8221; we show how can a user add new charging infrastructure to the default list of &#8220;no_charger&#8221;, &#8220;L1&#8221; and &#8220;L2&#8221;. Furthermore we show how to pass special instructions to the function in charge of the vehicle grid consumption.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">pandas</span>
+<span class="kn">import</span> <span class="nn">v2gsim</span>
+
+<span class="c1"># Create a project and increase the number of days</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Project</span><span class="p">()</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">itinerary</span><span class="o">.</span><span class="n">from_excel</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="s1">&#39;../data/NHTS/Tennessee.xlsx&#39;</span><span class="p">)</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">itinerary</span><span class="o">.</span><span class="n">copy_append</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">nb_copies</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># Create some new charging infrastructures, append those new</span>
+<span class="c1"># infrastructures to the project list of infrastructures</span>
+<span class="n">charging_stations</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">charging_stations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+    <span class="n">v2gsim</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">ChargingStation</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;L1_V1G&#39;</span><span class="p">,</span> <span class="n">maximum_power</span><span class="o">=</span><span class="mi">1400</span><span class="p">,</span> <span class="n">minimum_power</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">post_simulation</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+<span class="n">charging_stations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+    <span class="n">v2gsim</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">ChargingStation</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;L2_V2G&#39;</span><span class="p">,</span> <span class="n">maximum_power</span><span class="o">=</span><span class="mi">7200</span><span class="p">,</span> <span class="n">minimum_power</span><span class="o">=-</span><span class="mi">7200</span><span class="p">,</span> <span class="n">post_simulation</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+<span class="n">project</span><span class="o">.</span><span class="n">charging_stations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">charging_stations</span><span class="p">)</span>
+
+<span class="c1"># Create a data frame with the new infrastructures mix and</span>
+<span class="c1"># apply this mix at all the locations</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;L1_V1G&#39;</span><span class="p">,</span> <span class="s1">&#39;L2_V2G&#39;</span><span class="p">],</span>
+                      <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;charging_station&#39;</span><span class="p">:</span> <span class="n">charging_stations</span><span class="p">,</span>
+                            <span class="s1">&#39;probability&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]})</span>
+<span class="k">for</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">project</span><span class="o">.</span><span class="n">locations</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">location</span><span class="o">.</span><span class="n">category</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;Work&#39;</span><span class="p">,</span> <span class="s1">&#39;Home&#39;</span><span class="p">]:</span>
+        <span class="n">location</span><span class="o">.</span><span class="n">available_charging_station</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="c1"># Initiate SOC and charging infrastructures</span>
+<span class="n">conv</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">initialize_SOC</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">nb_iteration</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># Change the charging function to use the demand response controller</span>
+<span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">project</span><span class="o">.</span><span class="n">charging_stations</span><span class="p">:</span>
+    <span class="n">station</span><span class="o">.</span><span class="n">charging</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">charging</span><span class="o">.</span><span class="n">controlled</span><span class="o">.</span><span class="n">demand_response</span>
+
+<span class="c1"># Run V2G-Sim with a charging_option parameter.</span>
+<span class="c1"># this parameter will be passed to the charging function at every charging</span>
+<span class="c1"># events.</span>
+<span class="n">v2gsim</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">date_from</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">12</span><span class="p">),</span>
+                <span class="n">date_to</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">hours</span><span class="o">=</span><span class="mi">12</span><span class="p">),</span>
+                <span class="n">charging_option</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;startDR&#39;</span><span class="p">:</span> <span class="n">project</span><span class="o">.</span><span class="n">date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">hours</span><span class="o">=</span><span class="mi">17</span><span class="p">),</span>
+                                 <span class="s1">&#39;endDR&#39;</span><span class="p">:</span> <span class="n">project</span><span class="o">.</span><span class="n">date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">hours</span><span class="o">=</span><span class="mi">19</span><span class="p">),</span>
+                                 <span class="s1">&#39;date_limit&#39;</span><span class="p">:</span> <span class="n">project</span><span class="o">.</span><span class="n">date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">hours</span><span class="o">=</span><span class="mi">12</span><span class="p">),</span>
+                                 <span class="s1">&#39;post_DR_window_fraction&#39;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span>
+                                 <span class="s1">&#39;thresholdSOC&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>In &#8220;5_statistical_itineraries.py&#8221; we demonstrate how a user can create statistics about some existing itinerary data, and further use those statistics to generate more vehicles out of a small sample of vehicles.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">pdb</span>
+<span class="kn">import</span> <span class="nn">v2gsim</span>
+
+<span class="c1"># Create a project</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Project</span><span class="p">()</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">itinerary</span><span class="o">.</span><span class="n">from_excel</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="s1">&#39;../data/NHTS/Tennessee.xlsx&#39;</span><span class="p">)</span>
+<span class="n">project</span><span class="o">.</span><span class="n">vehicles</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">itinerary</span><span class="o">.</span><span class="n">get_cycling_itineraries</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+
+<span class="c1"># This function from the itinerary module finds all the different combination</span>
+<span class="c1"># of locations in a project (e.g home-work-restaurant-work-home, ...), and thus different</span>
+<span class="c1"># itineraries.</span>
+<span class="c1"># It returns a data frame with a row per combination, including the combination, but also</span>
+<span class="c1"># the vehicles that have this itinerary and some basics filtering options.</span>
+<span class="n">project</span><span class="o">.</span><span class="n">itinerary_statistics</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">itinerary</span><span class="o">.</span><span class="n">find_all_itinerary_combination</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+
+<span class="c1"># This function from the itinerary module reduce the number of itineraries</span>
+<span class="c1"># by merging the location names that are not provided in the input list into &#39;other_location&#39;</span>
+<span class="c1"># It returns a new frame with less row since some of the combination have been merged.</span>
+<span class="n">project</span><span class="o">.</span><span class="n">itinerary_statistics</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">itinerary</span><span class="o">.</span><span class="n">merge_itinerary_combination</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;Home&#39;</span><span class="p">,</span> <span class="s1">&#39;Work&#39;</span><span class="p">])</span>
+
+<span class="c1"># This function from the itinerary module creates statistics about each itinerary.</span>
+<span class="c1"># For each activity it will create distributions describing duration, etc...</span>
+<span class="c1"># based on the data from individual vehicle with the same itinerary.</span>
+<span class="n">project</span><span class="o">.</span><span class="n">itinerary_statistics</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">itinerary</span><span class="o">.</span><span class="n">get_itinerary_statistic</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+
+<span class="c1"># This function from the itinerary module recreates a new project based on the</span>
+<span class="c1"># statistics of all the different itineraries. The new project can have</span>
+<span class="c1"># a chosen number of vehicles.</span>
+<span class="n">new_project</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">itinerary</span><span class="o">.</span><span class="n">new_project_using_stats</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span>
+
+<span class="c1"># Initiate SOC and charging infrastructures</span>
+<span class="n">conv</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">initialize_SOC</span><span class="p">(</span><span class="n">new_project</span><span class="p">,</span> <span class="n">nb_iteration</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># Launch the simulation</span>
+<span class="n">v2gsim</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">new_project</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The template number 6 &#8220;6_SWITCH_model_input.py&#8221; is an example of a study realized with V2G-Sim. The V2G-Sim code is encapsulated in functions in order to be run multiple times for each year. At line 14 a specific function called &#8220;save_location_state_DR&#8221; is created to replace the way results are normally saved at locations. This function allows to save results in accord with the specific definitions taken at the beginning of the study (e.g. What should the maximum power that the aggregate fleet can reach?).</p>
+<p>The last template &#8220;7_detailed_powertrain&#8221; features the usage of a detailed power train model for the on road consumption of vehicles.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">v2gsim</span>
+
+<span class="c1"># Create a project</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Project</span><span class="p">(</span><span class="n">timestep</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">itinerary</span><span class="o">.</span><span class="n">from_excel</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="s1">&#39;../data/NHTS/Tennessee_1.xlsx&#39;</span><span class="p">)</span>
+
+<span class="c1"># Create a detailed power train vehicle model from an excel spread sheet</span>
+<span class="n">car_model</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">driving</span><span class="o">.</span><span class="n">detailed</span><span class="o">.</span><span class="n">init_model</span><span class="o">.</span><span class="n">load_powertrain</span><span class="p">(</span><span class="s1">&#39;../v2gsim/driving/detailed/data.xlsx&#39;</span><span class="p">)</span>
+
+<span class="c1"># Assign model to all vehicles and also use a new function to reccord detailed</span>
+<span class="c1"># from the power train model, such as battery temperature.</span>
+<span class="k">for</span> <span class="n">vehicle</span> <span class="ow">in</span> <span class="n">project</span><span class="o">.</span><span class="n">vehicles</span><span class="p">:</span>
+    <span class="n">vehicle</span><span class="o">.</span><span class="n">car_model</span> <span class="o">=</span> <span class="n">car_model</span>
+    <span class="n">vehicle</span><span class="o">.</span><span class="n">result_function</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">save_detailed_vehicle_state</span>
+
+<span class="c1"># Assign a drivecycle to all the driving activities since the detail power train</span>
+<span class="c1"># model uses speed profile to calculate on road consumption</span>
+<span class="n">v2gsim</span><span class="o">.</span><span class="n">driving</span><span class="o">.</span><span class="n">drivecycle</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">assign_EPA_cycle</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+
+<span class="c1"># Run V2G-Sim</span>
+<span class="n">v2gsim</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+
+<span class="n">total_power_demand</span> <span class="o">=</span> <span class="n">v2gsim</span><span class="o">.</span><span class="n">post_simulation</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">total_power_demand</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+
+<span class="c1"># Plot the result</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">total_power_demand</span><span class="p">[</span><span class="s1">&#39;total&#39;</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">project</span><span class="o">.</span><span class="n">vehicles</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">output_current</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">project</span><span class="o">.</span><span class="n">vehicles</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">battery_temp</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="core.html" class="btn btn-neutral float-right" title="core" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="installv2gsim.html" class="btn btn-neutral" title="how to install V2G-Sim" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Lawrence Berkeley National Laboratory.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

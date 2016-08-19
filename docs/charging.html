@@ -83,16 +83,20 @@
             
                 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="v2gconcept.html">what is vehicle to grid?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installv2gsim.html">how to install V2G-Sim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="core.html">core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="model.html">model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="itinerary.html">itinerary</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">charging package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#module-charging.uncontrolled">charging.uncontrolled</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-charging.station">charging.station</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-v2gsim.charging.uncontrolled">charging.uncontrolled</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-v2gsim.charging.station">charging.station</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-v2gsim.charging.controlled">charging.controlled</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="driving.html">driving package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="result.html">result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="post_simulation.html">post simulation package</a></li>
 </ul>
 
             
@@ -139,11 +143,11 @@
             
   <div class="section" id="charging-package">
 <h1>charging package<a class="headerlink" href="#charging-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-charging.uncontrolled">
-<span id="charging-uncontrolled"></span><h2>charging.uncontrolled<a class="headerlink" href="#module-charging.uncontrolled" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-v2gsim.charging.uncontrolled">
+<span id="charging-uncontrolled"></span><h2>charging.uncontrolled<a class="headerlink" href="#module-v2gsim.charging.uncontrolled" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="charging.uncontrolled.consumption">
-<code class="descclassname">charging.uncontrolled.</code><code class="descname">consumption</code><span class="sig-paren">(</span><em>activity</em>, <em>vehicle</em>, <em>nb_interval</em>, <em>timestep</em>, <em>charging_option</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/charging/uncontrolled.html#consumption"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charging.uncontrolled.consumption" title="Permalink to this definition">¶</a></dt>
+<dt id="v2gsim.charging.uncontrolled.consumption">
+<code class="descclassname">v2gsim.charging.uncontrolled.</code><code class="descname">consumption</code><span class="sig-paren">(</span><em>activity</em>, <em>vehicle</em>, <em>nb_interval</em>, <em>timestep</em>, <em>charging_option</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/charging/uncontrolled.html#consumption"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.charging.uncontrolled.consumption" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the consumption of a plugged in vehicle if no control is
 apply (charge ASAP until full battery).</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -151,8 +155,8 @@ apply (charge ASAP until full battery).</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>activity</strong> (<a class="reference internal" href="model.html#model.Parked" title="model.Parked"><em>Parked</em></a>) &#8211; Parked activity to get charging station capabilities</li>
-<li><strong>vehicle</strong> (<a class="reference internal" href="model.html#model.Vehicle" title="model.Vehicle"><em>Vehicle</em></a>) &#8211; Vehicle object to get current SOC and physical
+<li><strong>activity</strong> (<a class="reference internal" href="model.html#v2gsim.model.Parked" title="v2gsim.model.Parked"><em>Parked</em></a>) &#8211; Parked activity to get charging station capabilities</li>
+<li><strong>vehicle</strong> (<a class="reference internal" href="model.html#v2gsim.model.Vehicle" title="v2gsim.model.Vehicle"><em>Vehicle</em></a>) &#8211; Vehicle object to get current SOC and physical
 constraints (maximum SOC, ...)</li>
 <li><strong>nb_interval</strong> (<em>int</em>) &#8211; number of timestep for the parked activity</li>
 <li><strong>timestep</strong> (<em>int</em>) &#8211; calculation timestep</li>
@@ -173,23 +177,114 @@ power_demand (list): power demand</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-charging.station">
-<span id="charging-station"></span><h2>charging.station<a class="headerlink" href="#module-charging.station" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-v2gsim.charging.station">
+<span id="charging-station"></span><h2>charging.station<a class="headerlink" href="#module-v2gsim.charging.station" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="charging.station.randomly_assign">
-<code class="descclassname">charging.station.</code><code class="descname">randomly_assign</code><span class="sig-paren">(</span><em>activity_index</em>, <em>activity</em>, <em>vehicle</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/charging/station.html#randomly_assign"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charging.station.randomly_assign" title="Permalink to this definition">¶</a></dt>
+<dt id="v2gsim.charging.station.randomly_assign">
+<code class="descclassname">v2gsim.charging.station.</code><code class="descname">randomly_assign</code><span class="sig-paren">(</span><em>activity_index</em>, <em>activity</em>, <em>vehicle</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/charging/station.html#randomly_assign"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.charging.station.randomly_assign" title="Permalink to this definition">¶</a></dt>
 <dd><p>Randomly assign a charging station. Charging station is then kept the
 same for the next times a vehicle park at the same location.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>activity_index</strong> (<em>int</em>) &#8211; current activity index from vehicle.activities</li>
-<li><strong>activity</strong> (<a class="reference internal" href="model.html#model.Parked" title="model.Parked"><em>Parked</em></a>) &#8211; activity to be assigned with a charging station</li>
-<li><strong>vehicle</strong> (<a class="reference internal" href="model.html#model.Vehicle" title="model.Vehicle"><em>Vehicle</em></a>) &#8211; needed to lookup charging station used previously at
+<li><strong>activity</strong> (<a class="reference internal" href="model.html#v2gsim.model.Parked" title="v2gsim.model.Parked"><em>Parked</em></a>) &#8211; activity to be assigned with a charging station</li>
+<li><strong>vehicle</strong> (<a class="reference internal" href="model.html#v2gsim.model.Vehicle" title="v2gsim.model.Vehicle"><em>Vehicle</em></a>) &#8211; needed to lookup charging station used previously at
 the same location</li>
 </ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a charging station object to be assign to the parked activity</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-v2gsim.charging.controlled">
+<span id="charging-controlled"></span><h2>charging.controlled<a class="headerlink" href="#module-v2gsim.charging.controlled" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="v2gsim.charging.controlled.Q_consumption">
+<code class="descclassname">v2gsim.charging.controlled.</code><code class="descname">Q_consumption</code><span class="sig-paren">(</span><em>activity</em>, <em>vehicle</em>, <em>nb_interval</em>, <em>timestep</em>, <em>charging_option</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/charging/controlled.html#Q_consumption"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.charging.controlled.Q_consumption" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the consumption of a plugged in vehicle which charge Q or
+the remaining energy it needs if it&#8217;s inferior than Q.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>activity</strong> (<a class="reference internal" href="model.html#v2gsim.model.Parked" title="v2gsim.model.Parked"><em>Parked</em></a>) &#8211; Parked activity to get charging station capabilities</li>
+<li><strong>vehicle</strong> (<a class="reference internal" href="model.html#v2gsim.model.Vehicle" title="v2gsim.model.Vehicle"><em>Vehicle</em></a>) &#8211; Vehicle object to get current SOC and physical
+constraints (maximum SOC, ...)</li>
+<li><strong>nb_interval</strong> (<em>int</em>) &#8211; number of timestep for the parked activity</li>
+<li><strong>timestep</strong> (<em>int</em>) &#8211; calculation timestep</li>
+<li><strong>charging_option</strong> (<em>any</em>) &#8211; not used</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>SOC</strong> &#8211;
+state of charge
+power_demand (list): power demand</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.charging.controlled.demand_response">
+<code class="descclassname">v2gsim.charging.controlled.</code><code class="descname">demand_response</code><span class="sig-paren">(</span><em>parked</em>, <em>vehicle</em>, <em>nb_interval</em>, <em>timestep</em>, <em>option</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/charging/controlled.html#demand_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.charging.controlled.demand_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>EV Demand response function. Determines how much EV charging load can be shed during a demand response event
+without adversely affecting driver mobility needs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>vehicle</strong> (<a class="reference internal" href="model.html#v2gsim.model.Vehicle" title="v2gsim.model.Vehicle"><em>Vehicle</em></a>) &#8211; Vehicle object to get current SOC and physical constraints (maximum SOC, ...)</li>
+<li><strong>parked</strong> (<a class="reference internal" href="model.html#v2gsim.model.Parked" title="v2gsim.model.Parked"><em>Parked</em></a>) &#8211; Parked activity to get available charging station and charging strategy</li>
+<li><strong>option</strong> (<em>dict</em>) &#8211; DR parameters &#8216;startDR&#8217;, &#8216;endDR&#8217;, &#8216;post_DR_window_fraction&#8217;, &#8216;thresholdSOC&#8217; and &#8216;date_limit&#8217;</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">SOC and powerDemand as a list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.charging.controlled.follow_signal">
+<code class="descclassname">v2gsim.charging.controlled.</code><code class="descname">follow_signal</code><span class="sig-paren">(</span><em>activity</em>, <em>vehicle</em>, <em>nb_interval</em>, <em>timestep</em>, <em>charging_option</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/charging/controlled.html#follow_signal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.charging.controlled.follow_signal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the consumption of a plugged in vehicle if no control is
+apply (charge ASAP until full battery).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>activity</strong> (<a class="reference internal" href="model.html#v2gsim.model.Parked" title="v2gsim.model.Parked"><em>Parked</em></a>) &#8211; Parked activity to get charging station capabilities</li>
+<li><strong>vehicle</strong> (<a class="reference internal" href="model.html#v2gsim.model.Vehicle" title="v2gsim.model.Vehicle"><em>Vehicle</em></a>) &#8211; Vehicle object to get current SOC and physical
+constraints (maximum SOC, ...)</li>
+<li><strong>nb_interval</strong> (<em>int</em>) &#8211; number of timestep for the parked activity</li>
+<li><strong>timestep</strong> (<em>int</em>) &#8211; calculation timestep</li>
+<li><strong>charging_option</strong> (<em>any</em>) &#8211; not used</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>SOC</strong> &#8211;
+state of charge
+power_demand (list): power demand</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
 </td>
 </tr>
 </tbody>

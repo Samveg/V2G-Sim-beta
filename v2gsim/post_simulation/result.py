@@ -1,10 +1,15 @@
 from __future__ import division
-import numpy
 import pandas
 
 
 def total_power_demand(project):
     """Sum the power demand of each location and return a data frame with the result
+
+    Args:
+        project (Project): a project
+
+    Return:
+        a pandas DataFrame with the power demand at each location
     """
     result = pandas.DataFrame()
     for location in project.locations:

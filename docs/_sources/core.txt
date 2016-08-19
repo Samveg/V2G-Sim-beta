@@ -1,6 +1,6 @@
 core
 ====
 
-.. automodule:: core
+.. automodule:: v2gsim.core
     :members:
     :show-inheritance:

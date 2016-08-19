@@ -1,6 +1,6 @@
 model
 ===========
 
-.. automodule:: model
+.. automodule:: v2gsim.model
     :members:
     :show-inheritance:
