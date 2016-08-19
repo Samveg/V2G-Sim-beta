@@ -2,12 +2,7 @@ from __future__ import division
 import sys, os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../battery_degradation"))  # YOUR PATH
-import v2gsim.core as core
-import v2gsim.model as model
-import v2gsim.battery_degradation.Fixeddegradation as Fixeddegradation
-import v2gsim
-import matplotlib.pyplot as plt
-
+import v2gsim.battery_degradation.BDcore as BDcore
 import numpy as np
 
 
@@ -55,31 +50,31 @@ def bd(vehicleList, radH, ambientT, days):
 			# Calculate whole day temperature.
 			if not flag[i]: # vehicle is driving
 				# Calculate battery temeprature when the vehicle is driving
-				Fixeddegradation.driving_temperature(vehicle, ambientT[i], radH[i], DrivingCharge[-1],
+				BDcore.driving_temperature(vehicle, ambientT[i], radH[i], DrivingCharge[-1],
 				                                     vehicle.battery_model.coefTemp)
 
 				# Calculate cycle life loss caused by driving
-				Fixeddegradation.cycle_loss_drive(vehicle, vehicle.battery_model.batteryT[-1], AllDayCurrent[i], deltasoc[i], vehicle.battery_model.coefLoss)
+				BDcore.cycle_loss_drive(vehicle, vehicle.battery_model.batteryT[-1], AllDayCurrent[i], deltasoc[i], vehicle.battery_model.coefLoss)
 
 			elif flag[i]: # vehicle is parked
 				if AllDayCurrent[i] == 0:  # The car is parked but not charging/discharging
 
 					# Calculate battery temperature when the vehicle is parked but not charging/discharging, battery thermal mananage system (BTMS) works but AC does not work
-					Fixeddegradation.idle_temperature(vehicle, ambientT[i], radH[i],
+					BDcore.idle_temperature(vehicle, ambientT[i], radH[i],
 				                                     vehicle.battery_model.coefTemp)
 					# no cycle life loss, since current=0
-					Fixeddegradation.cycle_loss_drive(vehicle, vehicle.battery_model.batteryT[-1], AllDayCurrent[i], deltasoc[i], vehicle.battery_model.coefLoss) # cycleloss=0
+					BDcore.cycle_loss_drive(vehicle, vehicle.battery_model.batteryT[-1], AllDayCurrent[i], deltasoc[i], vehicle.battery_model.coefLoss) # cycleloss=0
 				else: # The car is parked and charge/discharge
 
 					# Calculate battery temperature when the vehicle is parked but not charging/discharging, battery thermal mananage system (BTMS) works but AC does not work
-					Fixeddegradation.charging_temperature(vehicle, ambientT[i], radH[i], DrivingCharge[-1],
+					BDcore.charging_temperature(vehicle, ambientT[i], radH[i], DrivingCharge[-1],
 				                                     vehicle.battery_model.coefTemp)
 
 					# Calculate cycle life loss caused by charging/discharging
-					Fixeddegradation.cycle_loss_drive(vehicle, vehicle.battery_model.batteryT[-1], AllDayCurrent[i], deltasoc[i], vehicle.battery_model.coefLoss)
+					BDcore.cycle_loss_drive(vehicle, vehicle.battery_model.batteryT[-1], AllDayCurrent[i], deltasoc[i], vehicle.battery_model.coefLoss)
 
 		# calculate calendar_loss
-		Fixeddegradation.calendar_loss(vehicle, vehicle.battery_model.coefLoss, days)
+		BDcore.calendar_loss(vehicle, vehicle.battery_model.coefLoss, days)
 
 		print(vehicle.battery_model.batteryLoss['calendarLoss'][-1])
 		print(sum(vehicle.battery_model.batteryLoss['cycleLoss']))

@@ -53,4 +53,4 @@ for i in range(len(dataReadt)):
 
 
 # Call battery degradation calculation function
-v2gsim.battery_degradation.Fixedexample.bd(project.vehicles, radH, ambientT, days=1)
+v2gsim.battery_degradation.BatteryDegradation.bd(project.vehicles, radH, ambientT, days=1)
