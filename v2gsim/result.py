@@ -1,7 +1,7 @@
 from __future__ import division
 import numpy
 import pandas
-
+import model
 
 def save_location_state(location, timestep, date_from, date_to,
                         vehicle=None, activity=None,
@@ -179,6 +179,35 @@ def save_vehicle_state(vehicle, timestep, date_from,
     if init:
         vehicle.SOC = [vehicle.SOC[0]]
         vehicle.result = None
+
+
+def save_detailed_vehicle_power_demand(vehicle, timestep, date_from,
+                                       date_to, activity=None, power_demand=None, SOC=None,
+                                       detail=None, nb_interval=None, init=False, run=False, post=False):
+    """Save vehicle detailed powertrain output. Only use with the detailed
+    detailed power train model.
+    """
+    if run:
+        activity_index1, activity_index2, location_index1, location_index2, save = _map_index(
+            activity.start, activity.end, date_from, date_to, len(power_demand),
+            len(vehicle.result['power_demand']), timestep)
+
+        # Save a lot of interesting result
+        if save:
+            # If parked pmin and pmax are not necessary the same
+            if isinstance(activity, model.Parked):
+                vehicle.result['power_demand'][location_index1:location_index2] += (
+                    power_demand[activity_index1:activity_index2])
+
+    elif init:
+        vehicle.SOC = [vehicle.SOC[0]]
+        vehicle.result = {'power_demand': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep))}
+
+    elif post:
+        # Convert location result back into pandas DataFrame (faster that way)
+        i = pandas.date_range(start=date_from, end=date_to,
+                              freq=str(timestep) + 's', closed='left')
+        vehicle.result = pandas.DataFrame(index=i, data=vehicle.result)
 
 
 def save_detailed_vehicle_state(vehicle, timestep, date_from,
