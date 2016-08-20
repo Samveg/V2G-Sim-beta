@@ -77,4 +77,4 @@ def bd(vehicleList, radH, ambientT, days):
 		BDcore.calendar_loss(vehicle, vehicle.battery_model.coefLoss, days)
 
 		print(vehicle.battery_model.batteryLoss['calendarLoss'][-1])
-		print(sum(vehicle.battery_model.batteryLoss['cycleLoss']))
+		print(sum(vehicle.battery_model.batteryLoss['cycleLoss'])*days)
