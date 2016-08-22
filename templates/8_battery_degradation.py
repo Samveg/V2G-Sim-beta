@@ -27,7 +27,7 @@ v2gsim.core.run(project)
 total_power_demand = v2gsim.post_simulation.result.total_power_demand(project)
 
 
-
+# input climate data
 radiation = open('../data/climate/radm.txt', 'r+')
 r = radiation.readlines()
 radH = []
