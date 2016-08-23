@@ -60,7 +60,7 @@ v2gsim.core.run(project)
 total_power_demand = v2gsim.post_simulation.result.total_power_demand(project)
 
 # Create the optimization object
-opti = v2gsim.post_simulation.temp_netload_optimization.DecentralizedOptimization(project, 60)
+opti = v2gsim.post_simulation.temp_netload_optimization.DecentralizedOptimization(project, 10)
 
 # Load the net load data
 finalResult = pandas.DataFrame()
@@ -71,7 +71,7 @@ day = datetime.datetime(2025, 6, 17)
 net_load = pandas.DataFrame(net_load[day: day + datetime.timedelta(days=1)]['netload'])
 
 # Initialize the optimization
-vehicles_to_optimize, remaining_vehicles = opti.solve(project, net_load, 1500000)
+vehicle_load, total_vehicle_load, net_load_with_vehicles = opti.solve(project, net_load / (1000 * 1000), 1500000)
 
 import pdb
 pdb.set_trace()
