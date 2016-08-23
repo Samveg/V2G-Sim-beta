@@ -1,11 +1,6 @@
 from __future__ import division
-
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "../../V2G-Sim-Beta"))
-
 import v2gsim
-import v2gsim.battery_degradation.Fixedexample
+import v2gsim.battery_degradation.BatteryDegradation
 
 project = v2gsim.model.Project(timestep=1)
 project = v2gsim.itinerary.from_excel(project, '../data/NHTS/Tennessee_1.xlsx')
@@ -24,9 +19,6 @@ v2gsim.driving.drivecycle.generator.assign_EPA_cycle(project)
 # Run V2G-Sim
 v2gsim.core.run(project)
 
-total_power_demand = v2gsim.post_simulation.result.total_power_demand(project)
-
-
 # input climate data
 radiation = open('../data/climate/radm.txt', 'r+')
 r = radiation.readlines()
@@ -41,7 +33,6 @@ ambientT = []
 for i in range(len(t)):
 	for k in range(0,3600):
 		ambientT.append(float(t[i]))
-
 
 # Call battery degradation calculation function
 v2gsim.battery_degradation.BatteryDegradation.bd(project.vehicles, radH, ambientT, days=1)

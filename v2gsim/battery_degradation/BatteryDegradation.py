@@ -1,7 +1,4 @@
 from __future__ import division
-import sys, os
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "../battery_degradation"))  # YOUR PATH
 import v2gsim.battery_degradation.BDcore as BDcore
 import numpy as np
 
