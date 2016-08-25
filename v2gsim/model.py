@@ -140,6 +140,7 @@ class Vehicle(object):
         car_model (BasicCarModel): car model associated to the vehicle
         result_function (func): function describing the way results are saved
         result (any): result structure returned by the result function
+        battery_model (BatteryModel): model to represent battery degradation
     """
 
     def __init__(self, index, car_model, initial_SOC=0.95):
@@ -153,7 +154,6 @@ class Vehicle(object):
         self.result_function = result.save_vehicle_state
         self.result = None
         self.battery_model = None
-        self.status = []
 
     def check_activities(self, start_date, end_date):
         """Verify if every activity start at the end of the previous activity
