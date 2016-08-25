@@ -539,8 +539,10 @@ def save_vehicle_state_for_optimization(vehicle, timestep, date_from,
 
 
 #######################################################################################
-############################### Experimental ##########################################
+############################### Decentralized #########################################
 #######################################################################################
+# This is an attempt in implemting the optimization framework described in
+# https://ecal.berkeley.edu/pubs/CDC15-DualSplittingEVs.pdf
 
 import sys
 from cStringIO import StringIO
