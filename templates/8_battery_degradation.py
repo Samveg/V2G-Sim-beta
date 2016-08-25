@@ -2,6 +2,8 @@ from __future__ import division
 import v2gsim
 import v2gsim.battery_degradation.BatteryDegradation
 
+# Timestep need to be set to 1 seconds to capture 
+# the detailed output of the powertrain model
 project = v2gsim.model.Project(timestep=1)
 project = v2gsim.itinerary.from_excel(project, '../data/NHTS/Tennessee_1.xlsx')
 
