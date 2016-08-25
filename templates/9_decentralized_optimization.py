@@ -72,5 +72,18 @@ net_load = pandas.DataFrame(net_load[day: day + datetime.timedelta(days=1)]['net
 new_net_load, opti_vehicle_load, total_vehicle_load, net_load_with_vehicles, dual_gap = opti.solve(
     project, net_load * (1000 * 1000), real_number_of_vehicle=1500000)
 
+try:
+    plt.plot(dual_gap)
+    plt.show()
+
+    plt.plot(opti_vehicle_load)
+    plt.show()
+
+    plt.plot(new_net_load, label='netload')
+    plt.plot(net_load_with_vehicles, label='vehicles')
+    plt.show()
+except:
+    import pdb
+    pdb.set_trace()  
 import pdb
 pdb.set_trace()
