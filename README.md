@@ -6,6 +6,7 @@
     3) Go inside the root folder of V2G-Sim and launch:
 
 ```shell
+pip install -r requirement.txt
 pip install .
 ```
 
