@@ -340,6 +340,133 @@ False if number is the same as in project</li>
 
 </dd></dl>
 
+<dl class="class">
+<dt id="v2gsim.post_simulation.netload_optimization.DecentralizedOptimization">
+<em class="property">class </em><code class="descclassname">v2gsim.post_simulation.netload_optimization.</code><code class="descname">DecentralizedOptimization</code><span class="sig-paren">(</span><em>project</em>, <em>optimization_timestep</em>, <em>date_from=None</em>, <em>date_to=None</em>, <em>minimum_SOC=0.1</em>, <em>sigma=1</em>, <em>max_iteration=25</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#DecentralizedOptimization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.DecentralizedOptimization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Creates an object to perform optimization.
+The object contains some general parameters for the optimization</p>
+<dl class="method">
+<dt id="v2gsim.post_simulation.netload_optimization.DecentralizedOptimization.get_final_SOC">
+<code class="descname">get_final_SOC</code><span class="sig-paren">(</span><em>vehicle</em>, <em>SOC_margin</em>, <em>SOC_end=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#DecentralizedOptimization.get_final_SOC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.DecentralizedOptimization.get_final_SOC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get final SOC that vehicle must reached at the end of the optimization</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="v2gsim.post_simulation.netload_optimization.DecentralizedOptimization.initialize_model">
+<code class="descname">initialize_model</code><span class="sig-paren">(</span><em>project</em>, <em>SOC_margin=0.02</em>, <em>SOC_end=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#DecentralizedOptimization.initialize_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.DecentralizedOptimization.initialize_model" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="v2gsim.post_simulation.netload_optimization.DecentralizedOptimization.initialize_net_load">
+<code class="descname">initialize_net_load</code><span class="sig-paren">(</span><em>net_load</em>, <em>real_number_of_vehicle</em>, <em>project</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#DecentralizedOptimization.initialize_net_load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.DecentralizedOptimization.initialize_net_load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make sure that the net load has the right size and scale the net
+load for the optimization scale.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>net_load</strong> (<em>pandas.DataFrame</em>) &#8211; data frame with date index and a &#8216;net_load&#8217; column in [W]</li>
+<li><strong>net_load_pmax</strong> (<em>int</em>) &#8211; maximum power on the scaled net load</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="v2gsim.post_simulation.netload_optimization.DecentralizedOptimization.postprocess">
+<code class="descname">postprocess</code><span class="sig-paren">(</span><em>vehicles_to_optimize</em>, <em>remaining_vehicles</em>, <em>project</em>, <em>net_load</em>, <em>real_number_of_vehicle</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#DecentralizedOptimization.postprocess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.DecentralizedOptimization.postprocess" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="v2gsim.post_simulation.netload_optimization.DecentralizedOptimization.process">
+<code class="descname">process</code><span class="sig-paren">(</span><em>vehicles_to_optimize</em>, <em>net_load</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#DecentralizedOptimization.process"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.DecentralizedOptimization.process" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function compute the optimal power demand for each vehicle regarding their daily consumption and
+a net load curve. The function &#8220;initialize_optimization&#8221; must be run as a preliminary.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>vehicles_to_optimize</strong> &#8211; list of vehicle ready for optimization</li>
+<li><strong>netLoadInput</strong> &#8211; net load (kw every hour)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">list of vehicle updated with their optimal power demand every outputInterval</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">vehicles_to_optimize</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="v2gsim.post_simulation.netload_optimization.DecentralizedOptimization.select_feasible">
+<code class="descname">select_feasible</code><span class="sig-paren">(</span><em>project</em>, <em>net_load</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#DecentralizedOptimization.select_feasible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.DecentralizedOptimization.select_feasible" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function is putting aside all vehicle that could not be solved during a pre-optimization</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project</strong> (<a class="reference internal" href="model.html#v2gsim.model.Project" title="v2gsim.model.Project"><em>Project</em></a>) &#8211; a project</li>
+<li><strong>net_load</strong> &#8211; net load [W]</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">list of vehicle that can participate in the optimization
+remaining_vehicles: list of vehicle that are not sustaining enough SOC</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">vehicles_to_optimize</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="v2gsim.post_simulation.netload_optimization.DecentralizedOptimization.solve">
+<code class="descname">solve</code><span class="sig-paren">(</span><em>project</em>, <em>net_load</em>, <em>real_number_of_vehicle</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#DecentralizedOptimization.solve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.DecentralizedOptimization.solve" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>net_load</strong> (<em>Pandas</em>) &#8211; net load in Watt</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="v2gsim.post_simulation.netload_optimization.DecentralizedOptimization.solve_local_optimal">
+<code class="descname">solve_local_optimal</code><span class="sig-paren">(</span><em>Aeq</em>, <em>beq</em>, <em>bineq</em>, <em>lb</em>, <em>ub</em>, <em>lbd</em>, <em>sigma</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#DecentralizedOptimization.solve_local_optimal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.DecentralizedOptimization.solve_local_optimal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="v2gsim.post_simulation.netload_optimization.InitDecentralizedOptimization">
+<em class="property">class </em><code class="descclassname">v2gsim.post_simulation.netload_optimization.</code><code class="descname">InitDecentralizedOptimization</code><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#InitDecentralizedOptimization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.InitDecentralizedOptimization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Optimization object for scheduling vehicle charging</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.post_simulation.netload_optimization.save_vehicle_state_for_decentralized_optimization">
+<code class="descclassname">v2gsim.post_simulation.netload_optimization.</code><code class="descname">save_vehicle_state_for_decentralized_optimization</code><span class="sig-paren">(</span><em>vehicle</em>, <em>timestep</em>, <em>date_from</em>, <em>date_to</em>, <em>activity=None</em>, <em>power_demand=None</em>, <em>SOC=None</em>, <em>detail=None</em>, <em>nb_interval=None</em>, <em>init=False</em>, <em>run=False</em>, <em>post=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#save_vehicle_state_for_decentralized_optimization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.save_vehicle_state_for_decentralized_optimization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save results for individual vehicles. Power demand is positive when charging
+negative when driving. Energy consumption is positive when driving and negative
+when charging. Charging station that offer after simulation processing should
+have activity.charging_station.post_simulation True.</p>
+</dd></dl>
+
 <dl class="function">
 <dt id="v2gsim.post_simulation.netload_optimization.save_vehicle_state_for_optimization">
 <code class="descclassname">v2gsim.post_simulation.netload_optimization.</code><code class="descname">save_vehicle_state_for_optimization</code><span class="sig-paren">(</span><em>vehicle</em>, <em>timestep</em>, <em>date_from</em>, <em>date_to</em>, <em>activity=None</em>, <em>power_demand=None</em>, <em>SOC=None</em>, <em>detail=None</em>, <em>nb_interval=None</em>, <em>init=False</em>, <em>run=False</em>, <em>post=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/post_simulation/netload_optimization.html#save_vehicle_state_for_optimization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.post_simulation.netload_optimization.save_vehicle_state_for_optimization" title="Permalink to this definition">¶</a></dt>

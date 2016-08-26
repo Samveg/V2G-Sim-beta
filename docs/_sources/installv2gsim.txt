@@ -1,10 +1,11 @@
 how to install V2G-Sim
 ======================
 
-    1) Install Python 2.7 with [Anaconda packages](https://www.continuum.io/downloads)
-    2) Download [V2G-Sim](https://github.com/Samveg/V2G-Sim-beta.git) from the github repository
+    1) Install Python 2.7 with Anaconda packages (https://www.continuum.io/downloads)
+    2) Download V2G-Sim (https://github.com/Samveg/V2G-Sim-beta.git) from the github repository
     3) Open a terminal inside the root folder of V2G-Sim and launch
 
+>>> pip install -r requirement.txt
 >>> pip install .
 
 That's it you are all set up.

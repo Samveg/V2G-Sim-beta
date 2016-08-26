@@ -140,7 +140,7 @@
 <span id="itinerary"></span><h1>itinerary<a class="headerlink" href="#module-v2gsim.itinerary" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="v2gsim.itinerary.copy_append">
-<code class="descclassname">v2gsim.itinerary.</code><code class="descname">copy_append</code><span class="sig-paren">(</span><em>project</em>, <em>nb_copies=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/itinerary.html#copy_append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.itinerary.copy_append" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">v2gsim.itinerary.</code><code class="descname">copy_append</code><span class="sig-paren">(</span><em>project</em>, <em>nb_of_days_to_add=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/itinerary.html#copy_append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.itinerary.copy_append" title="Permalink to this definition">¶</a></dt>
 <dd><p>Copy the itinerary of each vehicle in the project.
 The copy is appended and a merge operation is applied to ensure a good blend.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -149,7 +149,7 @@ The copy is appended and a merge operation is applied to ensure a good blend.</p
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>project</strong> (<a class="reference internal" href="model.html#v2gsim.model.Project" title="v2gsim.model.Project"><em>Project</em></a>) &#8211; project</li>
-<li><strong>nb_copies</strong> (<em>int</em>) &#8211; number of copies to append</li>
+<li><strong>nb_of_days_to_add</strong> (<em>int</em>) &#8211; number of copies to append</li>
 </ul>
 </td>
 </tr>
@@ -315,7 +315,7 @@ merge their assigned vehicles.</p>
 
 <dl class="function">
 <dt id="v2gsim.itinerary.new_project_using_stats">
-<code class="descclassname">v2gsim.itinerary.</code><code class="descname">new_project_using_stats</code><span class="sig-paren">(</span><em>old_project</em>, <em>new_number_of_vehicle</em>, <em>only_worker=False</em>, <em>min_vehicles_per_bin=False</em>, <em>remove_old_project=False</em>, <em>advanced_filtering_func=False</em>, <em>creating_vehicle_func=&lt;function create_vehicles_from_stat&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/itinerary.html#new_project_using_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.itinerary.new_project_using_stats" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">v2gsim.itinerary.</code><code class="descname">new_project_using_stats</code><span class="sig-paren">(</span><em>old_project</em>, <em>new_number_of_vehicle</em>, <em>only_worker=False</em>, <em>min_vehicles_per_bin=False</em>, <em>remove_old_project=False</em>, <em>verbose=True</em>, <em>advanced_filtering_func=False</em>, <em>creating_vehicle_func=&lt;function create_vehicles_from_stat&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/itinerary.html#new_project_using_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.itinerary.new_project_using_stats" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a new project from statistical itineraries of an existing project.
 Note: In the default version, itinerary should be able to cycle day after day, see
 get_cycling_itineraries.</p>

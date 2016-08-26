@@ -268,13 +268,13 @@
         <span class="n">location</span><span class="o">.</span><span class="n">available_charging_station</span> <span class="o">=</span> <span class="n">df2</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
 </div>
-<div class="viewcode-block" id="copy_append"><a class="viewcode-back" href="../../itinerary.html#v2gsim.itinerary.copy_append">[docs]</a><span class="k">def</span> <span class="nf">copy_append</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">nb_copies</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+<div class="viewcode-block" id="copy_append"><a class="viewcode-back" href="../../itinerary.html#v2gsim.itinerary.copy_append">[docs]</a><span class="k">def</span> <span class="nf">copy_append</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">nb_of_days_to_add</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Copy the itinerary of each vehicle in the project.</span>
 <span class="sd">    The copy is appended and a merge operation is applied to ensure a good blend.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        project (Project): project</span>
-<span class="sd">        nb_copies (int): number of copies to append</span>
+<span class="sd">        nb_of_days_to_add (int): number of copies to append</span>
 
 <span class="sd">    Return:</span>
 <span class="sd">        project (Project): new project with extended itineraries</span>
@@ -282,7 +282,7 @@
     <span class="n">number_of_merged</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="n">vehicle</span> <span class="ow">in</span> <span class="n">project</span><span class="o">.</span><span class="n">vehicles</span><span class="p">:</span>
         <span class="n">new_activities</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">i_copy</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nb_copies</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i_copy</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nb_of_days_to_add</span><span class="p">):</span>
             <span class="c1"># Manually copy all activities</span>
             <span class="k">for</span> <span class="n">activity</span> <span class="ow">in</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">Driving</span><span class="p">):</span>
@@ -336,7 +336,7 @@
         <span class="n">vehicle</span><span class="o">.</span><span class="n">activities</span> <span class="o">=</span> <span class="n">merged_activities</span>
         <span class="c1"># Check time gap</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">check_activities</span><span class="p">(</span>
-                <span class="n">start_date</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">date</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span> <span class="o">+</span> <span class="n">nb_copies</span><span class="p">)):</span>
+                <span class="n">start_date</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">date</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span> <span class="o">+</span> <span class="n">nb_of_days_to_add</span><span class="p">)):</span>
             <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Itinerary does not respect the constraints&#39;</span><span class="p">)</span>
             <span class="k">print</span><span class="p">(</span><span class="n">vehicle</span><span class="p">)</span>
 
@@ -693,14 +693,20 @@
     <span class="n">not_completed</span> <span class="o">=</span> <span class="bp">True</span>
     <span class="n">max_iteration</span> <span class="o">=</span> <span class="mi">100</span>
     <span class="n">iteration</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># Duration shortening is to avoid itineraries to overpass 24h</span>
+    <span class="n">duration_shortening</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">iteration_before_reducing_parked_duration</span> <span class="o">=</span> <span class="mi">25</span>
 
-    <span class="k">while</span> <span class="n">not_completed</span> <span class="ow">or</span> <span class="n">iteration</span> <span class="o">&lt;</span> <span class="n">max_iteration</span><span class="p">:</span>
+    <span class="k">while</span> <span class="n">not_completed</span> <span class="ow">and</span> <span class="n">iteration</span> <span class="o">&lt;</span> <span class="n">max_iteration</span><span class="p">:</span>
         <span class="n">iteration</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">vehicle</span> <span class="o">=</span> <span class="n">Vehicle</span><span class="p">(</span><span class="n">current_id</span><span class="p">,</span> <span class="n">project</span><span class="o">.</span><span class="n">car_models</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
         <span class="n">is_first_activity</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">True</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="bp">False</span>
         <span class="n">is_last_activity</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">itinerary</span><span class="o">.</span><span class="n">activity_statistics</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span> <span class="bp">True</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="n">y</span> <span class="k">else</span> <span class="bp">False</span>
         <span class="n">is_duration_enough</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">60</span> <span class="k">else</span> <span class="mi">60</span>
+
+        <span class="k">if</span> <span class="n">iteration</span> <span class="o">%</span> <span class="n">iteration_before_reducing_parked_duration</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">iteration</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">duration_shortening</span> <span class="o">+=</span> <span class="mf">0.1</span>
 
         <span class="c1"># The activities one by one</span>
         <span class="n">location_index</span> <span class="o">=</span> <span class="mi">0</span>
@@ -712,9 +718,11 @@
                 <span class="n">start</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">date</span>
                 <span class="c1"># duration is int() to avoid milliseconds</span>
                 <span class="n">duration</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">duration_loc</span><span class="p">,</span> <span class="n">activity</span><span class="o">.</span><span class="n">duration_scale</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
-                <span class="c1"># duration is rouded at project.timestep</span>
+                <span class="c1"># duration is rounded at project.timestep</span>
                 <span class="n">duration</span> <span class="o">-=</span> <span class="n">duration</span> <span class="o">%</span> <span class="n">project</span><span class="o">.</span><span class="n">timestep</span>
                 <span class="n">duration</span> <span class="o">=</span> <span class="n">is_duration_enough</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span>
+                <span class="n">duration</span> <span class="o">-=</span> <span class="n">duration</span> <span class="o">*</span> <span class="n">duration_shortening</span>
+
                 <span class="n">end</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">duration</span><span class="p">)</span>
                 <span class="n">location</span> <span class="o">=</span> <span class="n">itinerary</span><span class="o">.</span><span class="n">locations</span><span class="p">[</span><span class="n">location_index</span><span class="p">]</span>
                 <span class="n">location_index</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -737,6 +745,8 @@
                 <span class="n">duration</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">activity</span><span class="o">.</span><span class="n">duration_loc</span><span class="p">,</span> <span class="n">activity</span><span class="o">.</span><span class="n">duration_scale</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
                 <span class="n">duration</span> <span class="o">-=</span> <span class="n">duration</span> <span class="o">%</span> <span class="n">project</span><span class="o">.</span><span class="n">timestep</span>
                 <span class="n">duration</span> <span class="o">=</span> <span class="n">is_duration_enough</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span>
+                <span class="n">duration</span> <span class="o">-=</span> <span class="n">duration</span> <span class="o">*</span> <span class="n">duration_shortening</span>
+
                 <span class="n">end</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">duration</span><span class="p">)</span>
                 <span class="n">location</span> <span class="o">=</span> <span class="n">itinerary</span><span class="o">.</span><span class="n">locations</span><span class="p">[</span><span class="n">location_index</span><span class="p">]</span>
                 <span class="n">location_index</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -769,7 +779,7 @@
 
 </div>
 <div class="viewcode-block" id="new_project_using_stats"><a class="viewcode-back" href="../../itinerary.html#v2gsim.itinerary.new_project_using_stats">[docs]</a><span class="k">def</span> <span class="nf">new_project_using_stats</span><span class="p">(</span><span class="n">old_project</span><span class="p">,</span> <span class="n">new_number_of_vehicle</span><span class="p">,</span> <span class="n">only_worker</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                            <span class="n">min_vehicles_per_bin</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">remove_old_project</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                            <span class="n">min_vehicles_per_bin</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">remove_old_project</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                             <span class="n">advanced_filtering_func</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">creating_vehicle_func</span><span class="o">=</span><span class="n">create_vehicles_from_stat</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Creates a new project from statistical itineraries of an existing project.</span>
 <span class="sd">    Note: In the default version, itinerary should be able to cycle day after day, see</span>
@@ -787,6 +797,11 @@
 <span class="sd">    Return:</span>
 <span class="sd">        a new project with similar itineraries as the old project and chosen number of vehicles</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">progressbar</span><span class="o">.</span><span class="n">ProgressBar</span><span class="p">(</span><span class="n">widgets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Parsing: &#39;</span><span class="p">,</span>
+                                                    <span class="n">progressbar</span><span class="o">.</span><span class="n">Percentage</span><span class="p">(),</span> <span class="n">progressbar</span><span class="o">.</span><span class="n">Bar</span><span class="p">()],</span>
+                                           <span class="n">maxval</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">old_project</span><span class="o">.</span><span class="n">itinerary_statistics</span><span class="p">))</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
     <span class="c1"># Create a new project</span>
     <span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
     <span class="n">project</span><span class="o">.</span><span class="n">car_models</span> <span class="o">=</span> <span class="p">[</span><span class="n">BasicCarModel</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Leaf&#39;</span><span class="p">)]</span>
@@ -829,9 +844,17 @@
             <span class="n">project</span><span class="o">.</span><span class="n">vehicles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vehicle</span><span class="p">)</span>
             <span class="n">current_id</span> <span class="o">+=</span> <span class="mi">1</span>
 
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">progress</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="n">progress</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span>
+
     <span class="c1"># Initialize charging station at each location</span>
     <span class="n">reset_charging_infrastructures</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
 
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">project</span>
 
 </div>

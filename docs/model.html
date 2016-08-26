@@ -142,15 +142,14 @@
 <dt id="v2gsim.model.Activity">
 <em class="property">class </em><code class="descclassname">v2gsim.model.</code><code class="descname">Activity</code><span class="sig-paren">(</span><em>start</em>, <em>end</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/model.html#Activity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.model.Activity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Activity is an abstract class that is implemented in Driving and Parked.
-Data is indexed with the project timestep.</p>
+<p>Activity is an abstract class that is implemented in Driving and Parked.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>start</strong> (<em>float</em>) &#8211; start time of the activity in hours [h]</li>
-<li><strong>end</strong> (<em>float</em>) &#8211; end time of the activity in hours [h]</li>
+<li><strong>start</strong> (<em>datetime</em>) &#8211; start time of the activity</li>
+<li><strong>end</strong> (<em>datetime</em>) &#8211; end time of the activity</li>
 </ul>
 </td>
 </tr>
@@ -404,6 +403,7 @@ of the next one</li>
 <li><strong>car_model</strong> (<a class="reference internal" href="#v2gsim.model.BasicCarModel" title="v2gsim.model.BasicCarModel"><em>BasicCarModel</em></a>) &#8211; car model associated to the vehicle</li>
 <li><strong>result_function</strong> (<em>func</em>) &#8211; function describing the way results are saved</li>
 <li><strong>result</strong> (<em>any</em>) &#8211; result structure returned by the result function</li>
+<li><strong>battery_model</strong> (<em>BatteryModel</em>) &#8211; model to represent battery degradation</li>
 </ul>
 </td>
 </tr>

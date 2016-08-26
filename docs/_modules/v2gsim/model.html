@@ -278,6 +278,7 @@
 <span class="sd">        car_model (BasicCarModel): car model associated to the vehicle</span>
 <span class="sd">        result_function (func): function describing the way results are saved</span>
 <span class="sd">        result (any): result structure returned by the result function</span>
+<span class="sd">        battery_model (BatteryModel): model to represent battery degradation</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">car_model</span><span class="p">,</span> <span class="n">initial_SOC</span><span class="o">=</span><span class="mf">0.95</span><span class="p">):</span>
@@ -290,6 +291,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">stranding_log</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">result_function</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">save_vehicle_state</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">battery_model</span> <span class="o">=</span> <span class="bp">None</span>
 
 <div class="viewcode-block" id="Vehicle.check_activities"><a class="viewcode-back" href="../../model.html#v2gsim.model.Vehicle.check_activities">[docs]</a>    <span class="k">def</span> <span class="nf">check_activities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Verify if every activity start at the end of the previous activity</span>
@@ -322,11 +324,10 @@
 </div>
 <div class="viewcode-block" id="Activity"><a class="viewcode-back" href="../../model.html#v2gsim.model.Activity">[docs]</a><span class="k">class</span> <span class="nc">Activity</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Activity is an abstract class that is implemented in Driving and Parked.</span>
-<span class="sd">    Data is indexed with the project timestep.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        start (float): start time of the activity in hours [h]</span>
-<span class="sd">        end (float): end time of the activity in hours [h]</span>
+<span class="sd">        start (datetime): start time of the activity</span>
+<span class="sd">        end (datetime): end time of the activity</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
