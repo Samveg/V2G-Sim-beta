@@ -20,11 +20,14 @@ class BatteryModel(object):
 
 
 def driving_temperature(vehicle, ambientT, rad, charge, coefTemp):
-	"""Description of the function
+	"""Calculate the temperature when the EV is driving
 
 	Args:
-		arg1 (arg1_type): arg1 description
-		arg2 ...
+		vehicle (Vehicle): vehicle object to get current SOC and physical constraints (maximum SOC, ...)
+		ambientT (float): ambient temperature at this time step
+		rad (float) : solar radiation at this time step
+		charge (float): heat generate at this time step from the battery when the EV is driving
+		coefTemp (dict) : Coefficients of EV thermal model
 	"""
 	# when the EV is driving, calculate the battery temperature second by second.
 	# AC starts to work if cambin temperature is higher than 25, battery cooling system starts to work if battery temperature is higher than 20.
@@ -47,11 +50,14 @@ def driving_temperature(vehicle, ambientT, rad, charge, coefTemp):
 
 
 def charging_temperature(vehicle, ambientT, rad, charge, coefTemp):
-	"""Description of the function
+	"""Calculate the temperature when the EV is charging
 
 	Args:
-		arg1 (arg1_type): arg1 description
-		arg2 ...
+		vehicle (Vehicle): vehicle object to get current SOC and physical constraints (maximum SOC, ...)
+		ambientT (float): ambient temperature at this time step
+		rad (float) : solar radiation at this time step
+		charge (float): heat generate from the battery when the EV is charging/discharging at this time step
+		coefTemp (dict) : Coefficients of EV thermal model
 	"""
 	# seperately calculate the battery temperature when it is charging/discharging, because there is heat generated from the battery
 	if vehicle.battery_model.batteryT[-1] >= 20:
@@ -67,11 +73,13 @@ def charging_temperature(vehicle, ambientT, rad, charge, coefTemp):
 
 
 def idle_temperature(vehicle, ambientT, rad, coefTemp):
-	"""Description of the function
+	"""Calculate the temperature when the EV is idle
 
 	Args:
-		arg1 (arg1_type): arg1 description
-		arg2 ...
+		vehicle (Vehicle): vehicle object to get current SOC and physical constraints (maximum SOC, ...)
+		ambientT (float): ambient temperature at this time step
+		rad (float) : solar radiation at this time step
+		coefTemp (dict) : Coefficients of EV thermal model
 	"""
 	# seperately calculate the battery temperature when it is idle, because there is no heat generated from the battery.
 	# Assume key-off, so AC and thermal management system do not work
@@ -82,11 +90,12 @@ def idle_temperature(vehicle, ambientT, rad, coefTemp):
 
 
 def calendar_loss(vehicle, coefLoss, days):
-	"""Description of the function
+	"""Calculate battery capacity loss caused by calendar aging
 
 	Args:
-		arg1 (arg1_type): arg1 description
-		arg2 ...
+		vehicle (Vehicle): vehicle object to get current SOC and physical constraints (maximum SOC, ...)
+		coefLoss (dict) : Coefficients of EV capacity loss model
+		days (int): the number of days for EV battery calendar aging
 	"""
     # copy temperature
 	timeSpand = 86400*days
@@ -99,13 +108,16 @@ def calendar_loss(vehicle, coefLoss, days):
 
 
 def cycle_loss_drive(vehicle, bt,current, deltsoc, coefLoss):
-	"""Description of the function
+	"""Calculate battery capacity loss caused by cycling at this time step
 
 	Args:
-		arg1 (arg1_type): arg1 description
-		arg2 ...
+		vehicle (Vehicle): vehicle object to get current SOC and physical constraints (maximum SOC, ...)
+		bt (float) : battery temperature at this time step
+		current (float): battery current input/output at this time step
+		deltsoc (float): incremental soc at this time step
+		coefLoss (dict): Coefficients of EV capacity loss model
 	"""
-	# cycle life loss at every time step
+	# cycle life loss at current time step
 	loss = (coefLoss['a']*(bt+273.15)**2+coefLoss['b']*(bt+273.15)+coefLoss['c'])*exp((coefLoss['d']*(bt+273.15)+coefLoss['e'])*abs(deltsoc)*3600)*(abs(current))/2/2/3600
 	vehicle.battery_model.batteryLoss['cycleLoss'].append(loss)
 
@@ -115,10 +127,11 @@ def bd(vehicleList, radH, ambientT, days):
 
 	Args:
 	    vehicleList (list of vehicles): vehicles to simulate
-	    radH: solar radiation
-	    ambientT: ambient temperature
+	    radH (list): solar radiation
+	    ambientT (list): ambient temperature
+	    days (int): the number of days for EV battery calendar aging
 	"""
-	for vehicle in vehicleList:
+	for indexV, vehicle in enumerate(vehicleList):
 		vehicle.battery_model = BatteryModel()
 		DrivingCurrent = vehicle.result.output_current.tolist()   #create this variable to store all the current vector,
 		ChargingDemand = vehicle.result.power_demand.tolist()   #create this variable to store all the current vector
@@ -162,6 +175,8 @@ def bd(vehicleList, radH, ambientT, days):
 		# calculate calendar_loss
 		calendar_loss(vehicle, vehicle.battery_model.coefLoss, days)
 
-		print(vehicle.battery_model.batteryLoss['calendarLoss'][-1])
-		print(sum(vehicle.battery_model.batteryLoss['cycleLoss'])*days)
+
+		#print the capacity loss caused by calendar aging and cycling
+		print "The calendar life loss of Vehicle %s is %s"  % (indexV+1, vehicle.battery_model.batteryLoss['calendarLoss'][-1])
+		print "The cycle life loss of Vehicle %s is %s" %(indexV+1, sum(vehicle.battery_model.batteryLoss['cycleLoss'])*days)
 
