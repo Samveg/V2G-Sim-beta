@@ -5,7 +5,7 @@ import v2gsim.battery_degradation.CapacityLoss
 # Timestep need to be set to 1 seconds to capture 
 # the detailed output of the powertrain model
 project = v2gsim.model.Project(timestep=1)
-project = v2gsim.itinerary.from_excel(project, '../data/NHTS/Tennessee_100.xlsx')
+project = v2gsim.itinerary.from_excel(project, '../data/NHTS/Tennessee_1.xlsx')
 
 # Create a detailed power train model
 car_model = v2gsim.driving.detailed.init_model.load_powertrain('../v2gsim/driving/detailed/data.xlsx')

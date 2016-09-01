@@ -1,0 +1,9 @@
+battery degrdation package
+==========================
+
+battery_degradation.CapacityLoss
+--------------------------------
+
+.. automodule:: v2gsim.battery_degradation.CapacityLoss
+    :members:
+    :show-inheritance:

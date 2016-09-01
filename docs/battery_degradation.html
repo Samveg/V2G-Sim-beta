@@ -1,0 +1,348 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>battery degrdation package &mdash; V2G-Sim 0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="V2G-Sim 0.1 documentation" href="index.html"/>
+        <link rel="next" title="post simulation package" href="post_simulation.html"/>
+        <link rel="prev" title="result" href="result.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> V2G-Sim
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="v2gconcept.html">what is vehicle to grid?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installv2gsim.html">how to install V2G-Sim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model.html">model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="itinerary.html">itinerary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="charging.html">charging package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="driving.html">driving package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">result</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">battery degrdation package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-v2gsim.battery_degradation.CapacityLoss">battery_degradation.CapacityLoss</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="post_simulation.html">post simulation package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">V2G-Sim</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>battery degrdation package</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/battery_degradation.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="battery-degrdation-package">
+<h1>battery degrdation package<a class="headerlink" href="#battery-degrdation-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-v2gsim.battery_degradation.CapacityLoss">
+<span id="battery-degradation-capacityloss"></span><h2>battery_degradation.CapacityLoss<a class="headerlink" href="#module-v2gsim.battery_degradation.CapacityLoss" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="v2gsim.battery_degradation.CapacityLoss.BatteryModel">
+<em class="property">class </em><code class="descclassname">v2gsim.battery_degradation.CapacityLoss.</code><code class="descname">BatteryModel</code><a class="reference internal" href="_modules/v2gsim/battery_degradation/CapacityLoss.html#BatteryModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.battery_degradation.CapacityLoss.BatteryModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Create a class to store all the
+degradation information</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.battery_degradation.CapacityLoss.bd">
+<code class="descclassname">v2gsim.battery_degradation.CapacityLoss.</code><code class="descname">bd</code><span class="sig-paren">(</span><em>vehicleList</em>, <em>radH</em>, <em>ambientT</em>, <em>days</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/battery_degradation/CapacityLoss.html#bd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.battery_degradation.CapacityLoss.bd" title="Permalink to this definition">¶</a></dt>
+<dd><p>battery degradation function</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>vehicleList</strong> (<em>list of vehicles</em>) &#8211; vehicles to simulate</li>
+<li><strong>radH</strong> (<em>list</em>) &#8211; solar radiation</li>
+<li><strong>ambientT</strong> (<em>list</em>) &#8211; ambient temperature</li>
+<li><strong>days</strong> (<em>int</em>) &#8211; the number of days for EV battery calendar aging</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.battery_degradation.CapacityLoss.calendar_loss">
+<code class="descclassname">v2gsim.battery_degradation.CapacityLoss.</code><code class="descname">calendar_loss</code><span class="sig-paren">(</span><em>vehicle</em>, <em>coefLoss</em>, <em>days</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/battery_degradation/CapacityLoss.html#calendar_loss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.battery_degradation.CapacityLoss.calendar_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate battery capacity loss caused by calendar aging</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>vehicle</strong> (<a class="reference internal" href="model.html#v2gsim.model.Vehicle" title="v2gsim.model.Vehicle"><em>Vehicle</em></a>) &#8211; vehicle object to get current SOC and physical constraints (maximum SOC, ...)</li>
+<li><strong>coefLoss</strong> (<em>dict</em>) &#8211; Coefficients of EV capacity loss model</li>
+<li><strong>days</strong> (<em>int</em>) &#8211; the number of days for EV battery calendar aging</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.battery_degradation.CapacityLoss.charging_temperature">
+<code class="descclassname">v2gsim.battery_degradation.CapacityLoss.</code><code class="descname">charging_temperature</code><span class="sig-paren">(</span><em>vehicle</em>, <em>ambientT</em>, <em>rad</em>, <em>charge</em>, <em>coefTemp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/battery_degradation/CapacityLoss.html#charging_temperature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.battery_degradation.CapacityLoss.charging_temperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the temperature when the EV is charging</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>vehicle</strong> (<a class="reference internal" href="model.html#v2gsim.model.Vehicle" title="v2gsim.model.Vehicle"><em>Vehicle</em></a>) &#8211; vehicle object to get current SOC and physical constraints (maximum SOC, ...)</li>
+<li><strong>ambientT</strong> (<em>float</em>) &#8211; ambient temperature at this time step</li>
+<li><strong>rad</strong> (<em>float</em>) &#8211; solar radiation at this time step</li>
+<li><strong>charge</strong> (<em>float</em>) &#8211; heat generate from the battery when the EV is charging/discharging at this time step</li>
+<li><strong>coefTemp</strong> (<em>dict</em>) &#8211; Coefficients of EV thermal model</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.battery_degradation.CapacityLoss.cycle_loss_drive">
+<code class="descclassname">v2gsim.battery_degradation.CapacityLoss.</code><code class="descname">cycle_loss_drive</code><span class="sig-paren">(</span><em>vehicle</em>, <em>bt</em>, <em>current</em>, <em>deltsoc</em>, <em>coefLoss</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/battery_degradation/CapacityLoss.html#cycle_loss_drive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.battery_degradation.CapacityLoss.cycle_loss_drive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate battery capacity loss caused by cycling at this time step</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>vehicle</strong> (<a class="reference internal" href="model.html#v2gsim.model.Vehicle" title="v2gsim.model.Vehicle"><em>Vehicle</em></a>) &#8211; vehicle object to get current SOC and physical constraints (maximum SOC, ...)</li>
+<li><strong>bt</strong> (<em>float</em>) &#8211; battery temperature at this time step</li>
+<li><strong>current</strong> (<em>float</em>) &#8211; battery current input/output at this time step</li>
+<li><strong>deltsoc</strong> (<em>float</em>) &#8211; incremental soc at this time step</li>
+<li><strong>coefLoss</strong> (<em>dict</em>) &#8211; Coefficients of EV capacity loss model</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.battery_degradation.CapacityLoss.driving_temperature">
+<code class="descclassname">v2gsim.battery_degradation.CapacityLoss.</code><code class="descname">driving_temperature</code><span class="sig-paren">(</span><em>vehicle</em>, <em>ambientT</em>, <em>rad</em>, <em>charge</em>, <em>coefTemp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/battery_degradation/CapacityLoss.html#driving_temperature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.battery_degradation.CapacityLoss.driving_temperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the temperature when the EV is driving</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>vehicle</strong> (<a class="reference internal" href="model.html#v2gsim.model.Vehicle" title="v2gsim.model.Vehicle"><em>Vehicle</em></a>) &#8211; vehicle object to get current SOC and physical constraints (maximum SOC, ...)</li>
+<li><strong>ambientT</strong> (<em>float</em>) &#8211; ambient temperature at this time step</li>
+<li><strong>rad</strong> (<em>float</em>) &#8211; solar radiation at this time step</li>
+<li><strong>charge</strong> (<em>float</em>) &#8211; heat generate at this time step from the battery when the EV is driving</li>
+<li><strong>coefTemp</strong> (<em>dict</em>) &#8211; Coefficients of EV thermal model</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="v2gsim.battery_degradation.CapacityLoss.idle_temperature">
+<code class="descclassname">v2gsim.battery_degradation.CapacityLoss.</code><code class="descname">idle_temperature</code><span class="sig-paren">(</span><em>vehicle</em>, <em>ambientT</em>, <em>rad</em>, <em>coefTemp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/v2gsim/battery_degradation/CapacityLoss.html#idle_temperature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#v2gsim.battery_degradation.CapacityLoss.idle_temperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the temperature when the EV is idle</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>vehicle</strong> (<a class="reference internal" href="model.html#v2gsim.model.Vehicle" title="v2gsim.model.Vehicle"><em>Vehicle</em></a>) &#8211; vehicle object to get current SOC and physical constraints (maximum SOC, ...)</li>
+<li><strong>ambientT</strong> (<em>float</em>) &#8211; ambient temperature at this time step</li>
+<li><strong>rad</strong> (<em>float</em>) &#8211; solar radiation at this time step</li>
+<li><strong>coefTemp</strong> (<em>dict</em>) &#8211; Coefficients of EV thermal model</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="post_simulation.html" class="btn btn-neutral float-right" title="post simulation package" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="result.html" class="btn btn-neutral" title="result" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Lawrence Berkeley National Laboratory.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

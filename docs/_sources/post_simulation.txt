@@ -12,6 +12,8 @@ post_simulation.result
 post_simulation.netload_optimization
 ------------------------------------
 
+Note: The decentralized optimization module is only available on the master-optimization branch.
+
 .. automodule:: v2gsim.post_simulation.netload_optimization
     :members:
     :show-inheritance:
