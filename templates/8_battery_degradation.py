@@ -1,11 +1,11 @@
 from __future__ import division
 import v2gsim
-import v2gsim.battery_degradation.BatteryDegradation
+import v2gsim.battery_degradation.CapacityLoss
 
 # Timestep need to be set to 1 seconds to capture 
 # the detailed output of the powertrain model
 project = v2gsim.model.Project(timestep=1)
-project = v2gsim.itinerary.from_excel(project, '../data/NHTS/Tennessee_1.xlsx')
+project = v2gsim.itinerary.from_excel(project, '../data/NHTS/Tennessee_100.xlsx')
 
 # Create a detailed power train model
 car_model = v2gsim.driving.detailed.init_model.load_powertrain('../v2gsim/driving/detailed/data.xlsx')
@@ -37,5 +37,5 @@ for i in range(len(t)):
 		ambientT.append(float(t[i]))
 
 # Call battery degradation calculation function
-v2gsim.battery_degradation.BatteryDegradation.bd(project.vehicles, radH, ambientT, days=1)
+v2gsim.battery_degradation.CapacityLoss.bd(project.vehicles, radH, ambientT, days=1)
 
