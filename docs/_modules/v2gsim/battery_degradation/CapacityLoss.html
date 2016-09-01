@@ -1,0 +1,381 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>v2gsim.battery_degradation.CapacityLoss &mdash; V2G-Sim 0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="V2G-Sim 0.1 documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> V2G-Sim
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../v2gconcept.html">what is vehicle to grid?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installv2gsim.html">how to install V2G-Sim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../core.html">core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../model.html">model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../itinerary.html">itinerary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../charging.html">charging package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../driving.html">driving package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../result.html">result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../battery_degradation.html">battery degrdation package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../post_simulation.html">post simulation package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../index.html">V2G-Sim</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      
+    <li>v2gsim.battery_degradation.CapacityLoss</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for v2gsim.battery_degradation.CapacityLoss</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">exp</span>
+<span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span>
+
+
+<div class="viewcode-block" id="BatteryModel"><a class="viewcode-back" href="../../../battery_degradation.html#v2gsim.battery_degradation.CapacityLoss.BatteryModel">[docs]</a><span class="k">class</span> <span class="nc">BatteryModel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;Create a class to store all the</span>
+<span class="sd">	   degradation information</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">cabinT</span> <span class="o">=</span> <span class="p">[</span><span class="mi">20</span><span class="p">]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">batteryT</span> <span class="o">=</span> <span class="p">[</span><span class="mi">18</span><span class="p">]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">batteryLoss</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;cycleLoss&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;calendarLoss&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]}</span>
+		<span class="c1"># input parameters of EV thermal network and degradation model</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">coefTemp</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;q_havc&#39;</span><span class="p">:</span> <span class="mi">4500</span><span class="p">,</span> <span class="s1">&#39;M_c&#39;</span><span class="p">:</span> <span class="mi">101771</span><span class="p">,</span> <span class="s1">&#39;M_b&#39;</span><span class="p">:</span> <span class="mi">182000</span><span class="p">,</span> <span class="s1">&#39;K_ab&#39;</span><span class="p">:</span> <span class="mf">4.343</span><span class="p">,</span> <span class="s1">&#39;K_ac&#39;</span><span class="p">:</span> <span class="mf">22.6</span><span class="p">,</span> <span class="s1">&#39;K_bc&#39;</span><span class="p">:</span> <span class="mf">3.468</span><span class="p">}</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">coefLoss</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mf">8.888888888889532</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mi">6</span><span class="p">),</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.005288888888889</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mf">0.787113333333394</span><span class="p">,</span>
+		                 <span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.0067</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="mf">2.35</span><span class="p">,</span> <span class="s1">&#39;f&#39;</span><span class="p">:</span> <span class="mi">8720</span><span class="p">,</span> <span class="s1">&#39;E&#39;</span><span class="p">:</span> <span class="mi">24500</span><span class="p">,</span> <span class="s1">&#39;R&#39;</span><span class="p">:</span> <span class="mf">8.314</span><span class="p">}</span>
+
+</div>
+<div class="viewcode-block" id="driving_temperature"><a class="viewcode-back" href="../../../battery_degradation.html#v2gsim.battery_degradation.CapacityLoss.driving_temperature">[docs]</a><span class="k">def</span> <span class="nf">driving_temperature</span><span class="p">(</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">ambientT</span><span class="p">,</span> <span class="n">rad</span><span class="p">,</span> <span class="n">charge</span><span class="p">,</span> <span class="n">coefTemp</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;Calculate the temperature when the EV is driving</span>
+
+<span class="sd">	Args:</span>
+<span class="sd">		vehicle (Vehicle): vehicle object to get current SOC and physical constraints (maximum SOC, ...)</span>
+<span class="sd">		ambientT (float): ambient temperature at this time step</span>
+<span class="sd">		rad (float) : solar radiation at this time step</span>
+<span class="sd">		charge (float): heat generate at this time step from the battery when the EV is driving</span>
+<span class="sd">		coefTemp (dict) : Coefficients of EV thermal model</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="c1"># when the EV is driving, calculate the battery temperature second by second.</span>
+	<span class="c1"># AC starts to work if cambin temperature is higher than 25, battery cooling system starts to work if battery temperature is higher than 20.</span>
+	<span class="k">if</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">25</span> <span class="ow">and</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">20</span><span class="p">:</span>
+		<span class="n">cabinTemp</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="p">(</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_ac&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">ambientT</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_bc&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">rad</span><span class="o">-</span><span class="mi">4500</span><span class="p">)</span><span class="o">/</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;M_c&#39;</span><span class="p">]</span>
+		<span class="n">batteryTemp</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="p">(</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_ab&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">ambientT</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_bc&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">charge</span><span class="o">-</span><span class="mi">354</span><span class="o">*</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">20</span><span class="p">))</span><span class="o">/</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;M_b&#39;</span><span class="p">]</span>
+	<span class="k">elif</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">25</span> <span class="ow">and</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">:</span>
+		<span class="n">cabinTemp</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="p">(</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_ac&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">ambientT</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_bc&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">rad</span><span class="p">)</span><span class="o">/</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;M_c&#39;</span><span class="p">]</span>
+		<span class="n">batteryTemp</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="p">(</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_ab&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">ambientT</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_bc&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">charge</span><span class="p">)</span><span class="o">/</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;M_b&#39;</span><span class="p">]</span>
+	<span class="k">elif</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">25</span> <span class="ow">and</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">:</span>
+		<span class="n">cabinTemp</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="p">(</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_ac&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">ambientT</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_bc&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">rad</span><span class="o">-</span><span class="mi">4500</span><span class="p">)</span><span class="o">/</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;M_c&#39;</span><span class="p">]</span>
+		<span class="n">batteryTemp</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="p">(</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_ab&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">ambientT</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_bc&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">charge</span><span class="p">)</span><span class="o">/</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;M_b&#39;</span><span class="p">]</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="n">cabinTemp</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="p">(</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_ac&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">ambientT</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_bc&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">rad</span><span class="p">)</span><span class="o">/</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;M_c&#39;</span><span class="p">]</span>
+		<span class="n">batteryTemp</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="p">(</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_ab&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">ambientT</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_bc&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">charge</span><span class="o">-</span><span class="mi">354</span><span class="o">*</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">20</span><span class="p">))</span><span class="o">/</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;M_b&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Save cabin and battery temperature</span>
+	<span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cabinTemp</span><span class="p">)</span>
+	<span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">batteryTemp</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="charging_temperature"><a class="viewcode-back" href="../../../battery_degradation.html#v2gsim.battery_degradation.CapacityLoss.charging_temperature">[docs]</a><span class="k">def</span> <span class="nf">charging_temperature</span><span class="p">(</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">ambientT</span><span class="p">,</span> <span class="n">rad</span><span class="p">,</span> <span class="n">charge</span><span class="p">,</span> <span class="n">coefTemp</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;Calculate the temperature when the EV is charging</span>
+
+<span class="sd">	Args:</span>
+<span class="sd">		vehicle (Vehicle): vehicle object to get current SOC and physical constraints (maximum SOC, ...)</span>
+<span class="sd">		ambientT (float): ambient temperature at this time step</span>
+<span class="sd">		rad (float) : solar radiation at this time step</span>
+<span class="sd">		charge (float): heat generate from the battery when the EV is charging/discharging at this time step</span>
+<span class="sd">		coefTemp (dict) : Coefficients of EV thermal model</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="c1"># seperately calculate the battery temperature when it is charging/discharging, because there is heat generated from the battery</span>
+	<span class="k">if</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">20</span><span class="p">:</span>
+		<span class="n">cabinTemp</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="p">(</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_ac&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">ambientT</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_bc&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">rad</span><span class="p">)</span><span class="o">/</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;M_c&#39;</span><span class="p">]</span>
+		<span class="n">batteryTemp</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="p">(</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_ab&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">ambientT</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_bc&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">charge</span><span class="o">-</span><span class="mi">354</span><span class="o">*</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">20</span><span class="p">))</span><span class="o">/</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;M_b&#39;</span><span class="p">]</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="n">cabinTemp</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="p">(</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_ac&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">ambientT</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_bc&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">rad</span><span class="p">)</span><span class="o">/</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;M_c&#39;</span><span class="p">]</span>
+		<span class="n">batteryTemp</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="p">(</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_ab&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">ambientT</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_bc&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">charge</span><span class="p">)</span><span class="o">/</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;M_b&#39;</span><span class="p">]</span>
+
+
+	<span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cabinTemp</span><span class="p">)</span>
+	<span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">batteryTemp</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="idle_temperature"><a class="viewcode-back" href="../../../battery_degradation.html#v2gsim.battery_degradation.CapacityLoss.idle_temperature">[docs]</a><span class="k">def</span> <span class="nf">idle_temperature</span><span class="p">(</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">ambientT</span><span class="p">,</span> <span class="n">rad</span><span class="p">,</span> <span class="n">coefTemp</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;Calculate the temperature when the EV is idle</span>
+
+<span class="sd">	Args:</span>
+<span class="sd">		vehicle (Vehicle): vehicle object to get current SOC and physical constraints (maximum SOC, ...)</span>
+<span class="sd">		ambientT (float): ambient temperature at this time step</span>
+<span class="sd">		rad (float) : solar radiation at this time step</span>
+<span class="sd">		coefTemp (dict) : Coefficients of EV thermal model</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="c1"># seperately calculate the battery temperature when it is idle, because there is no heat generated from the battery.</span>
+	<span class="c1"># Assume key-off, so AC and thermal management system do not work</span>
+	<span class="n">cabinTemp</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="p">(</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_ac&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">ambientT</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_bc&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">rad</span><span class="p">)</span><span class="o">/</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;M_c&#39;</span><span class="p">]</span>
+	<span class="n">batteryTemp</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="p">(</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_ab&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">ambientT</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;K_bc&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span><span class="o">/</span><span class="n">coefTemp</span><span class="p">[</span><span class="s1">&#39;M_b&#39;</span><span class="p">]</span>
+	<span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">cabinT</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cabinTemp</span><span class="p">)</span>
+	<span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">batteryTemp</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="calendar_loss"><a class="viewcode-back" href="../../../battery_degradation.html#v2gsim.battery_degradation.CapacityLoss.calendar_loss">[docs]</a><span class="k">def</span> <span class="nf">calendar_loss</span><span class="p">(</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">coefLoss</span><span class="p">,</span> <span class="n">days</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;Calculate battery capacity loss caused by calendar aging</span>
+
+<span class="sd">	Args:</span>
+<span class="sd">		vehicle (Vehicle): vehicle object to get current SOC and physical constraints (maximum SOC, ...)</span>
+<span class="sd">		coefLoss (dict) : Coefficients of EV capacity loss model</span>
+<span class="sd">		days (int): the number of days for EV battery calendar aging</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+    <span class="c1"># copy temperature</span>
+	<span class="n">timeSpand</span> <span class="o">=</span> <span class="mi">86400</span><span class="o">*</span><span class="n">days</span>
+	<span class="n">temperature</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="o">*</span><span class="n">days</span>
+
+	<span class="c1"># cumulative calendar life loss</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">timeSpand</span><span class="p">):</span>
+		<span class="n">calendarLoss</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryLoss</span><span class="p">[</span><span class="s1">&#39;calendarLoss&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="o">/</span><span class="mi">3600</span><span class="o">/</span><span class="mi">24</span><span class="o">*</span><span class="mf">0.5</span><span class="o">*</span><span class="n">coefLoss</span><span class="p">[</span><span class="s1">&#39;f&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">coefLoss</span><span class="p">[</span><span class="s1">&#39;E&#39;</span><span class="p">]</span><span class="o">/</span><span class="n">coefLoss</span><span class="p">[</span><span class="s1">&#39;R&#39;</span><span class="p">]</span><span class="o">/</span><span class="p">(</span><span class="n">temperature</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="mf">273.15</span><span class="p">))</span><span class="o">*</span><span class="p">((</span><span class="n">i</span><span class="o">/</span><span class="mi">3600</span><span class="o">/</span><span class="mi">24</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">))</span>
+		<span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryLoss</span><span class="p">[</span><span class="s1">&#39;calendarLoss&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">calendarLoss</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="cycle_loss_drive"><a class="viewcode-back" href="../../../battery_degradation.html#v2gsim.battery_degradation.CapacityLoss.cycle_loss_drive">[docs]</a><span class="k">def</span> <span class="nf">cycle_loss_drive</span><span class="p">(</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">bt</span><span class="p">,</span><span class="n">current</span><span class="p">,</span> <span class="n">deltsoc</span><span class="p">,</span> <span class="n">coefLoss</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;Calculate battery capacity loss caused by cycling at this time step</span>
+
+<span class="sd">	Args:</span>
+<span class="sd">		vehicle (Vehicle): vehicle object to get current SOC and physical constraints (maximum SOC, ...)</span>
+<span class="sd">		bt (float) : battery temperature at this time step</span>
+<span class="sd">		current (float): battery current input/output at this time step</span>
+<span class="sd">		deltsoc (float): incremental soc at this time step</span>
+<span class="sd">		coefLoss (dict): Coefficients of EV capacity loss model</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="c1"># cycle life loss at current time step</span>
+	<span class="n">loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">coefLoss</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">bt</span><span class="o">+</span><span class="mf">273.15</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">coefLoss</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">bt</span><span class="o">+</span><span class="mf">273.15</span><span class="p">)</span><span class="o">+</span><span class="n">coefLoss</span><span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">])</span><span class="o">*</span><span class="n">exp</span><span class="p">((</span><span class="n">coefLoss</span><span class="p">[</span><span class="s1">&#39;d&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">bt</span><span class="o">+</span><span class="mf">273.15</span><span class="p">)</span><span class="o">+</span><span class="n">coefLoss</span><span class="p">[</span><span class="s1">&#39;e&#39;</span><span class="p">])</span><span class="o">*</span><span class="nb">abs</span><span class="p">(</span><span class="n">deltsoc</span><span class="p">)</span><span class="o">*</span><span class="mi">3600</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">current</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span><span class="o">/</span><span class="mi">2</span><span class="o">/</span><span class="mi">3600</span>
+	<span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryLoss</span><span class="p">[</span><span class="s1">&#39;cycleLoss&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="bd"><a class="viewcode-back" href="../../../battery_degradation.html#v2gsim.battery_degradation.CapacityLoss.bd">[docs]</a><span class="k">def</span> <span class="nf">bd</span><span class="p">(</span><span class="n">vehicleList</span><span class="p">,</span> <span class="n">radH</span><span class="p">,</span> <span class="n">ambientT</span><span class="p">,</span> <span class="n">days</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot; battery degradation function</span>
+
+<span class="sd">	Args:</span>
+<span class="sd">	    vehicleList (list of vehicles): vehicles to simulate</span>
+<span class="sd">	    radH (list): solar radiation</span>
+<span class="sd">	    ambientT (list): ambient temperature</span>
+<span class="sd">	    days (int): the number of days for EV battery calendar aging</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">for</span> <span class="n">indexV</span><span class="p">,</span> <span class="n">vehicle</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vehicleList</span><span class="p">):</span>
+		<span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span> <span class="o">=</span> <span class="n">BatteryModel</span><span class="p">()</span>
+		<span class="n">DrivingCurrent</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">output_current</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>   <span class="c1">#create this variable to store all the current vector,</span>
+		<span class="n">ChargingDemand</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">power_demand</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>   <span class="c1">#create this variable to store all the current vector</span>
+		<span class="n">ChargingCurrent</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="n">i</span> <span class="o">/</span> <span class="mi">380</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ChargingDemand</span><span class="p">]</span>
+		<span class="n">AllDayCurrent</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">+</span> <span class="n">y</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">DrivingCurrent</span><span class="p">,</span> <span class="n">ChargingCurrent</span><span class="p">)]</span>
+
+		<span class="n">deltasoc</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">SOC</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+		<span class="n">DrivingCharge</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="n">flag</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">parked</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="c1"># mark if the car is parked or driving</span>
+		<span class="n">R</span> <span class="o">=</span> <span class="mf">0.15</span> <span class="c1"># internal resistance</span>
+
+
+		<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">AllDayCurrent</span><span class="p">)):</span>
+			<span class="n">DrivingCharge</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">R</span> <span class="o">*</span> <span class="n">AllDayCurrent</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># heat generate from battery</span>
+			<span class="c1"># Calculate whole day temperature.</span>
+			<span class="k">if</span> <span class="ow">not</span> <span class="n">flag</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span> <span class="c1"># vehicle is driving</span>
+				<span class="c1"># Calculate battery temeprature when the vehicle is driving</span>
+				<span class="n">driving_temperature</span><span class="p">(</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">ambientT</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">radH</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">DrivingCharge</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+				                                     <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">coefTemp</span><span class="p">)</span>
+
+				<span class="c1"># Calculate cycle life loss caused by driving</span>
+				<span class="n">cycle_loss_drive</span><span class="p">(</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">AllDayCurrent</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">deltasoc</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">coefLoss</span><span class="p">)</span>
+
+			<span class="k">elif</span> <span class="n">flag</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span> <span class="c1"># vehicle is parked</span>
+				<span class="k">if</span> <span class="n">AllDayCurrent</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># The car is parked but not charging/discharging</span>
+
+					<span class="c1"># Calculate battery temperature when the vehicle is parked but not charging/discharging, battery thermal mananage system (BTMS) works but AC does not work</span>
+					<span class="n">idle_temperature</span><span class="p">(</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">ambientT</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">radH</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+				                                     <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">coefTemp</span><span class="p">)</span>
+					<span class="c1"># no cycle life loss, since current=0</span>
+					<span class="n">cycle_loss_drive</span><span class="p">(</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">AllDayCurrent</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">deltasoc</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">coefLoss</span><span class="p">)</span> <span class="c1"># cycleloss=0</span>
+				<span class="k">else</span><span class="p">:</span> <span class="c1"># The car is parked and charge/discharge</span>
+
+					<span class="c1"># Calculate battery temperature when the vehicle is parked but not charging/discharging, battery thermal mananage system (BTMS) works but AC does not work</span>
+					<span class="n">charging_temperature</span><span class="p">(</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">ambientT</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">radH</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">DrivingCharge</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+				                                     <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">coefTemp</span><span class="p">)</span>
+
+					<span class="c1"># Calculate cycle life loss caused by charging/discharging</span>
+					<span class="n">cycle_loss_drive</span><span class="p">(</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryT</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">AllDayCurrent</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">deltasoc</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">coefLoss</span><span class="p">)</span>
+
+		<span class="c1"># calculate calendar_loss</span>
+		<span class="n">calendar_loss</span><span class="p">(</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">coefLoss</span><span class="p">,</span> <span class="n">days</span><span class="p">)</span>
+
+
+		<span class="c1">#print the capacity loss caused by calendar aging and cycling</span>
+		<span class="k">print</span> <span class="s2">&quot;The calendar life loss of Vehicle </span><span class="si">%s</span><span class="s2"> is </span><span class="si">%s</span><span class="s2">&quot;</span>  <span class="o">%</span> <span class="p">(</span><span class="n">indexV</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryLoss</span><span class="p">[</span><span class="s1">&#39;calendarLoss&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+		<span class="k">print</span> <span class="s2">&quot;The cycle life loss of Vehicle </span><span class="si">%s</span><span class="s2"> is </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">indexV</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">vehicle</span><span class="o">.</span><span class="n">battery_model</span><span class="o">.</span><span class="n">batteryLoss</span><span class="p">[</span><span class="s1">&#39;cycleLoss&#39;</span><span class="p">])</span><span class="o">*</span><span class="n">days</span><span class="p">)</span>
+</pre></div></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Lawrence Berkeley National Laboratory.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

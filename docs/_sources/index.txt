@@ -31,6 +31,7 @@ Contents:
     charging.rst
     driving.rst
     result.rst
+    battery_degradation.rst
     post_simulation.rst
     :maxdepth: 3
 

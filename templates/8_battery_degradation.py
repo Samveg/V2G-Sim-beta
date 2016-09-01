@@ -1,6 +1,6 @@
 from __future__ import division
 import v2gsim
-import v2gsim.battery_degradation.BatteryDegradation
+import v2gsim.battery_degradation.CapacityLoss
 
 # Timestep need to be set to 1 seconds to capture 
 # the detailed output of the powertrain model
@@ -37,5 +37,5 @@ for i in range(len(t)):
 		ambientT.append(float(t[i]))
 
 # Call battery degradation calculation function
-v2gsim.battery_degradation.BatteryDegradation.bd(project.vehicles, radH, ambientT, days=1)
+v2gsim.battery_degradation.CapacityLoss.bd(project.vehicles, radH, ambientT, days=1)
 
