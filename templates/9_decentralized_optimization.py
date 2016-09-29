@@ -7,7 +7,7 @@ import pandas
 
 # Create a project and initialize it with someitineraries
 project = v2gsim.model.Project()
-project = v2gsim.itinerary.from_excel(project, '../data/NHTS/Tennessee.xlsx')
+project = v2gsim.itinerary.from_excel(project, '../data/NHTS/Tennessee_100.xlsx')
 
 # This function from the itinerary module return all the vehicles that
 # start and end their day at the same location (e.g. home)
@@ -58,7 +58,7 @@ total_power_demand = v2gsim.post_simulation.result.total_power_demand(project)
 
 # Create the optimization object
 opti = v2gsim.post_simulation.netload_optimization.DecentralizedOptimization(
-    project, 10, max_iteration=15, sigma=50)
+    project, 5, max_iteration=10, sigma=0.5)
 
 # Load the net load data
 finalResult = pandas.DataFrame()
