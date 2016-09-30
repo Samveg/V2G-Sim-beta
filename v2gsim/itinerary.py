@@ -9,6 +9,21 @@ from model import (Vehicle, ChargingStation, Location, Parked, Driving,
                    BasicCarModel, Project)
 
 
+def from_csv(project, filename):
+    """Read itineraries from an csv file. Excel header: id, start, end,
+    distance, location
+
+    Args:
+        project (Project): empty project
+        filename (string): relative or absolute path to the excel file
+
+    Return:
+        project (Project): project assigned with vehicles
+    """
+    df = pandas.read_csv('test.csv')
+    return _dataframe_to_vehicles(project, df)
+
+
 def from_excel(project, filename):
     """Read itineraries from an excel file. Excel header: Vehicle ID,
     Start time (hour), End time (hour), Distance (mi), P_max (W), Location,
@@ -24,10 +39,6 @@ def from_excel(project, filename):
     print('itinerary.from_excel(project, ' + filename + ')')
     print('Loading ...')
 
-    # Day of the project
-    date = project.date
-    tot_sec = (date - datetime.datetime.utcfromtimestamp(0)).total_seconds()
-
     df = pandas.read_excel(io=filename, sheetname='Activity')
     df = df.drop('Nothing', axis=1)
     df = df.rename(columns={'Vehicle ID': 'id', 'State': 'state',
@@ -37,6 +48,15 @@ def from_excel(project, filename):
                             'P_max (W)': 'maximum_power',
                             'Location': 'location',
                             'NHTS HH Wt': 'weight'})
+    print('')
+    return _dataframe_to_vehicles(project, df)
+
+
+def _dataframe_to_vehicles(project, df):
+    # Day of the project
+    date = project.date
+    tot_sec = (date - datetime.datetime.utcfromtimestamp(0)).total_seconds()
+
     from_mile_to_km = 1.60934
 
     # Initialize a car model for the project
@@ -47,7 +67,10 @@ def from_excel(project, filename):
     for vehicle_id, vehicle_data in df.groupby('id'):
         # Create a vehicle instance
         vehicle = Vehicle(vehicle_id, project.car_models[0])
-        vehicle.weight = vehicle_data.weight.iloc[0]
+        try:
+            vehicle.weight = vehicle_data.weight.iloc[0]
+        except AttributeError:
+            vehicle.weight = 0
 
         # Create a list of activities parked and driving
         for index, row in vehicle_data.iterrows():
@@ -76,8 +99,6 @@ def from_excel(project, filename):
 
     # Initialize charging station at each location
     reset_charging_infrastructures(project)
-
-    print('')
     return project
 
 
