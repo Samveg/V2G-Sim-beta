@@ -82,7 +82,7 @@ class CentralOptimization(object):
         new_net_load = net_load.copy()
 
         # Resample the net load
-        new_net_load = new_net_load.resample(str(self.optimization_timestep) + 'T', how='first')
+        new_net_load = new_net_load.resample(str(self.optimization_timestep) + 'T').first()
 
         # Check against the actual lenght it should have
         diff = (len(new_net_load) -
@@ -218,8 +218,7 @@ class CentralOptimization(object):
                 vehicle_to_optimize += 1
 
                 # Resample vehicle result
-                temp_vehicle_result = vehicle.result.resample(str(self.optimization_timestep) + 'T',
-                                                              how='first')
+                temp_vehicle_result = vehicle.result.resample(str(self.optimization_timestep) + 'T').first()
 
                 # Set time_vehicle_index
                 temp_vehicle_result = temp_vehicle_result.set_index(pandas.DataFrame(
