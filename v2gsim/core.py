@@ -3,7 +3,7 @@ import model
 import pandas
 import numpy
 import datetime
-import progressbar
+# import progressbar
 
 
 def run(project, charging_option=None, date_from=None, date_to=None,
@@ -32,10 +32,10 @@ def run(project, charging_option=None, date_from=None, date_to=None,
     project = _pre_run(project, date_from, date_to, reset=reset_charging_station)
 
     # Create the progress bar
-    progress = progressbar.ProgressBar(widgets=['core.run: ',
-                                                progressbar.Percentage(),
-                                                progressbar.Bar()],
-                                       maxval=len(project.vehicles)).start()
+    # progress = progressbar.ProgressBar(widgets=['core.run: ',
+    #                                             progressbar.Percentage(),
+    #                                             progressbar.Bar()],
+    #                                    maxval=len(project.vehicles)).start()
 
     # ####################### Simulation #####################################
     # For each vehicle
@@ -82,12 +82,12 @@ def run(project, charging_option=None, date_from=None, date_to=None,
                                     detail, nb_interval, run=True)
         # Remove initial SOC
         del vehicle.SOC[0]
-        progress.update(indexV + 1)
+        # progress.update(indexV + 1)
     # ########################################################################
 
     # Post process result (change format, ...)
     project = _post_run(project, date_from, date_to)
-    progress.finish()
+    # progress.finish()
     print('')
 
 
@@ -140,11 +140,11 @@ def initialize_SOC(project, nb_iteration=1, charging_option=None, verbose=True):
               'std': numpy.std([v.SOC[0] for v in project.vehicles]),
               'mean_rate': [0], 'std_rate': [0]})
 
-    # Create the progress bar
-    progress = progressbar.ProgressBar(widgets=['core.initialize_SOC: ',
-                                                progressbar.Percentage(),
-                                                progressbar.Bar()],
-                                       maxval=nb_iteration * len(project.vehicles)).start()
+    # # Create the progress bar
+    # progress = progressbar.ProgressBar(widgets=['core.initialize_SOC: ',
+    #                                             progressbar.Percentage(),
+    #                                             progressbar.Bar()],
+    #                                    maxval=nb_iteration * len(project.vehicles)).start()
 
     # Reset assigned charging station
     for vehicle in project.vehicles:
@@ -184,7 +184,7 @@ def initialize_SOC(project, nb_iteration=1, charging_option=None, verbose=True):
             # Initiate Vehicle SOC last value to be the inital SOC next iteration
             vehicle.SOC = [vehicle.SOC[-1]]
             count += 1
-            progress.update(count)
+            # progress.update(count)
 
         # Update the convergence DataFrame
         convergence = pandas.concat([convergence, pandas.DataFrame(
@@ -196,7 +196,7 @@ def initialize_SOC(project, nb_iteration=1, charging_option=None, verbose=True):
                                                     convergence.loc[indexI + 1, 'mean'])
         convergence.loc[indexI + 1, 'std_rate'] = (convergence.loc[indexI, 'std'] -
                                                    convergence.loc[indexI + 1, 'std'])
-    progress.finish()
+    # progress.finish()
     if verbose:
         print(convergence)
         print('')

@@ -2,7 +2,7 @@ from __future__ import division
 import pandas
 import scipy.stats
 import datetime
-import progressbar
+# import progressbar
 import matplotlib.pyplot as plt
 import random
 from model import (Vehicle, ChargingStation, Location, Parked, Driving,
@@ -359,9 +359,10 @@ def find_all_itinerary_combination(project, verbose=True):
         a pandas DataFrame with combination, vehicles and some high level statistics.
     """
     if verbose:
-        progress = progressbar.ProgressBar(widgets=['Parsing: ',
-                                                    progressbar.Percentage(), progressbar.Bar()],
-                                           maxval=len(project.vehicles)).start()
+        # progress = progressbar.ProgressBar(widgets=['Parsing: ',
+        #                                             progressbar.Percentage(), progressbar.Bar()],
+        #                                    maxval=len(project.vehicles)).start()
+        pass
 
     # Create the dataframe holding the results
     frame = pandas.DataFrame(columns={'locations', 'vehicles'})
@@ -390,10 +391,12 @@ def find_all_itinerary_combination(project, verbose=True):
                     data={'locations': [itinerary], 'vehicles': [[vehicle]]})], axis=0,
                 ignore_index=True)
         if verbose:
-            progress.update(vehicle_index + 1)
+            # progress.update(vehicle_index + 1)
+            pass
 
     if verbose:
-        progress.finish()
+        # progress.finish()
+        pass
 
     # Get some basic filtering value
     frame['nb_of_parked_activity'] = (
@@ -681,9 +684,10 @@ def new_project_using_stats(old_project, new_number_of_vehicle, only_worker=Fals
         a new project with similar itineraries as the old project and chosen number of vehicles
     """
     if verbose:
-        progress = progressbar.ProgressBar(widgets=['Parsing: ',
-                                                    progressbar.Percentage(), progressbar.Bar()],
-                                           maxval=len(old_project.itinerary_statistics)).start()
+        # progress = progressbar.ProgressBar(widgets=['Parsing: ',
+        #                                             progressbar.Percentage(), progressbar.Bar()],
+        #                                    maxval=len(old_project.itinerary_statistics)).start()
+        pass
 
     # Create a new project
     project = Project()
@@ -728,10 +732,12 @@ def new_project_using_stats(old_project, new_number_of_vehicle, only_worker=Fals
             current_id += 1
 
         if verbose:
-            progress.update(index + 1)
+            # progress.update(index + 1)
+            pass
 
     if verbose:
-        progress.finish()
+        # progress.finish()
+        pass
 
     # Initialize charging station at each location
     reset_charging_infrastructures(project)
