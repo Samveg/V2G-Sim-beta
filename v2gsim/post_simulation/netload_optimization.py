@@ -718,7 +718,7 @@ class DecentralizedOptimization(object):
         new_net_load = net_load.copy()
 
         # Resample the net load
-        new_net_load = new_net_load.resample(str(self.optimization_timestep) + 'T').first()
+        new_net_load = new_net_load.resample(str(self.optimization_timestep) + 'T').interpolate()
         temp_date_from = self.date_from.replace(year=new_net_load.head(1).index[0].year,
                                                 month=new_net_load.head(1).index[0].month,
                                                 day=new_net_load.head(1).index[0].day)
