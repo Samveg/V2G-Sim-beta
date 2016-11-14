@@ -9,7 +9,7 @@ from model import (Vehicle, ChargingStation, Location, Parked, Driving,
                    BasicCarModel, Project)
 
 
-def from_csv(project, filename):
+def from_csv(project, filename, number_of_days=1):
     """Read itineraries from an csv file. Excel header: id, start, end,
     distance, location
 
@@ -21,10 +21,10 @@ def from_csv(project, filename):
         project (Project): project assigned with vehicles
     """
     df = pandas.read_csv(filename)
-    return _dataframe_to_vehicles(project, df)
+    return _dataframe_to_vehicles(project, df, number_of_days)
 
 
-def from_excel(project, filename):
+def from_excel(project, filename, number_of_days=1):
     """Read itineraries from an excel file. Excel header: Vehicle ID,
     Start time (hour), End time (hour), Distance (mi), P_max (W), Location,
     NHTS HH Wt.
@@ -49,10 +49,10 @@ def from_excel(project, filename):
                             'Location': 'location',
                             'NHTS HH Wt': 'weight'})
     print('')
-    return _dataframe_to_vehicles(project, df)
+    return _dataframe_to_vehicles(project, df, number_of_days)
 
 
-def _dataframe_to_vehicles(project, df):
+def _dataframe_to_vehicles(project, df, number_of_days):
     # Day of the project
     date = project.date
     tot_sec = (date - datetime.datetime.utcfromtimestamp(0)).total_seconds()
@@ -92,7 +92,7 @@ def _dataframe_to_vehicles(project, df):
 
         # Check time gap before appending vehicle to the project
         if not vehicle.check_activities(start_date=date,
-                                        end_date=date + datetime.timedelta(days=1)):
+                                        end_date=date + datetime.timedelta(days=number_of_days)):
             print('Itinerary does not respect the constraints')
             print(vehicle)
         project.vehicles.append(vehicle)
