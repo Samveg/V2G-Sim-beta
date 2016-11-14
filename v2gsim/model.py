@@ -158,16 +158,25 @@ class Vehicle(object):
     def check_activities(self, start_date, end_date):
         """Verify if every activity start at the end of the previous activity
         """
+        # Check the starting date
         self.valid_activities = True
         if self.activities[0].start != start_date:
             self.valid_activities = False
             return False
 
+        # Check the start - end match of activities
         for i in range(0, len(self.activities) - 1):
             if self.activities[i].end != self.activities[i + 1].start:
                 self.valid_activities = False
                 return False
 
+        # Check for positive duration
+        for i in range(0, len(self.activities)):
+            if self.activities[i].end <= self.activities[i].start:
+                self.valid_activities = False
+                return False
+
+        # Check the ending date match
         if self.activities[-1].end != end_date:
             self.valid_activities = False
             return False
