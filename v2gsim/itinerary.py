@@ -20,7 +20,7 @@ def from_csv(project, filename):
     Return:
         project (Project): project assigned with vehicles
     """
-    df = pandas.read_csv('test.csv')
+    df = pandas.read_csv(filename)
     return _dataframe_to_vehicles(project, df)
 
 
