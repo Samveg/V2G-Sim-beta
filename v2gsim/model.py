@@ -172,7 +172,7 @@ class Vehicle(object):
 
         # Check for positive duration
         for i in range(0, len(self.activities)):
-            if self.activities[i].end <= self.activities[i].start:
+            if self.activities[i].end < self.activities[i].start:
                 self.valid_activities = False
                 return False
 

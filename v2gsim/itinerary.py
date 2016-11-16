@@ -316,7 +316,7 @@ def set_fleet_mix(vehicles, mix):
         model_index = int(random.choice(available_model_category))
 
         # Set the right model
-        vehicle.carModel = fleetMix.ix[model_index]['car_model']
+        vehicle.car_model = fleetMix.ix[model_index]['car_model']
         fleetMix.loc[model_index, 'vehicle_using_it'] += 1
 
 
