@@ -88,7 +88,6 @@ def run(project, charging_option=None, date_from=None, date_to=None,
     # Post process result (change format, ...)
     project = _post_run(project, date_from, date_to)
     progress.finish()
-    print('')
 
 
 def _pre_run(project, date_from, date_to, reset):
@@ -134,23 +133,24 @@ def initialize_SOC(project, nb_iteration=1, charging_option=None, verbose=True):
     Returns:
         convergence (pandas.DataFrame): convergence rate per iteration
     """
-    convergence = pandas.DataFrame(
-        index=[0],
-        data={'mean': numpy.mean([v.SOC[0] for v in project.vehicles]),
-              'std': numpy.std([v.SOC[0] for v in project.vehicles]),
-              'mean_rate': [0], 'std_rate': [0]})
-
     # Create the progress bar
     progress = progressbar.ProgressBar(widgets=['core.initialize_SOC: ',
                                                 progressbar.Percentage(),
                                                 progressbar.Bar()],
                                        maxval=nb_iteration * len(project.vehicles)).start()
 
-    # Reset assigned charging station
+    # Reset assigned charging station and SOC to maximum value
     for vehicle in project.vehicles:
+        vehicle.SOC = [vehicle.car_model.maximum_SOC]
         for activity in vehicle.activities:
             if isinstance(activity, model.Parked):
                 activity.charging_station = None
+
+    convergence = pandas.DataFrame(
+        index=[0],
+        data={'mean': numpy.mean([v.SOC[0] for v in project.vehicles]),
+              'std': numpy.std([v.SOC[0] for v in project.vehicles]),
+              'mean_rate': [0], 'std_rate': [0]})
 
     # For each iteration
     count = 0

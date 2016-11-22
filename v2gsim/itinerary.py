@@ -9,7 +9,7 @@ from model import (Vehicle, ChargingStation, Location, Parked, Driving,
                    BasicCarModel, Project)
 
 
-def from_csv(project, filename):
+def from_csv(project, filename, number_of_days=1):
     """Read itineraries from an csv file. Excel header: id, start, end,
     distance, location
 
@@ -21,10 +21,10 @@ def from_csv(project, filename):
         project (Project): project assigned with vehicles
     """
     df = pandas.read_csv(filename)
-    return _dataframe_to_vehicles(project, df)
+    return _dataframe_to_vehicles(project, df, number_of_days)
 
 
-def from_excel(project, filename):
+def from_excel(project, filename, number_of_days=1):
     """Read itineraries from an excel file. Excel header: Vehicle ID,
     Start time (hour), End time (hour), Distance (mi), P_max (W), Location,
     NHTS HH Wt.
@@ -36,9 +36,6 @@ def from_excel(project, filename):
     Return:
         project (Project): project assigned with vehicles
     """
-    print('itinerary.from_excel(project, ' + filename + ')')
-    print('Loading ...')
-
     df = pandas.read_excel(io=filename, sheetname='Activity')
     df = df.drop('Nothing', axis=1)
     df = df.rename(columns={'Vehicle ID': 'id', 'State': 'state',
@@ -48,11 +45,10 @@ def from_excel(project, filename):
                             'P_max (W)': 'maximum_power',
                             'Location': 'location',
                             'NHTS HH Wt': 'weight'})
-    print('')
-    return _dataframe_to_vehicles(project, df)
+    return _dataframe_to_vehicles(project, df, number_of_days)
 
 
-def _dataframe_to_vehicles(project, df):
+def _dataframe_to_vehicles(project, df, number_of_days):
     # Day of the project
     date = project.date
     tot_sec = (date - datetime.datetime.utcfromtimestamp(0)).total_seconds()
@@ -92,7 +88,7 @@ def _dataframe_to_vehicles(project, df):
 
         # Check time gap before appending vehicle to the project
         if not vehicle.check_activities(start_date=date,
-                                        end_date=date + datetime.timedelta(days=1)):
+                                        end_date=date + datetime.timedelta(days=number_of_days)):
             print('Itinerary does not respect the constraints')
             print(vehicle)
         project.vehicles.append(vehicle)
@@ -316,11 +312,11 @@ def set_fleet_mix(vehicles, mix):
         model_index = int(random.choice(available_model_category))
 
         # Set the right model
-        vehicle.carModel = fleetMix.ix[model_index]['car_model']
+        vehicle.car_model = fleetMix.ix[model_index]['car_model']
         fleetMix.loc[model_index, 'vehicle_using_it'] += 1
 
 
-def get_cycling_itineraries(project):
+def get_cycling_itineraries(project, verbose=False):
     """Put aside vehicles that does not come back
     at the same location as they started their day from.
     Also putting aside vehicle that ends or starts with a
@@ -340,11 +336,12 @@ def get_cycling_itineraries(project):
                 vehicle.activities[-1].location.category):
                 good_vehicles.append(vehicle)
 
-    previous_count = len(project.vehicles)
-    new_count = len(good_vehicles)
-    print(str(previous_count - new_count) +
-          ' vehicles did not finished at the same location as they have started the day')
-    print('')
+    if verbose:
+        previous_count = len(project.vehicles)
+        new_count = len(good_vehicles)
+        print(str(previous_count - new_count) +
+              ' vehicles did not finished at the same location as they have started the day')
+        print('')
 
     return good_vehicles
 
