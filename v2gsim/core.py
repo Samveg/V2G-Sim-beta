@@ -88,7 +88,6 @@ def run(project, charging_option=None, date_from=None, date_to=None,
     # Post process result (change format, ...)
     project = _post_run(project, date_from, date_to)
     progress.finish()
-    print('')
 
 
 def _pre_run(project, date_from, date_to, reset):

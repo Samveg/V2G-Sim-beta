@@ -36,9 +36,6 @@ def from_excel(project, filename, number_of_days=1):
     Return:
         project (Project): project assigned with vehicles
     """
-    print('itinerary.from_excel(project, ' + filename + ')')
-    print('Loading ...')
-
     df = pandas.read_excel(io=filename, sheetname='Activity')
     df = df.drop('Nothing', axis=1)
     df = df.rename(columns={'Vehicle ID': 'id', 'State': 'state',
@@ -48,7 +45,6 @@ def from_excel(project, filename, number_of_days=1):
                             'P_max (W)': 'maximum_power',
                             'Location': 'location',
                             'NHTS HH Wt': 'weight'})
-    print('')
     return _dataframe_to_vehicles(project, df, number_of_days)
 
 
@@ -320,7 +316,7 @@ def set_fleet_mix(vehicles, mix):
         fleetMix.loc[model_index, 'vehicle_using_it'] += 1
 
 
-def get_cycling_itineraries(project):
+def get_cycling_itineraries(project, verbose=False):
     """Put aside vehicles that does not come back
     at the same location as they started their day from.
     Also putting aside vehicle that ends or starts with a
@@ -340,11 +336,12 @@ def get_cycling_itineraries(project):
                 vehicle.activities[-1].location.category):
                 good_vehicles.append(vehicle)
 
-    previous_count = len(project.vehicles)
-    new_count = len(good_vehicles)
-    print(str(previous_count - new_count) +
-          ' vehicles did not finished at the same location as they have started the day')
-    print('')
+    if verbose:
+        previous_count = len(project.vehicles)
+        new_count = len(good_vehicles)
+        print(str(previous_count - new_count) +
+              ' vehicles did not finished at the same location as they have started the day')
+        print('')
 
     return good_vehicles
 
