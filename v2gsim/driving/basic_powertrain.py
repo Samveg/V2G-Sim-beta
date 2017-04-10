@@ -58,6 +58,63 @@ def consumption(activity, vehicle, nb_interval, timestep, verbose=False):
     return SOC, power_demand, stranded, False
 
 
+def road_consumption_plus_ancillary_load(activity, vehicle, nb_interval, timestep, verbose=False):
+    """Calculate the consumption when a vehicle is driving
+
+    Args:
+        activity (Driving): a driving activity
+        vehicle (Vehicle): a Vehicle object to update with the driving
+            activity consumption
+        nb_interval (int): number of timestep for the driving activity
+        timestep (int): calculation timestep
+
+    Return:
+        SOC (list): state of charge/
+        power_demand (list): power demand/
+        stranded (boolean): True if the vehicle run out of charge during the
+        activity
+        detail (any type): optional data
+    """
+
+    # Calculate the duration
+    duration = nb_interval * timestep / 3600
+
+    # Get the mean speed
+    if duration > 0:
+        mean_speed = activity.distance / duration
+    else:
+        if verbose:
+            print('Activity duration is shorter than timestep')
+        return [], [], False, False
+
+    # Get the energy Wh consumption per km
+    energyConsumption = _drivecycle_energy_per_distance(vehicle.car_model, mean_speed)
+
+    # Set the total energy needed for the trip (Wh)
+    energy = (activity.distance * energyConsumption +
+              duration * vehicle.car_model.ancillary_load)
+
+    # Get last SOC value ((SOCinit*batteryCap)-energyForTheTrip)/batteryCap
+    endSOC = (((vehicle.SOC[-1] * vehicle.car_model.battery_capacity) - energy) /
+              vehicle.car_model.battery_capacity)
+
+    # Check if not below stranding threshold
+    stranded = False
+    if endSOC < 0.1:
+        stranded = True
+        if endSOC < 0:
+            endSOC = 0
+
+    # Get SOC list with last SOC-intervalSOC, SOC-2*intervalSOC ...endSOC
+    SOC = list(numpy.linspace(vehicle.SOC[-1], endSOC, num=nb_interval, endpoint=True))
+
+    # Set the power demand for this driving activity [J] /
+    constant_power_demand = energy * 3600 / (nb_interval * timestep)
+    power_demand = [constant_power_demand] * nb_interval
+
+    return SOC, power_demand, stranded, False
+
+
 def _drivecycle_energy_per_distance(car_model, mean_speed):
     # Get the energy consumption per km
 
