@@ -312,11 +312,7 @@ class ChargingStation(object):
         self.charging = charging
 
     def __repr__(self):
-        return ("Charging infrastructure: powerRateMax({})" +
-                "powerRateMin({}) charging({})\n").format(
-                    self.maximum_power,
-                    self.minimum_power,
-                    str(self.charging))
+        return ("power rate {}W\n").format(self.maximum_power)
 
 
 class ItineraryBin(object):
