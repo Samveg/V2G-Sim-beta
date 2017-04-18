@@ -2,6 +2,7 @@ from __future__ import division
 import random
 import numpy
 import pandas
+import v2gsim
 
 
 def project_from_excel(df, parent_folder_itinerary=''):
