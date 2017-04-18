@@ -208,3 +208,51 @@ def set_available_infrastructures_at_locations(df, project):
         print(project.locations[i].category)
         print(project.locations[i].available_charging_station)
     print('')
+
+
+def custom_save_location_state(location, timestep, date_from, date_to,
+                               vehicle=None, activity=None,
+                               power_demand=None, SOC=None, nb_interval=None,
+                               init=False, run=False, post=False):
+    """Save local results from a parked activity during running
+    time. If date_from and date_to, set a fresh pandas DataFrame at locations.
+
+    Args:
+        location (Location): location
+        timestep (int): calculation timestep
+        date_from (datetime.datetime): date to start recording power demand
+        date_to (datetime.datetime): date to end recording power demand
+        vehicle (Vehicle): vehicle
+        activity (Parked): parked activity
+        power_demand (list): power demand from parked activity
+        SOC (list): state of charge from the parked activity
+        nb_interval (int): number of timestep for the parked activity
+    """
+    if run:
+        activity_index1, activity_index2, location_index1, location_index2, save = v2gsim.result._map_index(
+            activity.start, activity.end, date_from, date_to, len(power_demand),
+            len(location.result['power_demand']), timestep)
+
+        # Save a lot of interesting result
+        if save:
+            location.result['power_demand'][location_index1:location_index2] += (
+                power_demand[activity_index1:activity_index2])
+
+            # Add 'number_of_vehicle_parked' in the initialization section
+            location.result['number_of_vehicle_parked'][location_index1:location_index2] += 1
+
+            # Number of vehicle currently charging
+            location.result['number_of_vehicle_charging'][location_index1:location_index2] += (
+                [1 if power != 0.0 else 0 for power in power_demand])
+
+    elif init:
+        # Initiate a dictionary of numpy array to hold result (faster than DataFrame)
+        location.result = {'power_demand': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep)),
+                           'number_of_vehicle_parked': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep)),
+                           'number_of_vehicle_charging': numpy.array([0.0] * int((date_to - date_from).total_seconds() / timestep))}
+
+    elif post:
+        # Convert location result back into pandas DataFrame (faster that way)
+        i = pandas.date_range(start=date_from, end=date_to,
+                              freq=str(timestep) + 's', closed='left')
+        location.result = pandas.DataFrame(index=i, data=location.result)
