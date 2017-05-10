@@ -24,7 +24,7 @@ def from_csv(project, filename, number_of_days=1):
     return _dataframe_to_vehicles(project, df, number_of_days)
 
 
-def from_excel(project, filename, number_of_days=1):
+def from_excel(project, filename='', number_of_days=1, is_preload=False, df=False):
     """Read itineraries from an excel file. Excel header: Vehicle ID,
     Start time (hour), End time (hour), Distance (mi), P_max (W), Location,
     NHTS HH Wt.
@@ -36,7 +36,8 @@ def from_excel(project, filename, number_of_days=1):
     Return:
         project (Project): project assigned with vehicles
     """
-    df = pandas.read_excel(io=filename, sheetname='Activity')
+    if not is_preload:
+        df = pandas.read_excel(io=filename, sheetname='Activity')
     df = df.drop('Nothing', axis=1)
     df = df.rename(columns={'Vehicle ID': 'id', 'State': 'state',
                             'Start time (hour)': 'start',

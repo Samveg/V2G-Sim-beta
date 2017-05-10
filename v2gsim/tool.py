@@ -5,7 +5,7 @@ import pandas
 import v2gsim
 
 
-def project_from_excel(df, parent_folder_itinerary=''):
+def project_from_excel(df, filename=False, parent_folder_itinerary='', copy_append=True):
     """Create a project including itineraries"""
     # Create a project and initialize it with some itineraries
     project = v2gsim.model.Project()
@@ -13,16 +13,17 @@ def project_from_excel(df, parent_folder_itinerary=''):
     project.end = df['project'].end_date[0]
     project.nb_days = (project.end - project.date).days
     project.ambient_temperature = df['project'].ambient_temperature[0]
-    project = v2gsim.itinerary.from_excel(project, parent_folder_itinerary + df['project'].itinerary_filename[0])
+
+    if filename is False:
+        project = v2gsim.itinerary.from_excel(project, parent_folder_itinerary + df['project'].itinerary_filename[0])
+    else:
+        project = v2gsim.itinerary.from_csv(project, filename, number_of_days=project.nb_days)
 
     # This function from the itinerary module return all the vehicles that
     # start and end their day at the same location (e.g. home)
     project.vehicles = v2gsim.itinerary.get_cycling_itineraries(project)
 
-    # This function from the itinerary module copy a daily itinerary and
-    # append it at then end of the existing itinerary. In doing so, it makes
-    # sure that activities are merged at the junction.
-    if project.nb_days > 1:
+    if project.nb_days > 1 and copy_append:
         project = v2gsim.itinerary.copy_append(project, nb_of_days_to_add=project.nb_days - 1)
 
     # Little check
@@ -34,7 +35,37 @@ def project_from_excel(df, parent_folder_itinerary=''):
     return project
 
 
-def car_model_from_excel(df, ambient_temperature):
+def project_from_csv(df, parent_folder_itinerary='', filename=False, verbose=False):
+    """Create a project including itineraries"""
+    # Create a project and initialize it with some itineraries
+    project = v2gsim.model.Project()
+    project.date = df['project'].start_date[0]
+    project.end = df['project'].end_date[0]
+    project.nb_days = (project.end - project.date).days
+    project.ambient_temperature = df['project'].ambient_temperature[0]
+    if not filename:
+        project = v2gsim.itinerary.from_csv(project, parent_folder_itinerary + df['project'].itinerary_filename[0])
+    else:
+        project = v2gsim.itinerary.from_csv(project, filename)
+
+    # This function from the itinerary module return all the vehicles that
+    # start and end their day at the same location (e.g. home)
+    project.vehicles = v2gsim.itinerary.get_cycling_itineraries(project)
+
+    if project.nb_days > 1:
+        project = v2gsim.itinerary.copy_append(project, nb_of_days_to_add=project.nb_days - 1)
+
+    # Little check
+    if verbose:
+        print('')
+        print('A project has been created with ' + str(len(project.vehicles)) + ' vehicles')
+        print('Project start date: ' + str(project.vehicles[0].activities[0].start) + ' - ' +
+              'end date: ' + str(project.vehicles[0].activities[-1].end))
+        print('')
+    return project
+
+
+def car_model_from_excel(df, ambient_temperature, verbose=False):
     """Create a list of car models"""
     car_models = []
     for row in df['vehicle_characteristic'].itertuples():
@@ -66,16 +97,17 @@ def car_model_from_excel(df, ambient_temperature):
         car_models.append(car_model)
 
     # Little check
-    print('')
-    for cm in car_models:
-        print(cm.name + ' | battery: ' + str(cm.battery_capacity) + ' Wh | ' +
-              'UDDS/HWFET/US06: ' + str(int(cm.UDDS)) + '/' + str(int(cm.HWFET)) + '/' + str(int(cm.US06)) + 'Wh/km | ' +
-              ' added ancillary load: ' + str(cm.ancillary_load) + 'W')
-    print('')
+    if verbose:
+        print('')
+        for cm in car_models:
+            print(cm.name + ' | battery: ' + str(cm.battery_capacity) + ' Wh | ' +
+                  'UDDS/HWFET/US06: ' + str(int(cm.UDDS)) + '/' + str(int(cm.HWFET)) + '/' + str(int(cm.US06)) + 'Wh/km | ' +
+                  ' added ancillary load: ' + str(cm.ancillary_load) + 'W')
+        print('')
     return car_models
 
 
-def assign_car_model(df, project):
+def assign_car_model(df, project, verbose=False):
     """Set vehicle.car_model from project.car_models with proportion from vehicle_stock"""
     # Get the total of vehicle
     total_stock = int(df['vehicle_stock'].number_of_vehicles.sum())
@@ -116,17 +148,18 @@ def assign_car_model(df, project):
             vehicle.car_model = project.car_models[0]
 
     # Double check percentage are right
-    print('')
-    car_model_names = [car_model.name for car_model in project.car_models]
-    percentages = {key: 0 for key in car_model_names}
-    for vehicle in project.vehicles:
-        percentages[vehicle.car_model.name] += 1
-    for name in percentages:
-        print('There is ' + str(percentages[name] * 100 / total_itineraries) + ' % ' +
-              'of ' + str(name))
-    print('')
-    print('Scaling number: ' + str(scaling))
-    print('')
+    if verbose:
+        print('')
+        car_model_names = [car_model.name for car_model in project.car_models]
+        percentages = {key: 0 for key in car_model_names}
+        for vehicle in project.vehicles:
+            percentages[vehicle.car_model.name] += 1
+        for name in percentages:
+            print('There is ' + str(percentages[name] * 100 / total_itineraries) + ' % ' +
+                  'of ' + str(name))
+        print('')
+        print('Scaling number: ' + str(scaling))
+        print('')
     return scaling
 
 
@@ -145,7 +178,7 @@ def charging_stations_from_excel(df):
     return charging_stations
 
 
-def set_available_infrastructures_at_locations(df, project):
+def set_available_infrastructures_at_locations(df, project, verbose=False):
     """Set Charging infrastructure"""
     # Reset charging infrastructures
     for index, location in enumerate(project.locations):
@@ -204,11 +237,88 @@ def set_available_infrastructures_at_locations(df, project):
         location.available_charging_station.loc[size] = [no_station, probability]
 
     # Double check by printing the first 4 location charging stations
-    print('')
-    for i in range(0, 4):
-        print(project.locations[i].category)
-        print(project.locations[i].available_charging_station)
-    print('')
+    if verbose:
+        print('')
+        for i in range(0, 4):
+            print(project.locations[i].category)
+            print(project.locations[i].available_charging_station)
+        print('')
+
+
+def set_available_infrastructures_at_locations_v2(df, project, verbose=False):
+    """Set Charging infrastructure"""
+    # Reset charging infrastructures
+    for index, location in enumerate(project.locations):
+        location.available_charging_station = pandas.DataFrame(
+            columns=['charging_station', 'probability'])
+
+        # Get home and work locations
+        if location.category in 'Home':
+            home_location = project.locations[index]
+        elif location.category in 'Work':
+            work_location = project.locations[index]
+
+    # Assign setting
+    location_with_settings = df['location'].name.unique().tolist()
+    for row in df['location'].itertuples():
+        # Get the charging station
+        current_station = False
+        for index, st in enumerate(project.charging_stations):
+            if st.name == row.charger_name:
+                current_station = project.charging_stations[index]
+                break
+        if not current_station:
+            raise Exception('could not find the charging station')
+
+        # Get the location
+        current_location = False
+        for index, location in enumerate(project.locations):
+            if row.name in 'other':
+                current_location = True
+            if location.category in row.name:
+                current_location = project.locations[index]
+                break
+        if not current_location:
+            print('Looking for ' + str(row.name) + ' in project locations:')
+            for index, location in enumerate(project.locations):
+                print(location.category)
+            raise Exception('could not find the location')
+
+        # Assign home and work locations
+        if row.name not in 'other':
+            size = len(current_location.available_charging_station)
+            current_location.available_charging_station.loc[size] = [current_station, float(row.availability)]
+            current_location.soc_no_charging = float(row.soc_high_no_charging)
+            current_location.soc_charging = float(row.soc_low_need_to_charge)
+        else:
+            # Assign setting for 'other locations'
+            for index, location in enumerate(project.locations):
+                if location.category not in location_with_settings:
+                    size = len(location.available_charging_station)
+                    location.available_charging_station.loc[size] = [current_station, float(row.availability)]
+                    location.soc_no_charging = float(row.soc_high_no_charging)
+                    location.soc_charging = float(row.soc_low_need_to_charge)
+
+    # Add the no charger 'station'
+    for index, location in enumerate(project.locations):
+        for index, st in enumerate(project.charging_stations):
+            if st.name == 'no_charger':
+                no_station = project.charging_stations[index]
+                break
+        size = len(location.available_charging_station)
+        probability = 1.0 - float(location.available_charging_station.probability.sum())
+        if probability < 0:
+            raise('Charger availability cannot be more than 100%')
+        location.available_charging_station.loc[size] = [no_station, probability]
+
+    # Double check by printing the first 4 location charging stations
+    if verbose:
+        print('')
+        for i in range(0, 4):
+            print(project.locations[i].category)
+            print(project.locations[i].available_charging_station)
+        print('')
+
 
 
 def custom_save_location_state(location, timestep, date_from, date_to,
