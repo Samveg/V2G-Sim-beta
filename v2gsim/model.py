@@ -1,8 +1,8 @@
-import driving.basic_powertrain
-import charging.uncontrolled
-import charging.station
-import result
-import cPickle
+import v2gsim.driving.basic_powertrain
+import v2gsim.charging.uncontrolled
+import v2gsim.charging.station
+import v2gsim.result
+import pickle
 import copy
 import datetime
 
@@ -54,7 +54,7 @@ class Project(object):
             filename (string): path to save the project (/../my_project.v2gsim)
         """
         with open(filename, "wb") as output:
-            cPickle.dump(self, output, cPickle.HIGHEST_PROTOCOL)
+            pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
 
     def load(self, filename):
         """Load a project
@@ -63,7 +63,7 @@ class Project(object):
             filename (string): path to a project (/../my_project.v2gsim)
         """
         with open(filename, "rb") as input:
-            project = cPickle.load(input)
+            project = pickle.load(input)
 
         return project
 
@@ -94,7 +94,7 @@ class BasicCarModel(object):
     """
 
     def __init__(self, name,
-                 driving=driving.basic_powertrain.consumption,
+                 driving=v2gsim.driving.basic_powertrain.consumption,
                  maker=None, year=None, UDDS=145.83, HWFET=163.69, US06=223.62,
                  Delhi=138.3, maximum_SOC=0.95, decay=0.95,
                  battery_capacity=23832, battery_efficiency_charging=1.0,
@@ -151,7 +151,7 @@ class Vehicle(object):
         self.weight = 1
         self.valid_activities = False
         self.stranding_log = []
-        self.result_function = result.save_vehicle_state
+        self.result_function = v2gsim.result.save_vehicle_state
         self.result = None
         self.battery_model = None
 
@@ -274,8 +274,8 @@ class Location(object):
     """
 
     def __init__(self, category, name, position=(0, 0),
-                 assign_charging_station=charging.station.randomly_assign,
-                 result_function=result.save_location_state):
+                 assign_charging_station=v2gsim.charging.station.randomly_assign,
+                 result_function=v2gsim.result.save_location_state):
         self.category = category
         self.name = name
         self.position = position
@@ -302,7 +302,7 @@ class ChargingStation(object):
         minimum_power (float): minimum rate at which a vehicle can charge
     """
 
-    def __init__(self, charging=charging.uncontrolled.consumption,
+    def __init__(self, charging=v2gsim.charging.uncontrolled.consumption,
                  maximum_power=1440, minimum_power=-1440, post_simulation=False,
                  name='charger'):
         self.name = name

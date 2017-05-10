@@ -1,7 +1,7 @@
 from __future__ import division
 import numpy
 import pandas
-import model
+import v2gsim.model
 
 def save_location_state(location, timestep, date_from, date_to,
                         vehicle=None, activity=None,
@@ -94,7 +94,7 @@ def location_potential_power_demand(location, timestep, date_from, date_to,
             Q = 1440 * duration / 3600
 
             # Take the minimum of Q or remaining energy to charge [Wh]
-            if (Q + SOC[0] * vehicle.car_model.battery_capacity > 
+            if (Q + SOC[0] * vehicle.car_model.battery_capacity >
                 vehicle.car_model.battery_capacity * vehicle.car_model.maximum_SOC):
                 Q = (vehicle.car_model.battery_capacity * vehicle.car_model.maximum_SOC -
                     SOC[0] * vehicle.car_model.battery_capacity)
@@ -195,7 +195,7 @@ def save_detailed_vehicle_power_demand(vehicle, timestep, date_from,
         # Save a lot of interesting result
         if save:
             # If parked pmin and pmax are not necessary the same
-            if isinstance(activity, model.Parked):
+            if isinstance(activity, v2gsim.model.Parked):
                 vehicle.result['power_demand'][location_index1:location_index2] += (
                     power_demand[activity_index1:activity_index2])
 
@@ -232,7 +232,7 @@ def save_detailed_vehicle_state(vehicle, timestep, date_from,
             else:
                 vehicle.result['power_demand'][location_index1:location_index2] += (
                     power_demand[activity_index1:activity_index2])
-                
+
                 vehicle.result['parked'][location_index1:location_index2] = (
                     [True] * (activity_index2 - activity_index1))
 

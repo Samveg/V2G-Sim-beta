@@ -5,7 +5,7 @@ import datetime
 import progressbar
 import matplotlib.pyplot as plt
 import random
-from model import (Vehicle, ChargingStation, Location, Parked, Driving,
+from v2gsim.model import (Vehicle, ChargingStation, Location, Parked, Driving,
                    BasicCarModel, Project)
 
 
@@ -204,9 +204,9 @@ def copy_append(project, nb_of_days_to_add=2):
                         activity.end = vehicle.activities[index + 1].end
                         merged_activities.append(activity)
                     else:
-                        print activity
-                        print vehicle.activities[index + 1]
-                        print 'Merging issue'
+                        print(activity)
+                        print(vehicle.activities[index + 1])
+                        print('Merging issue')
                         merged_activities.append(activity)
                 else:
                     merged_activities.append(activity)

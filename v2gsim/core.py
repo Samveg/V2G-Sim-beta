@@ -1,5 +1,5 @@
 from __future__ import division
-import model
+import v2gsim.model
 import pandas
 import numpy
 import datetime
@@ -44,7 +44,7 @@ def run(project, charging_option=None, date_from=None, date_to=None,
         for indexA, activity in enumerate(vehicle.activities):
             # Calculate the duration of the activity
             nb_interval = int((activity.end - activity.start).total_seconds() / project.timestep)
-            if isinstance(activity, model.Driving):
+            if isinstance(activity, v2gsim.model.Driving):
                 SOC, power_demand, stranded, detail = vehicle.car_model.driving(activity,
                                                                                 vehicle,
                                                                                 nb_interval,
@@ -54,7 +54,7 @@ def run(project, charging_option=None, date_from=None, date_to=None,
                 if stranded:
                     vehicle.stranding_log.append(activity.end)
 
-            elif isinstance(activity, model.Parked):
+            elif isinstance(activity, v2gsim.model.Parked):
                 # Get the charging station if not already assigned
                 if activity.charging_station is None:
                     activity.charging_station = activity.location.assign_charging_station(indexA,
@@ -102,7 +102,7 @@ def _pre_run(project, date_from, date_to, reset):
                                 date_to, init=True)
         if reset:
             for activity in vehicle.activities:
-                if isinstance(activity, model.Parked):
+                if isinstance(activity, v2gsim.model.Parked):
                     activity.charging_station = None
 
     return project
@@ -143,7 +143,7 @@ def initialize_SOC(project, nb_iteration=1, charging_option=None, verbose=True):
     for vehicle in project.vehicles:
         vehicle.SOC = [vehicle.car_model.maximum_SOC]
         for activity in vehicle.activities:
-            if isinstance(activity, model.Parked):
+            if isinstance(activity, v2gsim.model.Parked):
                 activity.charging_station = None
 
     convergence = pandas.DataFrame(
@@ -161,14 +161,14 @@ def initialize_SOC(project, nb_iteration=1, charging_option=None, verbose=True):
             for indexA, activity in enumerate(vehicle.activities):
                 # Calculate the duration of the activity
                 nb_interval = int((activity.end - activity.start).total_seconds() / project.timestep)
-                if isinstance(activity, model.Driving):
+                if isinstance(activity, v2gsim.model.Driving):
                     SOC, _1, _2, _3 = vehicle.car_model.driving(activity, vehicle,
                                                                 nb_interval,
                                                                 project.timestep)
                     if len(SOC) != 0:
                         vehicle.SOC.append(SOC[-1])
 
-                elif isinstance(activity, model.Parked):
+                elif isinstance(activity, v2gsim.model.Parked):
                     # Get the charging station if not already assigned
                     if activity.charging_station is None:
                         activity.charging_station = activity.location.assign_charging_station(indexA,
