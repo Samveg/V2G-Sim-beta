@@ -10,6 +10,9 @@ import v2gsim.core
 import v2gsim.model
 import v2gsim.tool
 import v2gsim.post_simulation.netload_optimization
+import v2gsim.post_simulation.netload_opti_plus
+import v2gsim.post_simulation.netload_opti_hybrid
+import v2gsim.post_simulation.netload_opti_emergency
 import v2gsim.post_simulation.result
 import v2gsim.charging.uncontrolled
 import v2gsim.charging.controlled

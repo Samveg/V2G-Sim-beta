@@ -227,6 +227,7 @@ class CentralOptimization(object):
                 # Push pmax and pmin with vehicle and time key
                 self.pmin.update(temp_vehicle_result.to_dict()['p_min'])
                 self.pmax.update(temp_vehicle_result.to_dict()['p_max'])
+                
 
                 # Push emin and emax with vehicle and time key
                 # Units! if project.timestep in seconds, self.timestep in minutes and battery in Wh
@@ -345,7 +346,8 @@ class CentralOptimization(object):
                     return sum([(model.d[t + 1] - model.d[t] + sum([model.u[t + 1, v] - model.u[t, v] for v in model.v]))**2 for t in model.t if t != last_t])
                 model.objective = Objective(rule=objective_rule, sense=minimize, doc='Define objective function')
 
-            results = opt.solve(model)
+            solver_parameters = "ResultFile=model2.ilp" ##new
+            results = opt.solve(model, options_string=solver_parameters, symbolic_solver_labels=True) ##new
             # results.write()
 
         return model, results
@@ -468,6 +470,7 @@ def save_vehicle_state_for_optimization(vehicle, timestep, date_from,
     when charging. Charging station that offer after simulation processing should
     have activity.charging_station.post_simulation True.
     """
+
     if run:
         if vehicle.result is not None:
             activity_index1, activity_index2, location_index1, location_index2, save = v2gsim.result._map_index(
@@ -510,10 +513,31 @@ def save_vehicle_state_for_optimization(vehicle, timestep, date_from,
                         vehicle.result['p_max'][location_index1:location_index2] += (
                             power_demand[activity_index1:activity_index2])
                         vehicle.result['p_min'][location_index1:location_index2] += (
-                            power_demand[activity_index1:activity_index2])
+                            power_demand[activity_index1:activity_index2]) #if net load scaled too small...careful w units
+                            #bc kW vs kWh, but charging every 10m...5 kW, 5 kWh battery...no should be same
+                            #things are running as it should; some numerical issue...
+                            #final energy balance not something you set, just same as beginning
+                            #maybe really obvious somehow that one of constraints hasn't been scaled...e_final is issue??
+                            #JC has worked with one giant car before
+                            #interesting to plot optimization boundaries...
+                            #max energy rule is potentially happening; final energy balance...more likely #1, since final e is just trying to 
+                            #be above certain threshold
+                            #did i scale chargers wrong compared to cars??
+                            #weird bc it should stop the charging when it reached maximum
+                            #check if below minimum SOC at any time...dont check for above SOC, bc charging function not supposed
+                            #to charge above...high rates might make this weird
+                            #woudl be intersting to see if we could check if we dont go above max SOC at any time
+                            #if all constraints are set properly, shouldnt matter if i'm doing one large car
+                            #look at vehicles, look at SOC, see if you find anything weird--SOC is going above 1
+                            #charging function uncontrolled--charging uncontrolled . poi -- if SOC < maximum
+                            #ah--if SOC is below maximum, you charge; else, you don't charge. Have a chance that SOC is slightly below maximum,
+                            # but as soonas you add giant value one more time, you're above maximum
+                            #maybe make cars really small??? let him know how it goes, if looking at charging fxn isnt answer
                         # Energy is 0.0 because it's already accounted in power_demand
                         vehicle.result['energy'][location_index1:location_index2] -= (
                             [0.0] * (activity_index2 - activity_index1))
+
+
 
     elif init:
         vehicle.SOC = [vehicle.SOC[0]]
